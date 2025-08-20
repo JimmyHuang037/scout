@@ -68,7 +68,7 @@ def main():
         
         # 创建Excel写入器
         print("\n开始导出数据到Excel文件...")
-        with pd.ExcelWriter('school_management_data.xlsx', engine='openpyxl') as writer:
+        with pd.ExcelWriter('school_management.xlsx', engine='openpyxl') as writer:
             # 导出每个表到Excel的不同工作表
             tables = [
                 ('Classes', 'SELECT class_id, class_name FROM Classes'),
@@ -88,7 +88,7 @@ def main():
                     excel_counts[table_name] = count
                     success_count += 1
             
-        print(f"\n数据导出完成，成功导出 {success_count}/7 个表到 school_management_data.xlsx 文件")
+        print(f"\n数据导出完成，成功导出 {success_count}/7 个表到 school_management.xlsx 文件")
         
         # 比较记录数
         print("\n记录数比较结果:")
