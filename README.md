@@ -159,6 +159,12 @@ mysql -u root -p Newuser1
 python3 import_school_data.py
 ```
 
+也可以使用以下脚本将数据库数据导出到Excel文件：
+
+```bash
+python3 export_school_data.py
+```
+
 导入完成后，数据库中的数据量如下：
 - Classes 表: 36 条记录
 - Teachers 表: 132 条记录
