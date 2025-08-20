@@ -1,4 +1,4 @@
-。# 学生成绩管理系统
+# 学生成绩管理系统
 
 ## 数据库连接信息
 
@@ -8,15 +8,19 @@
 mysql -u root -p Newuser1
 ```
 
-默认数据库为 `s_management`。
+默认数据库为 `school_management`。
+
+## 数据库结构文档
+
+有关详细的数据库表结构信息，请参阅 [DATABASE_SCHEMA.md](file:///home/jimmy/repo/scout/DATABASE_SCHEMA.md) 文件。
 
 ### 数据库结构
 
-`s_management` 数据库包含以下七个表及其结构：
+`school_management` 数据库包含以下七个表及其结构：
 
-1. **Class 表**：
+1. **Classes 表**：
    - class_id (int, 主键, 自增)
-   - class_name (varchar(255), 可为空)
+   - class_name (varchar(255), 非空)
    
    示例数据：
    ```
@@ -32,25 +36,25 @@ mysql -u root -p Newuser1
 
 2. **Teachers 表**：
    - teacher_id (int, 主键, 自增)
-   - teacher (varchar(255), 可为空)
-   - subject (varchar(100), 可为空)
+   - teacher_name (varchar(255), 非空)
+   - subject_id (int, 非空, 外键引用Subjects.subject_id)
    
    示例数据：
    ```
-   +------------+-----------+---------+
-   | teacher_id | teacher   | subject |
-   +------------+-----------+---------+
-   |          1 | 王老师    | 语文    |
-   |          2 | 李老师    | 数学    |
-   |          3 | 张老师    | 英语    |
-   |          4 | 胡老师    | 物理    |
-   |          5 | 赵老师    | 化学    |
-   +------------+-----------+---------+
+   +------------+-------------+------------+
+   | teacher_id | teacher_name| subject_id |
+   +------------+-------------+------------+
+   |          1 | 王老师      |          1 |
+   |          2 | 李老师      |          2 |
+   |          3 | 张老师      |          3 |
+   |          4 | 胡老师      |          4 |
+   |          5 | 赵老师      |          5 |
+   +------------+-------------+------------+
    ```
 
-3. **Teacher_Class 表**：
-   - teacher_id (int, 可为空)
-   - class_id (int, 可为空)
+3. **TeacherClasses 表**：
+   - teacher_id (int, 非空, 外键引用Teachers.teacher_id)
+   - class_id (int, 非空, 外键引用Classes.class_id)
    
    示例数据：
    ```
@@ -66,103 +70,103 @@ mysql -u root -p Newuser1
    ```
 
 4. **Students 表**：
-   - student_id (varchar(255), 可为空)
-   - name (varchar(255), 可为空)
-   - class_id (int, 可为空)
+   - student_id (varchar(255), 主键)
+   - student_name (varchar(255), 非空)
+   - class_id (int, 非空, 外键引用Classes.class_id)
    - password (varchar(255), 可为空)
    
    示例数据：
    ```
-   +------------+----------+----------+----------+
-   | student_id | name     | class_id | password |
-   +------------+----------+----------+----------+
-   | S1001      | 尤丽     |        3 | pass123  |
-   | S1002      | 卫桂英   |        2 | pass123  |
-   | S1003      | 郑娟     |        1 | pass123  |
-   | S1004      | 杨敏     |        4 | pass123  |
-   | S1005      | 秦敏     |        4 | pass123  |
-   +------------+----------+----------+----------+
+   +------------+-------------+----------+----------+
+   | student_id | student_name| class_id | password |
+   +------------+-------------+----------+----------+
+   | S1001      | 尤丽        |        3 | pass123  |
+   | S1002      | 卫桂英      |        2 | pass123  |
+   | S1003      | 郑娟        |        1 | pass123  |
+   | S1004      | 杨敏        |        4 | pass123  |
+   | S1005      | 秦敏        |        4 | pass123  |
+   +------------+-------------+----------+----------+
    ```
 
 5. **Scores 表**：
-   - id (int, 主键, 自增)
-   - student_id (varchar(255), 可为空)
-   - subject (varchar(255), 可为空)
-   - type (varchar(255), 可为空)
-   - score (int, 可为空)
+   - score_id (int, 主键, 自增)
+   - student_id (varchar(255), 非空, 外键引用Students.student_id)
+   - subject_id (int, 非空, 外键引用Subjects.subject_id)
+   - exam_type_id (int, 非空, 外键引用ExamTypes.exam_type_id)
+   - score_value (decimal(5,2), 可为空)
    
    示例数据：
    ```
-   +----+------------+---------+-----------------+-------+
-   | id | student_id | subject | type            | score |
-   +----+------------+---------+-----------------+-------+
-   |  1 | S1001      | 语文    | 第一次月考      |    85 |
-   |  2 | S1001      | 数学    | 第一次月考      |    69 |
-   |  3 | S1001      | 英语    | 第一次月考      |    76 |
-   |  4 | S1001      | 物理    | 第一次月考      |    87 |
-   |  5 | S1001      | 化学    | 第一次月考      |    60 |
-   +----+------------+---------+-----------------+-------+
+   +----------+------------+------------+---------------+------------+
+   | score_id | student_id | subject_id | exam_type_id  | score_value|
+   +----------+------------+------------+---------------+------------+
+   |        1 | S1001      |          1 |             1 |    85.00   |
+   |        2 | S1001      |          2 |             1 |    69.00   |
+   |        3 | S1001      |          3 |             1 |    76.00   |
+   |        4 | S1001      |          4 |             1 |    87.00   |
+   |        5 | S1001      |          5 |             1 |    60.00   |
+   +----------+------------+------------+---------------+------------+
    ```
 
-6. **Test_Type 表**：
-   - type_id (int, 主键, 自增)
-   - type (varchar(255), 可为空)
+6. **ExamTypes 表**：
+   - exam_type_id (int, 主键, 自增)
+   - exam_type_name (varchar(255), 非空)
    
    示例数据：
    ```
-   +---------+-----------------+
-   | type_id | type            |
-   +---------+-----------------+
-   |       1 | NULL            |
-   |       2 | NULL            |
-   |       5 | 第一次月考      |
-   |       6 | 期中考试        |
-   +---------+-----------------+
+   +-------------+-----------------+
+   | exam_type_id| exam_type_name  |
+   +-------------+-----------------+
+   |       1     | 第一次月考      |
+   |       2     | 期中考          |
+   |       3     | 第二次月考      |
+   |       4     | 期末考          |
+   +-------------+-----------------+
    ```
 
-7. **Subject 表**：
-   - subject_id (int, 可为空)
-   - subject (varchar(255), 可为空)
+7. **Subjects 表**：
+   - subject_id (int, 主键)
+   - subject_name (varchar(255), 非空)
    
    示例数据：
    ```
-   +------------+---------+
-   | subject_id | subject |
-   +------------+---------+
-   |          1 | 语文    |
-   |          2 | 数学    |
-   |          3 | 英语    |
-   |          4 | 物理    |
-   |          5 | 化学    |
-   +------------+---------+
+   +------------+-------------+
+   | subject_id | subject_name|
+   +------------+-------------+
+   |          1 | 语文        |
+   |          2 | 数学        |
+   |          3 | 英语        |
+   |          4 | 物理        |
+   |          5 | 化学        |
+   +------------+-------------+
    ```
 
 ### 数据导入
 
-系统中的数据来自 [Subject.xlsx](file:///home/jimmy/repo/scout/Subject.xlsx) 文件，包含以下7个工作表：
+系统中的数据来自 [school_management_data.xlsx](file:///home/jimmy/repo/scout/school_management_data.xlsx) 文件，包含以下7个工作表：
 
 1. **Classes** - 班级信息
 2. **Teachers** - 教师信息
-3. **Teacher_Class** - 教师班级关联信息
+3. **TeacherClasses** - 教师班级关联信息
 4. **Students** - 学生信息
 5. **Scores** - 学生成绩信息
-6. **Test_Type** - 考试类型信息
-7. **Subject** - 科目信息
+6. **ExamTypes** - 考试类型信息
+7. **Subjects** - 科目信息
 
 使用以下脚本将Excel数据导入到数据库：
 
 ```bash
-python3 import_subject_data.py
+python3 import_school_data.py
 ```
 
 导入完成后，数据库中的数据量如下：
-- Class 表: 12 条记录
-- Teachers 表: 60 条记录
-- Teacher_Class 表: 24 条记录
-- Students 表: 242 条记录
-- Scores 表: 14400 条记录
-- Test_Type 表: 20 条记录
-- Subject 表: 12 条记录
+- Classes 表: 36 条记录
+- Teachers 表: 132 条记录
+- TeacherClasses 表: 168 条记录
+- Students 表: 120 条记录
+- Scores 表: 31680 条记录
+- ExamTypes 表: 8 条记录
+- Subjects 表: 6 条记录
 
 ### 数据分析结果
 
@@ -170,7 +174,7 @@ python3 import_subject_data.py
 
 #### 总体统计
 - 数据库中共有7个表
-- Scores表数据量最大，共14400条记录
+- Scores表数据量最大，共31680条记录
 - 总体平均分: 80.8分
 - 分数范围: 60-100分
 
