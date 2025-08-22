@@ -38,21 +38,22 @@ mysql -u root -p Newuser1
    - teacher_id (int, 主键, 自增)
    - teacher_name (varchar(255), 非空)
    - subject_id (int, 非空, 外键引用Subjects.subject_id)
+   - password (varchar(255), 可为空)
    
    示例数据：
    ```
-   +------------+-------------+------------+
-   | teacher_id | teacher_name| subject_id |
-   +------------+-------------+------------+
-   |          1 | 王老师      |          1 |
-   |          2 | 李老师      |          2 |
-   |          3 | 张老师      |          3 |
-   |          1 | 胡老师      |          4 |
-   |          5 | 赵老师      |          5 |
-   +------------+-------------+------------+
+   +------------+-------------+------------+----------+
+   | teacher_id | teacher_name| subject_id | password |
+   +------------+-------------+------------+----------+
+   |          1 | 王老师      |          1 | NULL     |
+   |          2 | 李老师      |          2 | NULL     |
+   |          3 | 张老师      |          3 | NULL     |
+   |          1 | 胡老师      |          4 | NULL     |
+   |          5 | 赵老师      |          5 | NULL     |
+   +------------+-------------+------------+----------+
    ```
 
-3. **TeacherClasses 表**：
+3. **teacher_classes 表**：
    - teacher_id (int, 非空, 外键引用Teachers.teacher_id)
    - class_id (int, 非空, 外键引用Classes.class_id)
    
@@ -84,7 +85,7 @@ mysql -u root -p Newuser1
    | S1002      | 卫桂英      |        2 | pass123  |
    | S1003      | 郑娟        |        1 | pass123  |
    | S1004      | 杨敏        |        4 | pass123  |
-   | S1005      | 秦敏        |        4 | pass123  |
+| S1005      | 秦敏        |        4 | pass123  |
    +------------+-------------+----------+----------+
    ```
 
@@ -92,30 +93,30 @@ mysql -u root -p Newuser1
    - score_id (int, 主键, 自增)
    - student_id (varchar(255), 非空, 外键引用Students.student_id)
    - subject_id (int, 非空, 外键引用Subjects.subject_id)
-   - exam_type_id (int, 非空, 外键引用ExamTypes.exam_type_id)
-   - score_value (decimal(5,2), 可为空)
+   - exam_type_id (int, 非空, 外键引用ExamTypes.type_id)
+   - score (int, 可为空)
    
    示例数据：
    ```
-   +----------+------------+------------+---------------+------------+
-   | score_id | student_id | subject_id | exam_type_id  | score_value|
-   +----------+------------+------------+---------------+------------+
-   |        1 | S1001      |          1 |             1 |    85.00   |
-   |        2 | S1001      |          2 |             1 |    69.00   |
-   |        3 | S1001      |          3 |             1 |    76.00   |
-   |        4 | S1001      |          4 |             1 |    87.00   |
-   |        5 | S1001      |          5 |             1 |    60.00   |
-   +----------+------------+------------+---------------+------------+
+   +----------+------------+------------+---------------+-------+
+   | score_id | student_id | subject_id | exam_type_id  | score |
+   +----------+------------+------------+---------------+-------+
+   |        1 | S1001      |          1 |             1 |    85 |
+   |        2 | S1001      |          2 |             1 |    69 |
+   |        3 | S1001      |          3 |             1 |    76 |
+   |        4 | S1001      |          4 |             1 |    87 |
+   |        5 | S1001      |          5 |             1 |    60 |
+   +----------+------------+------------+---------------+-------+
    ```
 
 6. **ExamTypes 表**：
-   - exam_type_id (int, 主键, 自增)
+   - type_id (int, 主键, 自增)
    - exam_type_name (varchar(255), 非空)
    
    示例数据：
    ```
    +-------------+-----------------+
-   | exam_type_id| exam_type_name  |
+   | type_id     | exam_type_name  |
    +-------------+-----------------+
    |       1     | 第一次月考      |
    |       2     | 期中考          |
@@ -140,6 +141,41 @@ mysql -u root -p Newuser1
    |          5 | 化学        |
    +------------+-------------+
    ```
+
+### 数据库结构更新规则
+
+为确保数据库文档与实际结构保持同步，制定以下规则：
+
+1. 当数据库表结构发生任何变更时，必须同步更新 [DATABASE_SCHEMA.md](file:///home/jimmy/repo/scout/DATABASE_SCHEMA.md) 文件
+2. 所有字段命名应保持语义清晰且一致：
+   - 学生相关字段使用 `student_` 前缀（如 student_name, student_id）
+   - 教师相关字段使用 `teacher_` 前缀（如 teacher_name, teacher_id）
+   - 科目相关字段使用 `subject_` 前缀（如 subject_name, subject_id）
+   - 考试类型相关字段使用 `exam_type_` 前缀（如 exam_type_name, exam_type_id）
+   - 班级相关字段使用 `class_` 前缀（如 class_name, class_id）
+3. 所有表名和字段名应使用下划线分隔的命名方式，不使用驼峰命名
+4. 每个表的主键应明确标识，并在文档中说明
+5. 所有外键关系应在文档中明确说明
+6. 当字段结构发生变化时，应同时更新本 README.md 中的示例数据
+
+### 数据库视图命名规范
+
+为保持数据库视图命名的一致性和可读性，制定以下规范：
+
+1. 所有视图名称应使用小写字母
+2. 多个单词之间使用下划线分隔，如 `student_scores`、`teacher_classes`
+3. 视图名称应语义清晰，能够直观表达其包含的数据内容和主要用途
+4. 在保持语义清晰的前提下，视图名称应尽量简洁
+5. 视图名称应优先使用单个有意义的名词，如 `students`、`scores`、`teachers`
+6. 当需要多个词组合时，应使用下划线分隔，如 `teacher_classes`、`class_counts`
+7. 不使用任何前缀（如 `V_` 或 `vw_`）
+8. 所有视图字段命名应与业务含义保持一致
+9. 字段命名应使用中文，与业务含义保持一致
+10. 相同语义的字段在不同视图中应保持相同命名
+11. 使用 `_name` 后缀表示名称字段（如 `student_name`、`teacher_name`）
+12. 使用 `_id` 后缀表示主键或外键字段
+13. 使用 `_value` 后缀表示数值型字段
+14. 使用 `_type` 或 `_type_name` 表示类型字段
 
 ### 数据导入
 
@@ -213,29 +249,63 @@ python3 export_school_data.py
 
 ## 数据库视图
 
-系统中创建了以下三个视图，用于数据分析和报告：
+系统中创建了以下视图，用于数据分析和报告：
 
-1. **Exam_Student_Scores** - 每次考试中每个学生的各科成绩、总分和排名
-   - 考试类型: 考试类型
-   - 学生姓名: 学生姓名
-   - 语文: 语文成绩
-   - 数学: 数学成绩
-   - 英语: 英语成绩
-   - 物理: 物理成绩
-   - 化学: 化学成绩
-   - 政治: 政治成绩
-   - 总分: 总分（该学生在该次考试中所有科目的分数总和）
-   - 排名: 排名（在该次考试中的排名）
-
-2. **Teacher_Subject_Averages** - 每个老师每门课的班级平均分，用于评估教师教学质量
-   - 教师姓名: 教师姓名
-   - 科目: 科目名称
-   - 班级: 班级名称
-   - 平均分: 该教师在该班级该科目的平均分
-
-3. **Class_Performance_Quartiles** - 班级成绩四分位数分布
+1. **exam_class** - 考试成绩等级分布
    - class_name: 班级名称
-   - grade_level: 等级(A/B/C/D)
-   - student_count: 学生数量
+   - exam_type: 考试类型
+   - A: A等级学生数量（年级前25%）
+   - B: B等级学生数量（年级25%-50%）
+   - C: C等级学生数量（年级50%-75%）
+   - D: D等级学生数量（年级后25%）
+
+2. **exam_results** - 考试结果
+   - exam_type: 考试类型
+   - student_name: 学生姓名
+   - chinese: 语文成绩
+   - math: 数学成绩
+   - english: 英语成绩
+   - physics: 物理成绩
+   - chemistry: 化学成绩
+   - politics: 政治成绩
+   - total_score: 总分（该学生在该次考试中所有科目的分数总和）
+   - ranking: 排名（在该次考试中的排名）
+
+3. **teacher_performance** - 教师教学表现
+   - teacher_name: 教师姓名
+   - subject: 科目名称
+   - class: 班级名称
+   - average_score: 该教师在该班级该科目的平均分（去除最高分和最低分后计算）
+   - highest_score: 该教师在该班级该科目的最高分
+   - lowest_score: 该教师在该班级该科目的最低分
+   - ranking: 该班级在该科目中的排名（按平均分排序，共12个班级）
+
+4. **students** - 学生信息及班级
+   - student_id: 学生ID
+   - student_name: 学生姓名
+   - class_name: 班级名称
+   - password: 密码
+
+5. **teachers** - 教师信息及科目
+   - teacher_id: 教师ID
+   - teacher_name: 教师姓名
+   - subject_name: 科目名称
+   - password: 密码
+
+6. **scores** - 成绩详情
+   - score_id: 成绩ID
+   - student_name: 学生姓名
+   - subject_name: 科目名称
+   - exam_type_name: 考试类型名称
+   - score_value: 分数
+
+7. **teacher_classes** - 教师班级关系
+   - teacher_name: 教师姓名
+   - class_name: 班级名称
+
+8. **teacher_counts** - 教师任课班级统计
+   - teacher_name: 教师姓名
+   - subject_name: 科目名称
+   - class_count: 任课班级数量
 
 这些视图基于基础表的数据进行计算，可以用于生成各类分析报告。

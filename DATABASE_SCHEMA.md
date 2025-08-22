@@ -13,7 +13,7 @@ Stores information about school classes.
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
 class_id | int | NO | PRI | NULL | auto_increment
-class_name | varchar(255) | NO |  | NULL | 
+class_name | varchar(255) | YES |  | NULL | 
 
 - **Primary Key**: class_id
 - **Record Count**: 40
@@ -25,13 +25,12 @@ Stores information about students.
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
 student_id | varchar(255) | NO | PRI | NULL | 
-student_name | varchar(255) | NO | MUL | NULL | 
-class_id | int | NO | MUL | NULL | 
+student_name | varchar(255) | YES |  | NULL | 
+class_id | int | YES | MUL | NULL | 
 password | varchar(255) | YES |  | NULL | 
 
 - **Primary Key**: student_id
 - **Foreign Key**: class_id references Classes(class_id)
-- **Index**: student_name (for searching students by name)
 - **Record Count**: 120
 
 ### 3. Teachers Table
@@ -41,12 +40,12 @@ Stores information about teachers.
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
 teacher_id | int | NO | PRI | NULL | auto_increment
-teacher_name | varchar(255) | NO | MUL |  | NULL | 
+teacher_name | varchar(255) | YES |  | NULL | 
 subject_id | int | NO | MUL | NULL | 
+password | varchar(255) | YES |  | NULL | 
 
 - **Primary Key**: teacher_id
 - **Foreign Key**: subject_id references Subjects(subject_id)
-- **Index**: teacher_name (for searching teachers by name)
 - **Record Count**: 144
 
 ### 4. Subjects Table
@@ -56,10 +55,9 @@ Stores information about subjects.
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
 subject_id | int | NO | PRI | NULL | 
-subject_name | varchar(255) | NO | UNI | NULL | 
+subject_name | varchar(255) | YES |  | NULL | 
 
 - **Primary Key**: subject_id
-- **Unique Constraint**: subject_name
 - **Record Count**: 6
 
 ### 5. Scores Table
@@ -69,50 +67,43 @@ Stores student scores for various subjects and exam types.
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
 score_id | int | NO | PRI | NULL | auto_increment
-student_id | varchar(255) | NO | MUL | NULL | 
-subject_id | int | NO | MUL | NULL | 
-exam_type_id | int | NO | MUL | NULL | 
-score_value | decimal(5,2) | YES |  | NULL | 
+student_id | varchar(255) | YES | MUL | NULL | 
+subject_id | int | YES | MUL | NULL | 
+exam_type_id | int | YES | MUL | NULL | 
+score | int | YES |  | NULL | 
 
 - **Primary Key**: score_id
 - **Foreign Keys**: 
   - student_id references Students(student_id)
   - subject_id references Subjects(subject_id)
-  - exam_type_id references ExamTypes(exam_type_id)
-- **Composite Indexes**:
-  - (student_id, subject_id) for querying specific student's scores in specific subjects
-  - (subject_id, exam_type_id) for querying scores of specific subject and exam type
-  - (exam_type_id, subject_id) for querying scores of specific exam type and subject
-- **Check Constraint**: score_value should be between 0 and 100
-- **Record Count**: 31,680
+  - exam_type_id references ExamTypes(type_id)
+- **Record Count**: 2520
 
 ### 6. ExamTypes Table
 
-Stores information about different exam types.
+Stores different types of exams.
 
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
-exam_type_id | int | NO | PRI | NULL | auto_increment
-exam_type_name | varchar(255) | NO | UNI | NULL | 
+type_id | int | NO | PRI | NULL | auto_increment
+exam_type_name | varchar(255) | YES | UNI | NULL | 
 
-- **Primary Key**: exam_type_id
-- **Unique Constraint**: exam_type_name
-- **Record Count**: 8
+- **Primary Key**: type_id
+- **Record Count**: 4
 
-### 7. TeacherClasses Table
+### 7. teacher_classes Table
 
-Stores the many-to-many relationship between teachers and classes.
+Stores the relationship between teachers and classes.
 
 Column Name | Data Type | Null | Key | Default | Extra
 -------------|-----------|------|-----|---------|-------
-teacher_id | int | NO | MUL | NULL | 
-class_id | int | NO | MUL | NULL | 
+teacher_id | int | YES | MUL | NULL | 
+class_id | int | YES | MUL | NULL | 
 
-- **Foreign Keys**:
+- **Foreign Keys**: 
   - teacher_id references Teachers(teacher_id)
   - class_id references Classes(class_id)
-- **Unique Constraint**: (teacher_id, class_id) to prevent duplicate assignments
-- **Record Count**: 192
+- **Record Count**: 144
 
 ## Entity Relationship Diagram
 
@@ -134,7 +125,7 @@ Scores }|--o{ ExamTypes : "many scores for 1 exam type"
 4. **TeacherClasses.class_id** → **Classes.class_id**
 5. **Teachers.subject_id** → **Subjects.subject_id**
 6. **Scores.subject_id** → **Subjects.subject_id**
-7. **Scores.exam_type_id** → **ExamTypes.exam_type_id**
+7. **Scores.exam_type_id** → **ExamTypes.type_id**
 
 ## Data Summary
 
@@ -144,8 +135,8 @@ Classes | 40
 Students | 120
 Teachers | 144
 Subjects | 6
-Scores | 31,680
-ExamTypes | 8
-TeacherClasses | 192
+Scores | 2520
+ExamTypes | 4
+TeacherClasses | 144
 
 The Scores table contains the largest amount of data, which is expected as each student has multiple scores across different subjects and exam types.
