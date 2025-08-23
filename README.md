@@ -10,10 +10,6 @@ mysql -u root -p Newuser1
 
 默认数据库为 `school_management`。
 
-## 数据库结构文档
-
-有关详细的数据库表结构信息，请参阅 [db/DATABASE_SCHEMA.md](file:///home/jimmy/repo/scout/db/DATABASE_SCHEMA.md) 文件。
-
 ### 数据库结构
 
 `school_management` 数据库包含以下七个表及其结构：
