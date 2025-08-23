@@ -80,10 +80,22 @@ echo "正在恢复数据库 $DB_NAME..."
 echo "请稍候..."
 
 # 检查 MySQL 连接
-mysql -u "$DB_USER" -p"$DB_PASS" -e "USE $DB_NAME;" > /dev/null 2>&1
-if [ $? -ne 0 ]; then
-    echo "错误: 无法连接到数据库 $DB_NAME"
+mysql -u "$DB_USER" -p"$DB_PASS" -e "SHOW DATABASES LIKE '$DB_NAME';" > /dev/null 2>&1
+if [ $? -ne 0 ] && [ $? -ne 1 ]; then
+    echo "错误: 无法连接到 MySQL 服务器"
     exit 1
+fi
+
+# 检查数据库是否存在，如果不存在则创建
+DB_EXISTS=$(mysql -u "$DB_USER" -p"$DB_PASS" -e "SHOW DATABASES LIKE '$DB_NAME';" 2>/dev/null | grep -c "$DB_NAME")
+if [ "$DB_EXISTS" -eq 0 ]; then
+    echo "数据库 $DB_NAME 不存在，正在创建..."
+    mysql -u "$DB_USER" -p"$DB_PASS" -e "CREATE DATABASE $DB_NAME;" > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo "错误: 无法创建数据库 $DB_NAME"
+        exit 1
+    fi
+    echo "数据库 $DB_NAME 创建成功!"
 fi
 
 # 执行恢复操作
@@ -98,10 +110,21 @@ if [ $? -eq 0 ]; then
     echo "恢复后的数据库记录数:"
     mysql -u "$DB_USER" -p"$DB_PASS" -e "
         USE $DB_NAME;
-        SELECT table_name AS 'Table', table_rows AS 'Record Count' 
-        FROM information_schema.tables 
-        WHERE table_schema = '$DB_NAME' AND table_type = 'BASE TABLE';
-    " 2>/dev/null
+        SELECT 'Classes' AS 'Table', COUNT(*) AS 'Record Count' FROM Classes
+        UNION ALL
+        SELECT 'ExamTypes' AS 'Table', COUNT(*) AS 'Record Count' FROM ExamTypes
+        UNION ALL
+        SELECT 'Scores' AS 'Table', COUNT(*) AS 'Record Count' FROM Scores
+        UNION ALL
+        SELECT 'Students' AS 'Table', COUNT(*) AS 'Record Count' FROM Students
+        UNION ALL
+        SELECT 'Subjects' AS 'Table', COUNT(*) AS 'Record Count' FROM Subjects
+        UNION ALL
+        SELECT 'TeacherClasses' AS 'Table', COUNT(*) AS 'Record Count' FROM TeacherClasses
+        UNION ALL
+        SELECT 'Teachers' AS 'Table', COUNT(*) AS 'Record Count' FROM Teachers
+        ORDER BY 'Table';
+    " 2>/dev/null | column -t
 else
     echo "数据库恢复失败!"
     exit 1
