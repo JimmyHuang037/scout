@@ -16,7 +16,7 @@ class_id | int | NO | PRI | NULL | auto_increment
 class_name | varchar(255) | YES |  | NULL | 
 
 - **Primary Key**: class_id
-- **Record Count**: 40
+- **Record Count**: 12
 
 ### 2. Students Table
 
@@ -31,7 +31,7 @@ password | varchar(255) | YES |  | NULL |
 
 - **Primary Key**: student_id
 - **Foreign Key**: class_id references Classes(class_id)
-- **Record Count**: 120
+- **Record Count**: 360
 
 ### 3. Teachers Table
 
@@ -46,7 +46,7 @@ password | varchar(255) | YES |  | NULL |
 
 - **Primary Key**: teacher_id
 - **Foreign Key**: subject_id references Subjects(subject_id)
-- **Record Count**: 144
+- **Record Count**: 20
 
 ### 4. Subjects Table
 
@@ -77,7 +77,7 @@ score | int | YES |  | NULL |
   - student_id references Students(student_id)
   - subject_id references Subjects(subject_id)
   - exam_type_id references ExamTypes(type_id)
-- **Record Count**: 2520
+- **Record Count**: 8640
 
 ### 6. ExamTypes Table
 
@@ -103,7 +103,118 @@ class_id | int | YES | MUL | NULL |
 - **Foreign Keys**: 
   - teacher_id references Teachers(teacher_id)
   - class_id references Classes(class_id)
-- **Record Count**: 144
+- **Record Count**: 72
+
+## Database Views
+
+### 1. exam_class View
+
+Shows the grade distribution (A, B, C, D) for each class in each exam type.
+
+Column Name | Description
+------------|------------
+class_name | Name of the class
+exam_type | Type of exam
+A | Count of students with A grade (top 25%)
+B | Count of students with B grade (25%-50%)
+C | Count of students with C grade (50%-75%)
+D | Count of students with D grade (bottom 25%)
+
+### 2. exam_results View
+
+Shows student scores for each subject and exam type, with total scores and rankings.
+
+Column Name | Description
+------------|------------
+exam_type | Type of exam
+student_name | Name of the student
+chinese | Chinese score
+math | Math score
+english | English score
+physics | Physics score
+chemistry | Chemistry score
+politics | Politics score
+total_score | Total score across all subjects
+ranking | Ranking within the exam type
+
+### 3. scores View
+
+Shows detailed score information with descriptive names.
+
+Column Name | Description
+------------|------------
+score_id | Score identifier
+student_name | Name of the student
+subject_name | Name of the subject
+exam_type_name | Name of the exam type
+score_value | Actual score value
+
+### 4. students View
+
+Shows student information with class names.
+
+Column Name | Description
+------------|------------
+student_id | Student identifier
+student_name | Name of the student
+class_name | Name of the class
+password | Student password
+
+### 5. teacher_classes View
+
+Shows teacher-class relationships with descriptive names.
+
+Column Name | Description
+------------|------------
+teacher_name | Name of the teacher
+class_name | Name of the class
+
+### 6. teacher_counts View
+
+Shows how many classes each teacher teaches.
+
+Column Name | Description
+------------|------------
+teacher_name | Name of the teacher
+subject_name | Name of the subject taught
+class_count | Number of classes taught
+
+### 7. teacher_performance View
+
+Shows teacher performance metrics including average scores (excluding highest and lowest), highest score, lowest score, and ranking for each exam type.
+
+Column Name | Description
+------------|------------
+teacher_name | Name of the teacher
+subject | Subject taught
+class | Class name
+exam_type_name | Name of the exam type
+average_score | Average score (excluding highest and lowest)
+highest_score | Highest score in the class
+lowest_score | Lowest score in the class
+ranking | Ranking among teachers of the same subject and exam type
+
+### 8. teachers View
+
+Shows teacher information with subject names.
+
+Column Name | Description
+------------|------------
+teacher_id | Teacher identifier
+teacher_name | Name of the teacher
+subject_name | Name of the subject taught
+password | Teacher password
+
+### 9. users View
+
+Shows all users (students, teachers, and admin) in a unified view for authentication.
+
+Column Name | Description
+------------|------------
+user_id | User identifier
+user_name | Name of the user
+password | User password
+role | Role of the user (student, teacher, or admin)
 
 ## Entity Relationship Diagram
 
@@ -131,12 +242,12 @@ Scores }|--o{ ExamTypes : "many scores for 1 exam type"
 
 Table | Record Count
 -------|--------------
-Classes | 40
-Students | 120
-Teachers | 144
+Classes | 12
+Students | 360
+Teachers | 20
 Subjects | 6
-Scores | 2520
+Scores | 8640
 ExamTypes | 4
-TeacherClasses | 144
+TeacherClasses | 72
 
 The Scores table contains the largest amount of data, which is expected as each student has multiple scores across different subjects and exam types.

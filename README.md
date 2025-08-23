@@ -309,3 +309,72 @@ python3 export_school_data.py
    - class_count: 任课班级数量
 
 这些视图基于基础表的数据进行计算，可以用于生成各类分析报告。
+
+## Flask API 开发指南
+
+在开发 Flask API 时，对于不同的数据实体，应根据其特性和可更新性选择使用基础表或视图：
+
+### 可直接使用视图进行 CRUD 操作的实体：
+
+1. **scores 视图**
+   - **可更新性**：是，已验证
+   - **优点**：提供描述性字段名 (student_name, subject_name, exam_type_name, score_value)
+   - **适用场景**：成绩管理的完整 CRUD 操作
+
+2. **teachers 视图**
+   - **可更新性**：部分，基础字段可更新
+   - **优点**：提供 teacher_name 和 subject_name 而不是 ID
+   - **适用场景**：教师信息查询和基本更新
+
+3. **students 视图**
+   - **可更新性**：部分，基础字段可更新
+   - **优点**：提供 student_name 和 class_name 而不是 ID
+   - **适用场景**：学生信息查询和基本更新
+
+### 必须使用基础表进行 CRUD 操作的实体：
+
+1. **Classes 表**
+   - **原因**：对应的 students 视图包含多表连接，无法直接更新
+   - **适用场景**：班级信息的完整 CRUD 操作
+
+2. **Students 表**
+   - **原因**：虽然 students 视图可部分更新，但复杂操作需要使用基础表
+   - **适用场景**：学生信息的完整 CRUD 操作，特别是涉及 class_id 的操作
+
+3. **Teachers 表**
+   - **原因**：虽然 teachers 视图可部分更新，但复杂操作需要使用基础表
+   - **适用场景**：教师信息的完整 CRUD 操作，特别是涉及 subject_id 的操作
+
+4. **Subjects 表**
+   - **原因**：没有对应的可更新视图
+   - **适用场景**：科目信息的完整 CRUD 操作
+
+5. **ExamTypes 表**
+   - **原因**：没有对应的可更新视图
+   - **适用场景**：考试类型信息的完整 CRUD 操作
+
+6. **TeacherClasses 表**
+   - **原因**：对应的 teacher_classes 视图无法更新
+   - **适用场景**：教师和班级关联关系的完整 CRUD 操作
+
+7. **Scores 表**
+   - **原因**：虽然 scores 视图可更新，但在某些复杂场景下直接操作基础表更可靠
+   - **适用场景**：作为 scores 视图的备选方案
+
+### 只能用于查询的视图（包含聚合或复杂计算）：
+
+1. **exam_class** - 包含聚合函数和复杂计算
+2. **exam_results** - 包含聚合函数和复杂计算
+3. **teacher_counts** - 包含聚合函数
+4. **teacher_performance** - 包含聚合函数和复杂计算
+5. **users** - 包含 UNION 操作
+
+这些视图仅适用于查询和报告场景，不能用于更新操作。
+
+### 建议的 Flask API 设计策略：
+
+1. **对于 scores**：优先使用 scores 视图进行所有 CRUD 操作
+2. **对于 teachers 和 students**：查询使用视图，创建/更新操作可选择使用视图或基础表
+3. **对于 teacher_classes 关联**：查询使用 teacher_classes 视图，创建/删除使用 TeacherClasses 基础表
+4. **对于其他实体**：使用基础表进行 CRUD 操作
+5. **对于分析报告类视图**：仅用于查询操作
