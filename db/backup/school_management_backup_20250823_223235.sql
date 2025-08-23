@@ -84,7 +84,7 @@ CREATE TABLE `Scores` (
   CONSTRAINT `Scores_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `Students` (`student_id`),
   CONSTRAINT `Scores_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `Subjects` (`subject_id`),
   CONSTRAINT `Scores_ibfk_3` FOREIGN KEY (`exam_type_id`) REFERENCES `ExamTypes` (`type_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16384 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -520,4 +520,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-23  4:10:33
+-- Dump completed on 2025-08-23 22:32:35
