@@ -12,7 +12,7 @@ mysql -u root -p Newuser1
 
 ## 数据库结构文档
 
-有关详细的数据库表结构信息，请参阅 [DATABASE_SCHEMA.md](file:///home/jimmy/repo/scout/DATABASE_SCHEMA.md) 文件。
+有关详细的数据库表结构信息，请参阅 [db/DATABASE_SCHEMA.md](file:///home/jimmy/repo/scout/db/DATABASE_SCHEMA.md) 文件。
 
 ### 数据库结构
 
@@ -179,7 +179,7 @@ mysql -u root -p Newuser1
 
 ### 数据导入
 
-系统中的数据来自 [school_management_data.xlsx](file:///home/jimmy/repo/scout/school_management_data.xlsx) 文件，包含以下7个工作表：
+系统中的数据来自 [db/school_management.xlsx](file:///home/jimmy/repo/scout/db/school_management.xlsx) 文件，包含以下7个工作表：
 
 1. **Classes** - 班级信息
 2. **Teachers** - 教师信息
@@ -192,12 +192,14 @@ mysql -u root -p Newuser1
 使用以下脚本将Excel数据导入到数据库：
 
 ```bash
+cd db
 python3 import_school_data.py
 ```
 
 也可以使用以下脚本将数据库数据导出到Excel文件：
 
 ```bash
+cd db
 python3 export_school_data.py
 ```
 
@@ -378,3 +380,34 @@ python3 export_school_data.py
 3. **对于 teacher_classes 关联**：查询使用 teacher_classes 视图，创建/删除使用 TeacherClasses 基础表
 4. **对于其他实体**：使用基础表进行 CRUD 操作
 5. **对于分析报告类视图**：仅用于查询操作
+
+## 数据库备份
+
+为了确保数据安全，建议定期备份整个数据库。备份文件存储在 `db/backup` 目录中。
+
+### 手动备份
+
+使用以下命令创建数据库备份：
+
+```bash
+mkdir -p db/backup
+mysqldump -u root -pNewuser1 school_management > db/backup/school_management_backup_$(date +"%Y%m%d_%H%M%S").sql
+```
+
+### 使用备份脚本
+
+项目提供了自动备份脚本，可以更方便地创建备份：
+
+```bash
+cd db
+./backup_db.sh
+```
+
+该脚本会自动在 `db/backup` 目录中创建一个带有时间戳的备份文件。
+
+你也可以指定备份文件名：
+
+```bash
+cd db
+./backup_db.sh my_backup.sql
+```

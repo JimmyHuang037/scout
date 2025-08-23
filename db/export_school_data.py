@@ -72,11 +72,11 @@ def main():
             # 导出每个表到Excel的不同工作表
             tables = [
                 ('Classes', 'SELECT class_id, class_name FROM Classes'),
-                ('Students', 'SELECT student_id, name, class_id, password FROM Students'),
-                ('Teachers', 'SELECT teacher_id, teacher, subject_id FROM Teachers'),
-                ('Subjects', 'SELECT subject_id, subject FROM Subjects'),
+                ('Students', 'SELECT student_id, student_name, class_id, password FROM Students'),
+                ('Teachers', 'SELECT teacher_id, teacher_name, subject_id, password FROM Teachers'),
+                ('Subjects', 'SELECT subject_id, subject_name FROM Subjects'),
                 ('Scores', 'SELECT score_id, student_id, subject_id, exam_type_id, score FROM Scores'),
-                ('ExamTypes', 'SELECT type_id, exam_type FROM ExamTypes'),
+                ('ExamTypes', 'SELECT type_id, exam_type_name FROM ExamTypes'),
                 ('TeacherClasses', 'SELECT teacher_id, class_id FROM TeacherClasses')
             ]
             

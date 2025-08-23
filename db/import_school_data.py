@@ -26,7 +26,7 @@ def import_sheet_to_table(sheet_name, table_name, connection):
     """将工作表导入到数据库表中"""
     try:
         # 读取Excel工作表
-        df = pd.read_excel('school_management_data.xlsx', sheet_name=sheet_name)
+        df = pd.read_excel('school_management.xlsx', sheet_name=sheet_name)
         print(f"正在处理工作表: {sheet_name}，数据行数: {len(df)}")
         
         if df.empty:
