@@ -411,3 +411,35 @@ cd db
 cd db
 ./backup_db.sh my_backup.sql
 ```
+
+## 数据库恢复
+
+当需要从备份文件恢复数据库时，可以使用以下方法：
+
+### 使用恢复脚本（推荐）
+
+项目提供了自动恢复脚本，可以更方便地从备份恢复数据库：
+
+```bash
+cd db
+./restore_db.sh
+```
+
+该脚本会列出 `db/backup` 目录中的所有备份文件，并让你选择要恢复的文件。
+
+你也可以直接指定要恢复的备份文件：
+
+```bash
+cd db
+./restore_db.sh school_management_backup_20250823_041033.sql
+```
+
+### 手动恢复
+
+使用以下命令从备份文件恢复数据库：
+
+```bash
+mysql -u root -pNewuser1 school_management < db/backup/school_management_backup_YYYYMMDD_HHMMSS.sql
+```
+
+**注意**：恢复操作会覆盖当前数据库中的所有数据，请谨慎操作。
