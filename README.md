@@ -54,8 +54,8 @@ mysql -u root -p Newuser1
    ```
 
 3. **TeacherClasses 表**：
-   - teacher_id (int, 非空, 外键引用Teachers.teacher_id)
-   - class_id (int, 非空, 外键引用Classes.class_id)
+   - teacher_id (int, 主键的一部分, 外键引用Teachers.teacher_id)
+   - class_id (int, 主键的一部分, 外键引用Classes.class_id)
    
    示例数据：
    ```
@@ -205,7 +205,9 @@ cd db
 python3 export_school_data.py
 ```
 
-导出的Excel文件将保存在 `db` 目录下，文件名为 `school_management.xlsx`。
+导出的Excel文件将保存在 `db` 目录下，包含两个文件：
+- `school_management.xlsx` - 包含所有基础表数据
+- `school_management_views.xlsx` - 包含所有视图数据
 
 导入完成后，数据库中的数据量如下：
 - Classes 表: 12 条记录

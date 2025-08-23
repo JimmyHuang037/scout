@@ -14,6 +14,7 @@ db_config = {
 # 确保Excel文件保存在db目录下
 db_directory = os.path.dirname(__file__)
 excel_file = os.path.join(db_directory, 'school_management.xlsx')
+views_excel_file = os.path.join(db_directory, 'school_management_views.xlsx')
 
 def create_connection():
     """创建数据库连接"""
@@ -40,6 +41,21 @@ def export_table_to_excel(table_name, query, connection, excel_writer):
         traceback.print_exc()
         return -1
 
+def export_view_to_excel(view_name, connection, excel_writer):
+    """将单个视图导出到Excel的工作表中"""
+    try:
+        print(f"正在导出 {view_name} 视图...")
+        query = f"SELECT * FROM {view_name}"
+        df = pd.read_sql(query, connection)
+        df.to_excel(excel_writer, sheet_name=view_name, index=False)
+        print(f"成功导出 {view_name} 视图，共 {len(df)} 行数据")
+        return len(df)
+    except Exception as e:
+        print(f"导出 {view_name} 视图时出错: {e}")
+        import traceback
+        traceback.print_exc()
+        return -1
+
 def get_database_counts(connection):
     """从数据库获取每个表的记录数"""
     table_counts = {}
@@ -57,6 +73,17 @@ def get_database_counts(connection):
             table_counts[table] = -1
     
     return table_counts
+
+def get_view_list(connection):
+    """获取数据库中的所有视图名称"""
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SHOW FULL TABLES WHERE Table_type = 'VIEW'")
+        views = [row[0] for row in cursor.fetchall()]
+        return views
+    except Exception as e:
+        print(f"获取视图列表时出错: {e}")
+        return []
 
 def main():
     # 创建数据库连接
@@ -124,6 +151,43 @@ def main():
         else:
             print("部分表的记录数不一致，请检查数据。")
             
+        # 导出视图到单独的Excel文件
+        print(f"\n开始导出视图到Excel文件 {views_excel_file}...")
+        
+        # 删除现有的视图Excel文件
+        if os.path.exists(views_excel_file):
+            os.remove(views_excel_file)
+            print(f"\n已删除现有的 {os.path.basename(views_excel_file)} 文件")
+        
+        # 获取视图列表
+        views = get_view_list(connection)
+        if not views:
+            print("未找到任何视图，跳过视图导出。")
+            return
+            
+        print(f"找到 {len(views)} 个视图: {', '.join(views)}")
+        
+        # 创建视图Excel写入器
+        with pd.ExcelWriter(views_excel_file, engine='openpyxl') as writer:
+            view_counts = {}
+            success_views = 0
+            
+            for view_name in views:
+                count = export_view_to_excel(view_name, connection, writer)
+                if count >= 0:
+                    view_counts[view_name] = count
+                    success_views += 1
+                    
+        print(f"\n视图导出完成，成功导出 {success_views}/{len(views)} 个视图到 {os.path.basename(views_excel_file)} 文件")
+        print(f"文件保存位置: {views_excel_file}")
+        
+        # 显示视图记录数
+        print("\n视图记录数:")
+        print("-" * 30)
+        for view_name, count in view_counts.items():
+            print(f"{view_name}: {count}")
+        print("-" * 30)
+        
     except Exception as e:
         print(f"导出数据时出错: {e}")
         import traceback
