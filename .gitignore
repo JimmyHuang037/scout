@@ -1,0 +1,21 @@
+# Python
+venv/
+env/
+ENV/
+.venv/
+.env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.coverage
+.pytest_cache/
+.coverage.*
+.pytest_cache
+
+# IDE
+.idea/
+*.swp
+*.swo
