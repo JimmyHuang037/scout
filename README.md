@@ -53,7 +53,7 @@ mysql -u root -p Newuser1
    +------------+-------------+------------+----------+
    ```
 
-3. **teacher_classes 表**：
+3. **TeacherClasses 表**：
    - teacher_id (int, 非空, 外键引用Teachers.teacher_id)
    - class_id (int, 非空, 外键引用Classes.class_id)
    
@@ -196,12 +196,16 @@ cd db
 python3 import_school_data.py
 ```
 
+导入脚本会自动在db目录下查找 `school_management.xlsx` 文件，并将数据导入到数据库中。
+
 也可以使用以下脚本将数据库数据导出到Excel文件：
 
 ```bash
 cd db
 python3 export_school_data.py
 ```
+
+导出的Excel文件将保存在 `db` 目录下，文件名为 `school_management.xlsx`。
 
 导入完成后，数据库中的数据量如下：
 - Classes 表: 12 条记录
@@ -210,7 +214,7 @@ python3 export_school_data.py
 - Subjects 表: 6 条记录
 - Scores 表: 8640 条记录
 - ExamTypes 表: 4 条记录
-- TeacherClasses 表: 50 条记录
+- TeacherClasses 表: 72 条记录
 
 ### 数据分析结果
 
