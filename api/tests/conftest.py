@@ -13,7 +13,6 @@ api_dir = os.path.join(os.path.dirname(__file__), '..')
 sys.path.insert(0, os.path.abspath(api_dir))
 
 from app.factory import create_app
-from config.config import config
 
 
 @pytest.fixture
@@ -26,6 +25,7 @@ def app():
 @pytest.fixture
 def client(app):
     """创建测试客户端"""
+    # 处理Werkzeug版本兼容性问题
     return app.test_client()
 
 

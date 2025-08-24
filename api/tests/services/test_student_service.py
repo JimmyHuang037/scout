@@ -5,12 +5,20 @@
 
 import pytest
 from services.student_service import StudentService
+from app.factory import create_app
 
 
 class TestStudentService:
     """学生服务测试类"""
     
-    def test_get_student_by_id_success(self, mocker):
+    @pytest.fixture
+    def app_context(self):
+        """创建应用上下文"""
+        app = create_app('testing')
+        with app.app_context():
+            yield app
+    
+    def test_get_student_by_id_success(self, mocker, app_context):
         """测试根据ID获取学生信息成功"""
         # 模拟数据库服务返回
         mock_result = {
@@ -31,7 +39,7 @@ class TestStudentService:
         assert result == mock_result
         service.db_service.execute_query.assert_called_once()
     
-    def test_get_student_by_id_not_found(self, mocker):
+    def test_get_student_by_id_not_found(self, mocker, app_context):
         """测试根据ID获取学生信息但未找到"""
         # 模拟数据库服务返回None
         service = StudentService()
@@ -44,7 +52,7 @@ class TestStudentService:
         assert result is None
         service.db_service.execute_query.assert_called_once()
     
-    def test_get_all_students_success(self, mocker):
+    def test_get_all_students_success(self, mocker, app_context):
         """测试获取所有学生成功"""
         # 模拟数据库服务返回
         mock_students = [
