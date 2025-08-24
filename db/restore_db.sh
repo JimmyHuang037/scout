@@ -1,14 +1,20 @@
 #!/bin/bash
 
 # 数据库恢复脚本
-# 用法: ./restore_db.sh [备份文件名]
+# 用法: ./restore_db.sh [备份文件名] [数据库名]
 # 如果不指定文件名，则列出备份目录中的所有备份文件供选择
+# 如果不指定数据库名，则使用默认数据库名
 
 # 设置变量
 DB_USER="root"
 DB_PASS="Newuser1"
 DB_NAME="school_management"
 BACKUP_DIR="/home/jimmy/repo/scout/db/backup"
+
+# 如果提供了第二个参数，则使用它作为数据库名
+if [ $# -ge 2 ]; then
+    DB_NAME="$2"
+fi
 
 # 检查备份目录是否存在
 if [ ! -d "$BACKUP_DIR" ]; then
@@ -66,9 +72,11 @@ echo "文件名: $FILENAME"
 echo "文件大小: $FILESIZE"
 echo "行数: $FILELINES"
 echo ""
+echo "目标数据库: $DB_NAME"
+echo ""
 
 # 确认操作
-read -p "确定要恢复这个备份吗？这将覆盖当前数据库中的所有数据！(y/N): " CONFIRM
+read -p "确定要恢复这个备份吗？这将覆盖 $DB_NAME 数据库中的所有数据！(y/N): " CONFIRM
 
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo "操作已取消"

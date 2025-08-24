@@ -16,27 +16,20 @@ class TestTeacherService:
         """创建测试应用"""
         return create_app('testing')
     
-    def test_get_teacher_by_id_success(self, mocker, app):
+    def test_get_teacher_by_id_success(self, app):
         """测试根据ID获取教师信息成功"""
-        # 模拟数据库服务返回
-        mock_result = {
-            'teacher_id': 1,
-            'teacher_name': '王老师',
-            'subject_id': 1,
-            'subject_name': '语文'
-        }
-        
         with app.app_context():
-            # 创建服务实例并模拟数据库方法
+            # 创建服务实例
             service = TeacherService()
-            mocker.patch.object(service.db_service, 'execute_query', return_value=mock_result)
             
-            # 调用被测试方法
+            # 调用被测试方法 - 使用真实数据
             result = service.get_teacher_by_id(1)
             
             # 验证结果
-            assert result == mock_result
-            service.db_service.execute_query.assert_called_once()
+            assert result is not None
+            assert 'teacher_id' in result
+            assert result['teacher_id'] == 1
+            assert 'teacher_name' in result
     
     def test_get_all_teachers_success(self, mocker, app):
         """测试获取所有教师成功"""

@@ -43,8 +43,8 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """测试环境配置"""
     TESTING = True
-    # 在测试环境中也使用主数据库以避免连接问题
-    MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
+    # 使用专门的测试数据库
+    MYSQL_DB = os.getenv('MYSQL_TEST_DB', 'school_management_test')
 
 
 # 配置字典
