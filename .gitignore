@@ -19,7 +19,9 @@ __pycache__/
 api/flask_session/
 
 # Log files
+logs/
 api/logs/
+*.log
 
 # IDE
 .idea/
