@@ -7,7 +7,7 @@ student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 from .profile.profile_management import get_profile
 
 # 导入成绩相关路由
-from .scores_management import get_my_scores
+from .scores.scores_management import get_my_scores
 
 # 导入考试相关路由
 from .exam.exam_results_management import get_my_exam_results
