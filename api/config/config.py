@@ -10,6 +10,11 @@ class Config:
     # Flask配置
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     
+    # Session配置
+    SESSION_TYPE = 'filesystem'
+    SESSION_PERMANENT = False
+    PERMANENT_SESSION_LIFETIME = 3600  # 1小时
+    
     # MySQL数据库配置
     MYSQL_HOST = os.getenv('MYSQL_HOST', 'localhost')
     MYSQL_USER = os.getenv('MYSQL_USER', 'root')

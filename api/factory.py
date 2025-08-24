@@ -2,6 +2,7 @@
 import os
 from flask import Flask
 from flask_cors import CORS
+from flask_session import Session
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,6 +17,9 @@ def create_app(config_name=None):
     config_name = config_name or os.getenv('FLASK_CONFIG', 'default')
     from config.config import config
     app.config.from_object(config[config_name])
+    
+    # 初始化Session
+    Session(app)
     
     # 注册蓝图
     from api.routes import register_blueprints

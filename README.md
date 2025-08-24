@@ -25,9 +25,10 @@
 
 ### 项目结构规范
 1. **使用Blueprint组织API路由**：
-   - 按用户角色创建独立的蓝图文件（admin.py、teacher.py、student.py等）
+   - 按用户角色创建独立的蓝图文件（admin.py、teacher.py、student.py、auth.py等）
    - 所有蓝图文件应放在 `api/blueprints/` 目录下
-   - 每个蓝图应有统一的URL前缀（如 `/api/admin`、`/api/teacher`、`/api/student`）
+   - 每个蓝图应有统一的URL前缀（如 `/api/admin`、`/api/teacher`、`/api/student`、`/api/auth`）
+   - 认证相关功能应放在独立的auth蓝图中
 
 2. **配置管理**：
    - 创建独立的配置模块 `api/config/config.py`
@@ -38,6 +39,12 @@
    - 使用 `api/database.py` 模块统一管理数据库连接
    - 实现连接池和自动关闭机制
    - 遵循Flask应用上下文最佳实践
+
+4. **认证模块**：
+   - 认证功能应放在 `api/blueprints/auth/` 目录下
+   - 包含认证管理模块和蓝图初始化文件
+   - 实现用户登录、登出和获取当前用户信息的功能
+   - 使用session管理用户认证状态
 
 ### 代码质量规范
 1. **文件长度限制**：
@@ -73,7 +80,7 @@
    ```json
    {
      "success": true/false,
-     "data": {...},       // 成功时返回数据
+   "data": {...},       // 成功时返回数据
      "error": "..."       // 失败时返回错误信息
    }
    ```
@@ -91,6 +98,13 @@
    - 实现身份验证和授权机制
    - 敏感操作需要权限验证
    - 防止SQL注入等安全问题
+
+6. **认证规范**：
+   - 使用基于session的认证机制
+   - 用户登录信息存储在服务端session中
+   - 所有需要认证的API端点必须检查用户认证状态
+   - 用户角色信息用于权限控制
+   - 登录失败时返回适当的错误码和信息
 
 ### 代码质量规范
 1. **代码组织**：
@@ -137,8 +151,8 @@
 - `api/extensions/database.py` (36行) - 数据库连接管理模块
 - `api/factory.py` (107行) - 应用工厂模块，负责创建和配置Flask应用
 
-### 工具模块
-- `api/extensions/db_utils.py` (66行) - 数据库工具模块，包含多种数据库操作函数
+### 认证模块文件
+- `api/blueprints/auth/auth_management.py` (55行) - 用户认证管理模块，包含登录、登出和用户信息功能
 
 这些文件保持较大体积的原因：
 1. **核心架构文件**：如蓝图主文件和工厂文件，它们是系统架构的重要组成部分
@@ -575,6 +589,21 @@ mysql -u root -pNewuser1 school_management < db/backup/school_management_backup_
 
 在开发 Flask API 时，对于不同的数据实体，应根据其特性和可更新性选择使用基础表或视图。API 需要支持三种不同的用户角色：管理员、教师和学生，并为每种角色提供相应的权限和功能。
 
+### 用户认证
+
+系统使用基于session的简单认证机制：
+
+1. **认证方式**：使用`users`视图进行用户名和密码验证
+2. **会话管理**：使用Flask-Session管理用户会话
+3. **权限控制**：通过session中的角色信息控制访问权限
+
+**认证流程**：
+1. 用户通过`POST /api/auth/login`提交用户ID和密码
+2. 系统查询`users`视图验证凭据
+3. 验证成功后，用户信息存储在session中
+4. 后续请求中，各模块从session获取用户ID进行权限控制
+5. 用户通过`POST /api/auth/logout`登出，清除session
+
 ### 用户角色和权限
 
 1. **管理员角色 (Admin)**
@@ -824,53 +853,9 @@ Web 前端部分将使用 Angular 框架开发，采用 Angular Material 组件�
 
 - [ ] 创建 Angular 项目结构
 - [ ] 设计 UI/UX 原型
-- [ ] 实现用户认证模块
+- [x] 实现用户认证模块
 - [ ] 实现管理员功能模块
 - [ ] 实现教师功能模块
 - [ ] 实现学生功能模块
 - [ ] 编写单元测试
 - [ ] 部署配置
-
-## 当前存在的大型文件列表
-
-以下是一些由于功能复杂性或架构设计需要而超过15行限制的文件。这些文件的大小是合理的，因为它们承担着核心功能：
-
-### 核心蓝图文件
-- `api/blueprints/admin.py` (422行) - 管理员蓝图主文件，包含核心路由定义
-- `api/blueprints/teacher.py` (415行) - 教师蓝图主文件，包含核心路由定义
-- `api/blueprints/student.py` (124行) - 学生蓝图主文件，包含核心路由定义
-
-### 复杂业务逻辑文件
-- `api/blueprints/admin/teacher_update.py` (83行) - 教师信息更新逻辑，包含复杂验证
-- `api/blueprints/admin/student_update.py` (83行) - 学生信息更新逻辑，包含复杂验证
-- `api/blueprints/teacher/score_create.py` (72行) - 成绩录入逻辑，包含多重验证
-- `api/blueprints/teacher/score_update.py` (61行) - 成绩更新逻辑，包含权限验证
-- `api/blueprints/teacher/students.py` (58行) - 学生信息查询逻辑，包含复杂查询条件
-- `api/blueprints/student/scores.py` (55行) - 学生成绩查询逻辑，包含多种筛选条件
-- `api/blueprints/teacher/exam_results.py` (52行) - 考试结果查询逻辑
-- `api/blueprints/teacher/exam_class.py` (52行) - 班级考试结果查询逻辑
-- `api/blueprints/teacher/performance.py` (46行) - 教师表现统计逻辑
-- `api/blueprints/student/exam_results.py` (46行) - 学生考试结果查询逻辑
-- `api/blueprints/admin/teachers.py` (46行) - 教师列表查询逻辑
-- `api/blueprints/admin/teacher_create.py` (46行) - 教师创建逻辑，包含验证
-- `api/blueprints/admin/teacher_detail.py` (35行) - 教师详情查询逻辑
-
-### 配置和工厂文件
-- `api/config/config.py` (45行) - 应用配置文件，包含多种环境配置
-- `api/extensions/database.py` (36行) - 数据库连接管理模块
-- `api/factory.py` (107行) - 应用工厂模块，负责创建和配置Flask应用
-
-### 工具模块
-- `api/extensions/db_utils.py` (66行) - 数据库工具模块，包含多种数据库操作函数
-
-这些文件保持较大体积的原因：
-1. **核心架构文件**：如蓝图主文件和工厂文件，它们是系统架构的重要组成部分
-2. **复杂业务逻辑**：某些业务操作涉及复杂的验证、权限检查和数据处理
-3. **功能聚合**：一些模块聚合了相关功能，拆分可能导致代码分散和维护困难
-4. **历史原因**：部分文件在重构过程中尚未完成拆分
-
-未来优化方向：
-1. 对于超过50行的文件，应考虑进一步拆分
-2. 可以将一些通用功能提取到独立的工具模块中
-3. 复杂的验证逻辑可以拆分为独立的验证模块
-4. 数据库操作可以进一步模块化以提高复用性
