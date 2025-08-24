@@ -16,10 +16,10 @@ __pycache__/
 .pytest_cache
 
 # Session files
-flask_session/
+api/flask_session/
 
 # Log files
-logs/
+api/logs/
 
 # IDE
 .idea/
