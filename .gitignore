@@ -15,12 +15,8 @@ __pycache__/
 .coverage.*
 .pytest_cache
 
-# Session files
-api/runtime/flask_session/
-
-# Log files
-api/runtime/logs/
-*.log
+# runtime
+api/runtime/
 
 # IDE
 .idea/
