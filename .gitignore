@@ -18,10 +18,12 @@ __pycache__/
 # Session files
 flask_session/
 api/flask_session/
+api/runtime/flask_session/
 
 # Log files
 logs/
 api/logs/
+api/runtime/logs/
 *.log
 
 # IDE

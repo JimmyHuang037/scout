@@ -54,4 +54,4 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 
 # 创建应用日志记录器
-app_logger = setup_logger('app', 'logs/app.log')
+app_logger = setup_logger('app', 'runtime/logs/app.log')
