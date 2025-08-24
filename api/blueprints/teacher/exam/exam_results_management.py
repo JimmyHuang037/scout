@@ -19,16 +19,16 @@ def get_exam_results():
         class_id = request.args.get('class_id')
         
         # 使用成绩服务获取考试结果
-        # TODO: 实现根据班级筛选的功能
         score_service = ScoreService()
-        results = score_service.get_scores(
+        exam_results = score_service.get_exam_results(
             teacher_id=current_teacher_id,
-            exam_type_id=exam_type_id
+            exam_type_id=exam_type_id,
+            class_id=class_id
         )
         
         return jsonify({
             'success': True,
-            'data': results
+            'data': exam_results
         })
         
     except Exception as e:

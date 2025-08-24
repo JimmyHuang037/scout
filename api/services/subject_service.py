@@ -1,5 +1,5 @@
 """科目服务模块，处理与科目相关的业务逻辑"""
-from .database_service import DatabaseService
+from api.utils import DatabaseService
 
 
 class SubjectService:
@@ -11,33 +11,30 @@ class SubjectService:
     
     def get_all_subjects(self, page=1, per_page=10):
         """
-        获取所有科目列表（带分页）
+        获取所有科目（带分页）
         
         Args:
             page (int): 页码
             per_page (int): 每页数量
             
         Returns:
-            dict: 包含科目列表和分页信息的字典
+            dict: 科目列表和分页信息
         """
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
-            total_result = self.db_service.execute_query(
-                "SELECT COUNT(*) as count FROM Subjects", 
-                fetch_one=True
-            )
-            total = total_result['count'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM Subjects"
+            total = self.db_service.get_count(count_query)
             
             # 获取科目列表
-            subjects_query = """
+            query = """
                 SELECT subject_id, subject_name
                 FROM Subjects
                 ORDER BY subject_id
                 LIMIT %s OFFSET %s
             """
-            subjects = self.db_service.execute_query(subjects_query, (per_page, offset))
+            subjects = self.db_service.execute_query(query, (per_page, offset))
             
             return {
                 'subjects': subjects,
@@ -48,6 +45,7 @@ class SubjectService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
+            
         except Exception as e:
             raise e
         finally:
@@ -55,7 +53,7 @@ class SubjectService:
     
     def get_subject_by_id(self, subject_id):
         """
-        根据科目ID获取科目详情
+        根据ID获取科目详情
         
         Args:
             subject_id (int): 科目ID

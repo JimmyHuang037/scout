@@ -19,14 +19,14 @@ def get_my_exam_results():
         
         # 使用成绩服务获取考试结果
         score_service = ScoreService()
-        results = score_service.get_scores(
+        exam_results = score_service.get_student_exam_results(
             student_id=current_student_id,
             exam_type_id=exam_type_id
         )
         
         return jsonify({
             'success': True,
-            'data': results
+            'data': exam_results
         })
         
     except Exception as e:

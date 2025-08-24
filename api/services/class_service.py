@@ -1,5 +1,5 @@
 """班级服务模块，处理与班级相关的业务逻辑"""
-from .database_service import DatabaseService
+from api.utils import DatabaseService
 
 
 class ClassService:
@@ -11,33 +11,33 @@ class ClassService:
     
     def get_all_classes(self, page=1, per_page=10):
         """
-        获取所有班级列表（带分页）
+        获取所有班级（带分页）
         
         Args:
             page (int): 页码
             per_page (int): 每页数量
             
         Returns:
-            dict: 包含班级列表和分页信息的字典
+            dict: 班级列表和分页信息
         """
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
-            total_result = self.db_service.execute_query(
-                "SELECT COUNT(*) as count FROM Classes", 
-                fetch_one=True
-            )
-            total = total_result['count'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM Classes"
+            total = self.db_service.get_count(count_query)
             
             # 获取班级列表
-            classes_query = """
-                SELECT class_id, class_name
-                FROM Classes
-                ORDER BY class_id
+            query = """
+                SELECT c.class_id, c.class_name, 
+                       COUNT(s.student_id) as student_count
+                FROM Classes c
+                LEFT JOIN Students s ON c.class_id = s.class_id
+                GROUP BY c.class_id, c.class_name
+                ORDER BY c.class_id
                 LIMIT %s OFFSET %s
             """
-            classes = self.db_service.execute_query(classes_query, (per_page, offset))
+            classes = self.db_service.execute_query(query, (per_page, offset))
             
             return {
                 'classes': classes,
@@ -48,6 +48,7 @@ class ClassService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
+            
         except Exception as e:
             raise e
         finally:
@@ -64,7 +65,14 @@ class ClassService:
             dict: 班级信息
         """
         try:
-            query = "SELECT class_id, class_name FROM Classes WHERE class_id = %s"
+            query = """
+                SELECT c.class_id, c.class_name, 
+                       COUNT(s.student_id) as student_count
+                FROM Classes c
+                LEFT JOIN Students s ON c.class_id = s.class_id
+                WHERE c.class_id = %s
+                GROUP BY c.class_id, c.class_name
+            """
             return self.db_service.execute_query(query, (class_id,), fetch_one=True)
         except Exception as e:
             raise e

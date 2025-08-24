@@ -16,22 +16,40 @@ def get_exam_classes():
                 'success': False,
                 'error': 'User not authenticated'
             }), 401
-        
-        # 查询教师所教的班级
+
+        # 查询参数
+        exam_type_id = request.args.get('exam_type_id')
+        class_id = request.args.get('class_id')
+
+        # 构建查询
         query = """
-            SELECT c.class_id, c.class_name
-            FROM Classes c
-            JOIN TeacherClasses tc ON c.class_id = tc.class_id
+            SELECT ec.class_id, ec.class_name, ec.exam_type_id, ec.exam_type_name,
+                   ec.a_count, ec.b_count, ec.c_count, ec.d_count, ec.total_count
+            FROM exam_class ec
+            JOIN TeacherClasses tc ON ec.class_id = tc.class_id
             WHERE tc.teacher_id = %s
-            ORDER BY c.class_id
         """
-        classes = db_service.execute_query(query, (current_teacher_id,))
-        
+        params = [current_teacher_id]
+
+        # 添加筛选条件
+        if exam_type_id:
+            query += " AND ec.exam_type_id = %s"
+            params.append(exam_type_id)
+
+        if class_id:
+            query += " AND ec.class_id = %s"
+            params.append(class_id)
+
+        query += " ORDER BY ec.class_id, ec.exam_type_id"
+
+        # 执行查询
+        exam_classes = db_service.execute_query(query, params)
+
         return jsonify({
             'success': True,
-            'data': classes
+            'data': exam_classes
         })
-        
+
     except Exception as e:
         return jsonify({
             'success': False,

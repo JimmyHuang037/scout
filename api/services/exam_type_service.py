@@ -1,5 +1,5 @@
 """考试类型服务模块，处理与考试类型相关的业务逻辑"""
-from .database_service import DatabaseService
+from api.utils import DatabaseService
 
 
 class ExamTypeService:
@@ -11,33 +11,30 @@ class ExamTypeService:
     
     def get_all_exam_types(self, page=1, per_page=10):
         """
-        获取所有考试类型列表（带分页）
+        获取所有考试类型（带分页）
         
         Args:
             page (int): 页码
             per_page (int): 每页数量
             
         Returns:
-            dict: 包含考试类型列表和分页信息的字典
+            dict: 考试类型列表和分页信息
         """
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
-            total_result = self.db_service.execute_query(
-                "SELECT COUNT(*) as count FROM ExamTypes", 
-                fetch_one=True
-            )
-            total = total_result['count'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM ExamTypes"
+            total = self.db_service.get_count(count_query)
             
             # 获取考试类型列表
-            exam_types_query = """
+            query = """
                 SELECT type_id, exam_type_name
                 FROM ExamTypes
                 ORDER BY type_id
                 LIMIT %s OFFSET %s
             """
-            exam_types = self.db_service.execute_query(exam_types_query, (per_page, offset))
+            exam_types = self.db_service.execute_query(query, (per_page, offset))
             
             return {
                 'exam_types': exam_types,
@@ -48,6 +45,7 @@ class ExamTypeService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
+            
         except Exception as e:
             raise e
         finally:
@@ -55,7 +53,7 @@ class ExamTypeService:
     
     def get_exam_type_by_id(self, type_id):
         """
-        根据考试类型ID获取考试类型详情
+        根据ID获取考试类型详情
         
         Args:
             type_id (int): 考试类型ID

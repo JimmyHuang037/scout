@@ -1,4 +1,3 @@
-from .database_service import DatabaseService
 from .student_service import StudentService
 from .teacher_service import TeacherService
 from .score_service import ScoreService
@@ -8,7 +7,6 @@ from .exam_type_service import ExamTypeService
 from .teacher_class_service import TeacherClassService
 
 __all__ = [
-    'DatabaseService',
     'StudentService',
     'TeacherService',
     'ScoreService',

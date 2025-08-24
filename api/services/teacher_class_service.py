@@ -1,5 +1,5 @@
 """教师班级关联服务模块，处理与教师班级关联相关的业务逻辑"""
-from .database_service import DatabaseService
+from api.utils import DatabaseService
 
 
 class TeacherClassService:
@@ -11,27 +11,24 @@ class TeacherClassService:
     
     def get_all_teacher_classes(self, page=1, per_page=10):
         """
-        获取所有教师班级关联列表（带分页）
+        获取所有教师班级关联（带分页）
         
         Args:
             page (int): 页码
             per_page (int): 每页数量
             
         Returns:
-            dict: 包含教师班级关联列表和分页信息的字典
+            dict: 教师班级关联列表和分页信息
         """
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
-            total_result = self.db_service.execute_query(
-                "SELECT COUNT(*) as count FROM TeacherClasses", 
-                fetch_one=True
-            )
-            total = total_result['count'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM TeacherClasses"
+            total = self.db_service.get_count(count_query)
             
             # 获取教师班级关联列表
-            teacher_classes_query = """
+            query = """
                 SELECT tc.teacher_id, t.teacher_name, tc.class_id, c.class_name
                 FROM TeacherClasses tc
                 JOIN Teachers t ON tc.teacher_id = t.teacher_id
@@ -39,7 +36,7 @@ class TeacherClassService:
                 ORDER BY tc.teacher_id, tc.class_id
                 LIMIT %s OFFSET %s
             """
-            teacher_classes = self.db_service.execute_query(teacher_classes_query, (per_page, offset))
+            teacher_classes = self.db_service.execute_query(query, (per_page, offset))
             
             return {
                 'teacher_classes': teacher_classes,
@@ -50,12 +47,13 @@ class TeacherClassService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
+            
         except Exception as e:
             raise e
         finally:
             self.db_service.close()
     
-    def get_teacher_classes_by_teacher_id(self, teacher_id):
+    def get_teacher_class_by_teacher(self, teacher_id):
         """
         根据教师ID获取教师班级关联详情
         
@@ -91,7 +89,10 @@ class TeacherClassService:
             bool: 是否创建成功
         """
         try:
-            query = "INSERT INTO TeacherClasses (teacher_id, class_id) VALUES (%s, %s)"
+            query = """
+                INSERT INTO TeacherClasses (teacher_id, class_id)
+                VALUES (%s, %s)
+            """
             params = (
                 teacher_class_data.get('teacher_id'),
                 teacher_class_data.get('class_id')
@@ -115,7 +116,10 @@ class TeacherClassService:
             bool: 是否删除成功
         """
         try:
-            query = "DELETE FROM TeacherClasses WHERE teacher_id = %s AND class_id = %s"
+            query = """
+                DELETE FROM TeacherClasses 
+                WHERE teacher_id = %s AND class_id = %s
+            """
             self.db_service.execute_update(query, (teacher_id, class_id))
             return True
         except Exception as e:

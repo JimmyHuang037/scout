@@ -1,6 +1,6 @@
 """教师考试表现管理模块"""
 from flask import jsonify, request, session
-from api.services import ScoreService
+from api.services.teacher import ScoreService  # 更新后的导入路径
 
 
 def get_performance():
@@ -19,14 +19,16 @@ def get_performance():
         class_id = request.args.get('class_id')
         
         # 使用成绩服务获取考试表现数据
-        # TODO: 实现具体的考试表现统计逻辑
         score_service = ScoreService()
-        # 这里暂时返回空数据，需要根据实际需求实现统计逻辑
-        performance_data = []
+        performance = score_service.get_teacher_performance(
+            teacher_id=current_teacher_id,
+            exam_type_id=exam_type_id,
+            class_id=class_id
+        )
         
         return jsonify({
             'success': True,
-            'data': performance_data
+            'data': performance
         })
         
     except Exception as e:

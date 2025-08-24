@@ -1,5 +1,5 @@
 """教师服务模块，处理与教师相关的业务逻辑"""
-from .database_service import DatabaseService
+from api.utils import DatabaseService
 
 
 class TeacherService:
@@ -11,34 +11,31 @@ class TeacherService:
     
     def get_all_teachers(self, page=1, per_page=10):
         """
-        获取所有教师列表（带分页）
+        获取所有教师（带分页）
         
         Args:
             page (int): 页码
             per_page (int): 每页数量
             
         Returns:
-            dict: 包含教师列表和分页信息的字典
+            dict: 教师列表和分页信息
         """
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
-            total_result = self.db_service.execute_query(
-                "SELECT COUNT(*) as count FROM Teachers", 
-                fetch_one=True
-            )
-            total = total_result['count'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM Teachers"
+            total = self.db_service.get_count(count_query)
             
             # 获取教师列表
-            teachers_query = """
+            query = """
                 SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
                 FROM Teachers t
-                JOIN Subjects s ON t.subject_id = s.subject_id
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
                 ORDER BY t.teacher_id
                 LIMIT %s OFFSET %s
             """
-            teachers = self.db_service.execute_query(teachers_query, (per_page, offset))
+            teachers = self.db_service.execute_query(query, (per_page, offset))
             
             return {
                 'teachers': teachers,
@@ -49,6 +46,7 @@ class TeacherService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
+            
         except Exception as e:
             raise e
         finally:
