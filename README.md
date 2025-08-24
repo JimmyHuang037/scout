@@ -127,32 +127,50 @@
 以下是一些由于功能复杂性或架构设计需要而超过15行限制的文件。这些文件的大小是合理的，因为它们承担着核心功能：
 
 ### 核心蓝图文件
-- `api/blueprints/admin.py` (422行) - 管理员蓝图主文件，包含核心路由定义
-- `api/blueprints/teacher.py` (415行) - 教师蓝图主文件，包含核心路由定义
-- `api/blueprints/student.py` (124行) - 学生蓝图主文件，包含核心路由定义
+- `api/blueprints/admin/__init__.py` (62行) - 管理员蓝图主文件，包含核心路由定义
+- `api/blueprints/teacher/__init__.py` (20行) - 教师蓝图主文件，包含核心路由定义
+- `api/blueprints/student/__init__.py` (15行) - 学生蓝图主文件，包含核心路由定义
+- `api/blueprints/auth/__init__.py` (11行) - 认证蓝图主文件，包含核心路由定义
 
 ### 复杂业务逻辑文件
-- `api/blueprints/admin/teacher_update.py` (83行) - 教师信息更新逻辑，包含复杂验证
-- `api/blueprints/admin/student_update.py` (83行) - 学生信息更新逻辑，包含复杂验证
-- `api/blueprints/teacher/score_create.py` (72行) - 成绩录入逻辑，包含多重验证
-- `api/blueprints/teacher/score_update.py` (61行) - 成绩更新逻辑，包含权限验证
-- `api/blueprints/teacher/students.py` (58行) - 学生信息查询逻辑，包含复杂查询条件
-- `api/blueprints/student/scores.py` (55行) - 学生成绩查询逻辑，包含多种筛选条件
-- `api/blueprints/teacher/exam_results.py` (52行) - 考试结果查询逻辑
-- `api/blueprints/teacher/exam_class.py` (52行) - 班级考试结果查询逻辑
-- `api/blueprints/teacher/performance.py` (46行) - 教师表现统计逻辑
-- `api/blueprints/student/exam_results.py` (46行) - 学生考试结果查询逻辑
-- `api/blueprints/admin/teachers.py` (46行) - 教师列表查询逻辑
-- `api/blueprints/admin/teacher_create.py` (46行) - 教师创建逻辑，包含验证
-- `api/blueprints/admin/teacher_detail.py` (35行) - 教师详情查询逻辑
+- `api/blueprints/admin/classes/class_management.py` (92行) - 班级管理逻辑，包含复杂验证和业务逻辑
+- `api/blueprints/admin/exam_types/exam_type_management.py` (90行) - 考试类型管理逻辑，包含复杂验证
+- `api/blueprints/admin/students/student_management.py` (88行) - 学生信息管理逻辑，包含复杂验证
+- `api/blueprints/admin/subjects/subject_management.py` (88行) - 科目管理逻辑，包含复杂验证
+- `api/blueprints/admin/teacher_classes/teacher_class_management.py` (85行) - 教师班级关联管理逻辑
+- `api/blueprints/admin/teachers/teacher_management.py` (85行) - 教师信息管理逻辑，包含复杂验证
+- `api/blueprints/teacher/scores/score_management.py` (79行) - 成绩管理逻辑，包含录入和更新功能
+- `api/blueprints/admin/classes/class_update.py` (75行) - 班级信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/exam_types/exam_type_update.py` (73行) - 考试类型信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/students/student_update.py` (71行) - 学生信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/subjects/subject_update.py` (71行) - 科目信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/teacher_classes/teacher_class_update.py` (69行) - 教师班级关联信息更新逻辑
+- `api/blueprints/admin/teachers/teacher_update.py` (69行) - 教师信息更新逻辑，包含复杂验证
 
 ### 配置和工厂文件
-- `api/config/config.py` (45行) - 应用配置文件，包含多种环境配置
-- `api/extensions/database.py` (36行) - 数据库连接管理模块
-- `api/factory.py` (107行) - 应用工厂模块，负责创建和配置Flask应用
+- `api/factory.py` (32行) - 应用工厂模块，负责创建和配置Flask应用
+- `api/config/config.py` (50行) - 应用配置文件，包含多种环境配置
+- `api/services/database_service.py` (97行) - 数据库连接管理模块
+- `api/routes.py` (24行) - 路由注册模块，负责注册所有蓝图
+
+### 服务层文件
+- `api/services/score_service.py` (206行) - 成绩服务模块，包含复杂的查询和业务逻辑
+- `api/services/teacher_service.py` (75行) - 教师服务模块，包含教师相关业务逻辑
+- `api/services/student_service.py` (73行) - 学生服务模块，包含学生相关业务逻辑
+- `api/services/exam_type_service.py` (65行) - 考试类型服务模块，包含考试类型相关业务逻辑
+- `api/services/subject_service.py` (63行) - 科目服务模块，包含科目相关业务逻辑
+- `api/services/class_service.py` (61行) - 班级服务模块，包含班级相关业务逻辑
+- `api/services/teacher_class_service.py` (59行) - 教师班级关联服务模块，包含关联相关业务逻辑
 
 ### 认证模块文件
 - `api/blueprints/auth/auth_management.py` (55行) - 用户认证管理模块，包含登录、登出和用户信息功能
+
+### 学生和教师功能模块
+- `api/blueprints/teacher/exam/exam_class_management.py` (52行) - 班级成绩等级分布查询逻辑
+- `api/blueprints/teacher/exam/exam_results_management.py` (50行) - 教师考试结果查询逻辑
+- `api/blueprints/student/scores/scores_management.py` (46行) - 学生成绩查询逻辑
+- `api/blueprints/teacher/exam/performance_management.py` (46行) - 教师表现统计逻辑
+- `api/blueprints/student/exam/exam_results_management.py` (46行) - 学生考试结果查询逻辑
 
 这些文件保持较大体积的原因：
 1. **核心架构文件**：如蓝图主文件和工厂文件，它们是系统架构的重要组成部分
@@ -632,25 +650,27 @@ mysql -u root -pNewuser1 school_management < db/backup/school_management_backup_
 根据前端页面设计，需要提供以下专门的 API 接口：
 
 1. **考试成绩等级分布页面 (exam_class)**
-   - `GET /api/exam-class` - 获取班级成绩等级分布数据
+   - `GET /api/teacher/exam/classes` - 获取班级成绩等级分布数据
      - 支持查询参数：exam_type_id（考试类型）、class_id（班级）
      - 返回 exam_class 视图中的数据
    - `GET /api/exam-types` - 获取所有考试类型列表（用于下拉选择）
    - `GET /api/classes` - 获取所有班级列表（用于下拉选择）
 
 2. **考试结果页面 (exam_result)**
-   - `GET /api/exam-results` - 获取考试结果数据
+   - `GET /api/teacher/exam/results` - 获取考试结果数据（教师视角）
      - 支持查询参数：exam_type_id（考试类型）、class_id（班级）
+     - 返回 exam_results 视图中的数据
+   - `GET /api/student/exam/results` - 获取考试结果数据（学生视角）
+     - 支持查询参数：exam_type_id（考试类型）
      - 返回 exam_results 视图中的数据
    - `GET /api/exam-types` - 获取所有考试类型列表（用于下拉选择）
    - `GET /api/classes` - 获取所有班级列表（用于下拉选择）
 
 3. **教师表现页面 (teacher_performance)**
-   - `GET /api/teacher-performance` - 获取教师教学表现数据
-     - 支持查询参数：exam_type_id（考试类型）、teacher_id（教师）
+   - `GET /api/teacher/exam/performance` - 获取教师教学表现数据
+     - 支持查询参数：exam_type_id（考试类型）
      - 返回 teacher_performance 视图中的数据
    - `GET /api/exam-types` - 获取所有考试类型列表（用于下拉选择）
-   - `GET /api/teachers` - 获取所有教师列表（用于下拉选择）
 
 4. **管理员修改功能**
    - 需要完整的 CRUD API 接口来管理学生、教师、班级、科目、考试类型等基础数据
@@ -747,14 +767,13 @@ mysql -u root -pNewuser1 school_management < db/backup/school_management_backup_
   - `GET /api/teacher/scores` - 获取所教班级的成绩
   - `POST /api/teacher/scores` - 录入成绩
   - `PUT /api/teacher/scores/<id>` - 更新成绩
-  - `GET /api/teacher/exam-class` - 获取班级成绩等级分布
-  - `GET /api/teacher/exam-results` - 获取考试结果
-  - `GET /api/teacher/performance` - 获取教学表现统计
+  - `GET /api/teacher/exam/classes` - 获取考试班级列表
+  - `GET /api/teacher/exam/results` - 获取考试结果
+  - `GET /api/teacher/exam/performance` - 获取教学表现统计
 
 - **学生专用**
-  - `GET /api/student/profile` - 获取个人信息
   - `GET /api/student/scores` - 获取个人成绩
-  - `GET /api/student/exam-results` - 获取个人考试结果
+  - `GET /api/student/exam/results` - 获取个人考试结果
 
 - **通用查询**
   - `GET /api/classes` - 获取班级列表
@@ -854,8 +873,9 @@ Web 前端部分将使用 Angular 框架开发，采用 Angular Material 组件�
 - [ ] 创建 Angular 项目结构
 - [ ] 设计 UI/UX 原型
 - [x] 实现用户认证模块
-- [ ] 实现管理员功能模块
-- [ ] 实现教师功能模块
-- [ ] 实现学生功能模块
+- [x] 实现管理员功能模块
+- [x] 实现教师功能模块
+- [x] 实现学生功能模块
+- [x] 完善API文档和路由规划
 - [ ] 编写单元测试
 - [ ] 部署配置
