@@ -1,8 +1,8 @@
 """成绩管理模块，处理成绩相关的所有操作"""
 from flask import jsonify, request, session
-from api.services import ScoreService
-from api.utils.logger import app_logger
-from api.utils.helpers import success_response, error_response, require_auth
+from services import ScoreService
+from utils.logger import app_logger
+from utils.helpers import success_response, error_response, require_auth
 
 
 def create_score():

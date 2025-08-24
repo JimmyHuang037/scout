@@ -1,5 +1,5 @@
 """班级服务模块，处理与班级相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class ClassService:

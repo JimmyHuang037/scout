@@ -1,5 +1,5 @@
 """教师班级关联服务模块，处理与教师班级关联相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class TeacherClassService:

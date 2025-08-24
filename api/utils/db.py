@@ -1,7 +1,7 @@
 """数据库工具模块，提供统一的数据库操作接口"""
 import mysql.connector
 from flask import current_app, g
-from api.utils.logger import app_logger
+from .logger import app_logger
 
 
 def get_db():

@@ -1,8 +1,8 @@
 """认证管理模块，处理用户登录、登出等操作"""
 from flask import jsonify, request, session
-from api.utils import DatabaseService
-from api.utils.logger import app_logger
-from api.utils.helpers import success_response, error_response
+from utils import DatabaseService
+from utils.logger import app_logger
+from utils.helpers import success_response, error_response
 
 
 def login():

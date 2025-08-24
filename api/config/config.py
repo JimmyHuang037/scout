@@ -1,8 +1,11 @@
 import os
 from dotenv import load_dotenv
 
+# 项目根目录
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 # 加载 .env 文件
-load_dotenv()
+load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config:
@@ -22,7 +25,7 @@ class Config:
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
     
     # 数据库连接URI
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 

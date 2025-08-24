@@ -1,18 +1,22 @@
 """教师考试结果管理模块"""
 from flask import jsonify, request, session
-from api.services import ScoreService
+from services import ScoreService
+from utils.logger import app_logger
+from utils.helpers import success_response, error_response, require_auth
 
 
 def get_exam_results():
     """获取考试结果"""
     try:
+        # 检查认证
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
         # 从session中获取当前教师ID
         current_teacher_id = session.get('user_id')
         if not current_teacher_id:
-            return jsonify({
-                'success': False,
-                'error': 'User not authenticated'
-            }), 401
+            return error_response('User not authenticated'), 401
         
         # 获取筛选参数
         exam_type_id = request.args.get('exam_type_id')
@@ -26,13 +30,9 @@ def get_exam_results():
             class_id=class_id
         )
         
-        return jsonify({
-            'success': True,
-            'data': exam_results
-        })
+        app_logger.info(f"Teacher {current_teacher_id} retrieved exam results")
+        return success_response(exam_results)
         
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Failed to fetch exam results: {str(e)}'
-        }), 500
+        app_logger.error(f"Failed to fetch exam results: {str(e)}")
+        return error_response(f'Failed to fetch exam results: {str(e)}'), 500

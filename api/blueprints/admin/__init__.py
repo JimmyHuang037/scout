@@ -60,4 +60,4 @@ admin_bp.add_url_rule('/exam-types/<int:type_id>', view_func=delete_exam_type, m
 admin_bp.add_url_rule('/teacher-classes', view_func=get_teacher_classes, methods=['GET'])
 admin_bp.add_url_rule('/teacher-classes', view_func=create_teacher_class, methods=['POST'])
 admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=get_teacher_class_by_teacher, methods=['GET'])
-admin_bp.add_url_rule('/teacher-classes', view_func=delete_teacher_class, methods=['DELETE'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>/<int:class_id>', view_func=delete_teacher_class, methods=['DELETE'])

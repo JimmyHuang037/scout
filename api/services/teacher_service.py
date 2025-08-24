@@ -1,5 +1,5 @@
 """教师服务模块，处理与教师相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class TeacherService:

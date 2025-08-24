@@ -1,5 +1,5 @@
 """考试类型服务模块，处理与考试类型相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class ExamTypeService:

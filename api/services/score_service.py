@@ -1,5 +1,5 @@
 """成绩服务模块，处理与成绩相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class ScoreService:

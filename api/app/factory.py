@@ -4,7 +4,7 @@ from flask import Flask
 from flask_cors import CORS
 from flask_session import Session
 from dotenv import load_dotenv
-from api.utils.logger import app_logger
+from utils.logger import app_logger
 
 load_dotenv()
 
@@ -16,14 +16,14 @@ def create_app(config_name=None):
     
     # 配置应用
     config_name = config_name or os.getenv('FLASK_CONFIG', 'default')
-    from api.config.config import config
+    from config.config import config
     app.config.from_object(config[config_name])
     
     # 初始化Session
     Session(app)
     
     # 注册蓝图
-    from api.app.routes import register_blueprints
+    from app.routes import register_blueprints
     register_blueprints(app)
     
     # 添加健康检查端点

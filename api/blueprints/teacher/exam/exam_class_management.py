@@ -1,60 +1,43 @@
 """教师考试班级管理模块"""
-from flask import jsonify, request, session
-from api.services import DatabaseService
+from flask import jsonify, session
+from services import ScoreService
+from utils.logger import app_logger
+from utils.helpers import success_response, error_response, require_auth
 
 
 def get_exam_classes():
-    """获取考试班级列表"""
-    db_service = None
+    """获取教师相关的考试班级列表"""
     try:
-        db_service = DatabaseService()
-        
+        # 检查认证
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
         # 从session中获取当前教师ID
         current_teacher_id = session.get('user_id')
         if not current_teacher_id:
-            return jsonify({
-                'success': False,
-                'error': 'User not authenticated'
-            }), 401
-
-        # 查询参数
-        exam_type_id = request.args.get('exam_type_id')
-        class_id = request.args.get('class_id')
-
-        # 构建查询
-        query = """
-            SELECT ec.class_id, ec.class_name, ec.exam_type_id, ec.exam_type_name,
-                   ec.a_count, ec.b_count, ec.c_count, ec.d_count, ec.total_count
-            FROM exam_class ec
-            JOIN TeacherClasses tc ON ec.class_id = tc.class_id
-            WHERE tc.teacher_id = %s
-        """
-        params = [current_teacher_id]
-
-        # 添加筛选条件
-        if exam_type_id:
-            query += " AND ec.exam_type_id = %s"
-            params.append(exam_type_id)
-
-        if class_id:
-            query += " AND ec.class_id = %s"
-            params.append(class_id)
-
-        query += " ORDER BY ec.class_id, ec.exam_type_id"
-
-        # 执行查询
-        exam_classes = db_service.execute_query(query, params)
-
-        return jsonify({
-            'success': True,
-            'data': exam_classes
-        })
-
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Failed to fetch exam classes: {str(e)}'
-        }), 500
-    finally:
-        if db_service:
+            return error_response('User not authenticated'), 401
+        
+        # 使用成绩服务获取考试班级列表
+        score_service = ScoreService()
+        # 这里我们直接使用数据库服务来获取教师相关的班级信息
+        from utils import DatabaseService
+        db_service = DatabaseService()
+        
+        try:
+            query = """
+                SELECT DISTINCT c.class_id, c.class_name
+                FROM Classes c
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+                ORDER BY c.class_id
+            """
+            classes = db_service.execute_query(query, (current_teacher_id,))
+            app_logger.info(f"Teacher {current_teacher_id} retrieved exam classes")
+            return success_response(classes)
+        finally:
             db_service.close()
+        
+    except Exception as e:
+        app_logger.error(f"Failed to fetch exam classes: {str(e)}")
+        return error_response(f'Failed to fetch exam classes: {str(e)}'), 500

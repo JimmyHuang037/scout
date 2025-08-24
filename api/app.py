@@ -1,10 +1,12 @@
 import sys
 import os
 
-# Add the parent directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add the api directory to the Python path
+api_dir = os.path.dirname(os.path.abspath(__file__))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
 
-from api.app.factory import create_app
+from app.factory import create_app
 
 app = create_app()
 

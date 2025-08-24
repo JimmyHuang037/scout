@@ -1,5 +1,5 @@
 """科目服务模块，处理与科目相关的业务逻辑"""
-from api.utils import DatabaseService
+from utils import DatabaseService
 
 
 class SubjectService:
