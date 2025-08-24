@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_cors import CORS
 from dotenv import load_dotenv
+from api.services import get_db, close_db
 
 load_dotenv()
 
@@ -14,14 +15,15 @@ def create_app(config_name=None):
     
     # 配置应用
     config_name = config_name or os.getenv('FLASK_CONFIG', 'default')
-    from .config.config import config
+    from config.config import config
     app.config.from_object(config[config_name])
     
-    # 初始化扩展
-    _init_extensions(app)
+    # 初始化数据库
+    app.teardown_appcontext(close_db)
     
     # 注册蓝图
-    _register_blueprints(app)
+    from api.routes import register_blueprints
+    register_blueprints(app)
     
     # 添加健康检查端点
     @app.route('/api/health')
@@ -32,19 +34,11 @@ def create_app(config_name=None):
 
 
 def _init_extensions(app):
-    """初始化Flask扩展"""
-    from .database import init_app
-    init_app(app)
+    """初始化扩展"""
+    pass
 
 
 def _register_blueprints(app):
-    """注册所有蓝图"""
-    from .routes import main
-    from .blueprints.admin import admin_bp
-    from .blueprints.teacher import teacher_bp
-    from .blueprints.student import student_bp
-    
-    app.register_blueprint(main)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(teacher_bp)
-    app.register_blueprint(student_bp)
+    """注册蓝图"""
+    from api.routes import register_blueprints
+    register_blueprints(app)

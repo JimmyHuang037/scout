@@ -1,5 +1,4 @@
 from flask import Blueprint, jsonify, request
-from .database import get_db
 
 main = Blueprint('main', __name__)
 
@@ -10,3 +9,15 @@ def index():
         'message': 'Welcome to School Management API',
         'version': '1.0.0'
     })
+
+
+def register_blueprints(app):
+    """注册所有蓝图"""
+    from .blueprints.admin import admin_bp
+    from .blueprints.teacher import teacher_bp
+    from .blueprints.student import student_bp
+    
+    app.register_blueprint(main)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(teacher_bp)
+    app.register_blueprint(student_bp)

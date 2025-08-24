@@ -3,6 +3,14 @@ from ..database import get_db
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 
+@student_bp.route('/')
+def student_index():
+    """学生API根路径"""
+    return jsonify({
+        'message': 'Student API',
+        'version': '1.0.0'
+    })
+
 # 学生专用API端点
 @student_bp.route('/profile', methods=['GET'])
 def get_profile():

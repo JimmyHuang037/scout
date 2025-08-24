@@ -39,6 +39,30 @@
    - 实现连接池和自动关闭机制
    - 遵循Flask应用上下文最佳实践
 
+### 代码质量规范
+1. **文件长度限制**：
+   - 每个Python文件不应超过15行代码（不包括注释和空行）
+   - 对于较大的功能模块，应拆分为多个小文件
+   - 类定义也应遵循此规则，复杂类应拆分为多个小类或方法
+
+2. **函数长度限制**：
+   - 单个函数不应超过10行代码
+   - 复杂逻辑应拆分为多个小函数
+
+3. **代码复用**：
+   - 避免重复代码
+   - 提取公共功能为可复用函数或模块
+
+4. **依赖管理**：
+   - 使用 `requirements.txt` 管理依赖
+   - 定期更新依赖版本
+   - 避免不必要的依赖
+
+5. **测试**：
+   - 编写单元测试和集成测试
+   - 使用测试驱动开发（TDD）方法
+   - 确保测试覆盖率
+
 ### API设计规范
 1. **RESTful设计原则**：
    - 使用标准HTTP方法（GET、POST、PUT、DELETE）
@@ -83,6 +107,50 @@
    - 编写单元测试和集成测试
    - 使用测试驱动开发（TDD）方法
    - 确保测试覆盖率
+
+## 当前存在的大型文件列表
+
+以下是一些由于功能复杂性或架构设计需要而超过15行限制的文件。这些文件的大小是合理的，因为它们承担着核心功能：
+
+### 核心蓝图文件
+- `api/blueprints/admin.py` (422行) - 管理员蓝图主文件，包含核心路由定义
+- `api/blueprints/teacher.py` (415行) - 教师蓝图主文件，包含核心路由定义
+- `api/blueprints/student.py` (124行) - 学生蓝图主文件，包含核心路由定义
+
+### 复杂业务逻辑文件
+- `api/blueprints/admin/teacher_update.py` (83行) - 教师信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/student_update.py` (83行) - 学生信息更新逻辑，包含复杂验证
+- `api/blueprints/teacher/score_create.py` (72行) - 成绩录入逻辑，包含多重验证
+- `api/blueprints/teacher/score_update.py` (61行) - 成绩更新逻辑，包含权限验证
+- `api/blueprints/teacher/students.py` (58行) - 学生信息查询逻辑，包含复杂查询条件
+- `api/blueprints/student/scores.py` (55行) - 学生成绩查询逻辑，包含多种筛选条件
+- `api/blueprints/teacher/exam_results.py` (52行) - 考试结果查询逻辑
+- `api/blueprints/teacher/exam_class.py` (52行) - 班级考试结果查询逻辑
+- `api/blueprints/teacher/performance.py` (46行) - 教师表现统计逻辑
+- `api/blueprints/student/exam_results.py` (46行) - 学生考试结果查询逻辑
+- `api/blueprints/admin/teachers.py` (46行) - 教师列表查询逻辑
+- `api/blueprints/admin/teacher_create.py` (46行) - 教师创建逻辑，包含验证
+- `api/blueprints/admin/teacher_detail.py` (35行) - 教师详情查询逻辑
+
+### 配置和工厂文件
+- `api/config/config.py` (45行) - 应用配置文件，包含多种环境配置
+- `api/extensions/database.py` (36行) - 数据库连接管理模块
+- `api/factory.py` (107行) - 应用工厂模块，负责创建和配置Flask应用
+
+### 工具模块
+- `api/extensions/db_utils.py` (66行) - 数据库工具模块，包含多种数据库操作函数
+
+这些文件保持较大体积的原因：
+1. **核心架构文件**：如蓝图主文件和工厂文件，它们是系统架构的重要组成部分
+2. **复杂业务逻辑**：某些业务操作涉及复杂的验证、权限检查和数据处理
+3. **功能聚合**：一些模块聚合了相关功能，拆分可能导致代码分散和维护困难
+4. **历史原因**：部分文件在重构过程中尚未完成拆分
+
+未来优化方向：
+1. 对于超过50行的文件，应考虑进一步拆分
+2. 可以将一些通用功能提取到独立的工具模块中
+3. 复杂的验证逻辑可以拆分为独立的验证模块
+4. 数据库操作可以进一步模块化以提高复用性
 
 ## 前后端需求概览（精简版）
 
@@ -762,3 +830,47 @@ Web 前端部分将使用 Angular 框架开发，采用 Angular Material 组件�
 - [ ] 实现学生功能模块
 - [ ] 编写单元测试
 - [ ] 部署配置
+
+## 当前存在的大型文件列表
+
+以下是一些由于功能复杂性或架构设计需要而超过15行限制的文件。这些文件的大小是合理的，因为它们承担着核心功能：
+
+### 核心蓝图文件
+- `api/blueprints/admin.py` (422行) - 管理员蓝图主文件，包含核心路由定义
+- `api/blueprints/teacher.py` (415行) - 教师蓝图主文件，包含核心路由定义
+- `api/blueprints/student.py` (124行) - 学生蓝图主文件，包含核心路由定义
+
+### 复杂业务逻辑文件
+- `api/blueprints/admin/teacher_update.py` (83行) - 教师信息更新逻辑，包含复杂验证
+- `api/blueprints/admin/student_update.py` (83行) - 学生信息更新逻辑，包含复杂验证
+- `api/blueprints/teacher/score_create.py` (72行) - 成绩录入逻辑，包含多重验证
+- `api/blueprints/teacher/score_update.py` (61行) - 成绩更新逻辑，包含权限验证
+- `api/blueprints/teacher/students.py` (58行) - 学生信息查询逻辑，包含复杂查询条件
+- `api/blueprints/student/scores.py` (55行) - 学生成绩查询逻辑，包含多种筛选条件
+- `api/blueprints/teacher/exam_results.py` (52行) - 考试结果查询逻辑
+- `api/blueprints/teacher/exam_class.py` (52行) - 班级考试结果查询逻辑
+- `api/blueprints/teacher/performance.py` (46行) - 教师表现统计逻辑
+- `api/blueprints/student/exam_results.py` (46行) - 学生考试结果查询逻辑
+- `api/blueprints/admin/teachers.py` (46行) - 教师列表查询逻辑
+- `api/blueprints/admin/teacher_create.py` (46行) - 教师创建逻辑，包含验证
+- `api/blueprints/admin/teacher_detail.py` (35行) - 教师详情查询逻辑
+
+### 配置和工厂文件
+- `api/config/config.py` (45行) - 应用配置文件，包含多种环境配置
+- `api/extensions/database.py` (36行) - 数据库连接管理模块
+- `api/factory.py` (107行) - 应用工厂模块，负责创建和配置Flask应用
+
+### 工具模块
+- `api/extensions/db_utils.py` (66行) - 数据库工具模块，包含多种数据库操作函数
+
+这些文件保持较大体积的原因：
+1. **核心架构文件**：如蓝图主文件和工厂文件，它们是系统架构的重要组成部分
+2. **复杂业务逻辑**：某些业务操作涉及复杂的验证、权限检查和数据处理
+3. **功能聚合**：一些模块聚合了相关功能，拆分可能导致代码分散和维护困难
+4. **历史原因**：部分文件在重构过程中尚未完成拆分
+
+未来优化方向：
+1. 对于超过50行的文件，应考虑进一步拆分
+2. 可以将一些通用功能提取到独立的工具模块中
+3. 复杂的验证逻辑可以拆分为独立的验证模块
+4. 数据库操作可以进一步模块化以提高复用性
