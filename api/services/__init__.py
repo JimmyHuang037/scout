@@ -1,14 +1,19 @@
-"""服务层模块初始化文件"""
-from .database_service import DatabaseService, get_db, close_db
+from .database_service import DatabaseService
 from .student_service import StudentService
 from .teacher_service import TeacherService
 from .score_service import ScoreService
+from .class_service import ClassService
+from .subject_service import SubjectService
+from .exam_type_service import ExamTypeService
+from .teacher_class_service import TeacherClassService
 
 __all__ = [
-    'DatabaseService', 
-    'get_db', 
-    'close_db',
+    'DatabaseService',
     'StudentService',
     'TeacherService',
-    'ScoreService'
+    'ScoreService',
+    'ClassService',
+    'SubjectService',
+    'ExamTypeService',
+    'TeacherClassService'
 ]
