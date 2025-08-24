@@ -15,6 +15,12 @@ __pycache__/
 .coverage.*
 .pytest_cache
 
+# Session files
+flask_session/
+
+# Log files
+logs/
+
 # IDE
 .idea/
 *.swp
