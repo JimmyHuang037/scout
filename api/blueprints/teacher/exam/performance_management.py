@@ -1,14 +1,18 @@
 """教师考试表现管理模块"""
-from flask import jsonify, request
+from flask import jsonify, request, session
 from api.services import ScoreService
 
 
 def get_performance():
     """获取考试表现统计"""
     try:
-        # 在实际应用中，这里会从JWT token或session中获取当前教师ID
-        # 这里假设教师ID为1
-        current_teacher_id = 1
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
         
         # 获取筛选参数
         exam_type_id = request.args.get('exam_type_id')

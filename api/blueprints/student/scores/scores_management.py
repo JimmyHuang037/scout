@@ -1,14 +1,18 @@
 """学生成绩管理模块"""
-from flask import jsonify, request
+from flask import jsonify, request, session
 from api.services import ScoreService
 
 
 def get_my_scores():
     """获取当前学生成绩"""
     try:
-        # 在实际应用中，这里会从JWT token或session中获取当前学生ID
-        # 这里假设学生ID为S1001
-        current_student_id = 'S1001'
+        # 从session中获取当前学生ID
+        current_student_id = session.get('user_id')
+        if not current_student_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
         
         # 获取筛选参数
         subject_id = request.args.get('subject_id')

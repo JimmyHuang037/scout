@@ -1,5 +1,5 @@
 """成绩管理模块，处理成绩相关的所有操作"""
-from flask import jsonify, request
+from flask import jsonify, request, session
 from api.services import ScoreService
 
 
@@ -27,8 +27,14 @@ def create_score():
         
         # 使用成绩服务创建成绩
         score_service = ScoreService()
-        # 假设当前教师ID为1，实际应用中应从JWT token中获取
-        current_teacher_id = 1
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
+            
         score_data = {
             'student_id': student_id,
             'subject_id': subject_id,
@@ -76,8 +82,14 @@ def update_score(score_id):
         
         # 使用成绩服务更新成绩
         score_service = ScoreService()
-        # 假设当前教师ID为1，实际应用中应从JWT token中获取
-        current_teacher_id = 1
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
+            
         score_data = {'score': score}
         result = score_service.update_score(score_id, score_data, current_teacher_id)
         
