@@ -77,13 +77,24 @@ class ExamTypeService:
             exam_type_data (dict): 考试类型信息
             
         Returns:
-            bool: 是否创建成功
+            dict: 创建的考试类型信息
         """
         try:
             query = "INSERT INTO ExamTypes (exam_type_name) VALUES (%s)"
             params = (exam_type_data.get('exam_type_name'),)
             self.db_service.execute_update(query, params)
-            return True
+            
+            # 获取新创建的考试类型信息
+            select_query = """
+                SELECT type_id, exam_type_name
+                FROM ExamTypes
+                WHERE exam_type_name = %s
+                ORDER BY type_id DESC
+                LIMIT 1
+            """
+            select_params = (exam_type_data.get('exam_type_name'),)
+            exam_type_info = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            return exam_type_info
         except Exception as e:
             raise e
         finally:

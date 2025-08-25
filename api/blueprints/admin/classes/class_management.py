@@ -47,11 +47,10 @@ def create_class():
         
         data = request.get_json()
         class_name = data.get('class_name')
-        grade = data.get('grade')
         
-        if not all([class_name, grade]):
+        if not class_name:
             app_logger.warning("Create class attempt with missing required fields")
-            return error_response('Missing required fields: class_name, grade', 400)
+            return error_response('Missing required field: class_name', 400)
         
         # 使用班级服务创建班级
         class_service = ClassService()
@@ -136,14 +135,26 @@ def update_class(class_id):
 def delete_class(class_id):
     """删除班级"""
     try:
+        # 检查认证和权限
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
+        role_error = require_role('admin')
+        if role_error:
+            return role_error
+        
         # 使用班级服务删除班级
         class_service = ClassService()
         result = class_service.delete_class(class_id)
         
         if result:
+            app_logger.info(f"Admin deleted class {class_id}")
             return success_response(None, 'Class deleted successfully'), 204
         else:
+            app_logger.error(f"Failed to delete class {class_id}")
             return error_response('Failed to delete class', 400)
             
     except Exception as e:
+        app_logger.error(f'Failed to delete class: {str(e)}')
         return error_response(f'Failed to delete class: {str(e)}', 500)

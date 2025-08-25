@@ -87,13 +87,24 @@ class ClassService:
             class_data (dict): 班级信息
             
         Returns:
-            bool: 是否创建成功
+            dict: 创建的班级信息
         """
         try:
             query = "INSERT INTO Classes (class_name) VALUES (%s)"
             params = (class_data.get('class_name'),)
             self.db_service.execute_update(query, params)
-            return True
+            
+            # 获取新创建的班级信息
+            select_query = """
+                SELECT class_id, class_name
+                FROM Classes
+                WHERE class_name = %s
+                ORDER BY class_id DESC
+                LIMIT 1
+            """
+            select_params = (class_data.get('class_name'),)
+            class_info = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            return class_info
         except Exception as e:
             raise e
         finally:
@@ -111,8 +122,20 @@ class ClassService:
             bool: 是否更新成功
         """
         try:
-            query = "UPDATE Classes SET class_name = %s WHERE class_id = %s"
-            params = (class_data.get('class_name'), class_id)
+            # 构建动态更新语句
+            fields = []
+            params = []
+            
+            for key, value in class_data.items():
+                if key in ['class_name']:
+                    fields.append(f"{key} = %s")
+                    params.append(value)
+            
+            if not fields:
+                return False
+            
+            params.append(class_id)
+            query = f"UPDATE Classes SET {', '.join(fields)} WHERE class_id = %s"
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
