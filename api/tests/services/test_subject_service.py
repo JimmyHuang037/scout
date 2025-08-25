@@ -4,21 +4,31 @@
 """
 
 import pytest
-from unittest.mock import patch
 from services.subject_service import SubjectService
+from app.factory import create_app
 
 
 class TestSubjectService:
     """科目服务测试类"""
-
-    @patch('services.subject_service.DatabaseService')
-    def test_get_subjects(self, mock_db_service):
+    
+    @pytest.fixture
+    def app(self):
+        """创建测试应用"""
+        return create_app('testing')
+    
+    def test_get_all_subjects(self, app):
         """测试获取科目列表"""
-        # 创建SubjectService实例
-        subject_service = SubjectService()
-        
-        # 验证DatabaseService被正确初始化
-        mock_db_service.assert_called_once()
-        
-        # 验证方法存在
-        assert hasattr(subject_service, 'get_all_subjects')
+        with app.app_context():
+            # 创建SubjectService实例
+            subject_service = SubjectService()
+            
+            # 调用被测试方法 - 使用真实数据
+            result = subject_service.get_all_subjects(page=1, per_page=10)
+            
+            # 验证结果
+            assert result is not None
+            assert 'subjects' in result
+            assert 'pagination' in result
+            assert result['pagination']['page'] == 1
+            # 检查返回的科目列表是否为列表类型
+            assert isinstance(result['subjects'], list)
