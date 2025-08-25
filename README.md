@@ -38,11 +38,12 @@ scout/
 │   ├── app/            # 应用核心模块
 │   ├── blueprints/     # Flask蓝图（路由）
 │   ├── config/         # 配置文件
+│   ├── runtime/        # 运行时文件（日志、会话等）
 │   ├── services/       # 业务逻辑层
 │   ├── utils/          # 工具模块
 │   ├── tests/          # 测试文件
 │   ├── requirements.txt # Python依赖
-│   └── run_tests.sh    # 测试运行脚本
+│   └── curl_test.sh    # API测试脚本
 └── web/                # Angular前端
 ```
 
@@ -62,12 +63,17 @@ scout/
    - 数据库连接配置
    - Session配置
 
-3. **工具模块** ([utils/](file:///home/jimmy/repo/scout/api/utils/))
-   - **数据库工具** ([db.py](file:///home/jimmy/repo/scout/api/utils/db.py)): 数据库连接和操作封装
-   - **日志工具** ([logger.py](file:///home/jimmy/repo/scout/api/utils/logger.py)): 统一日志记录
-   - **助手函数** ([helpers.py](file:///home/jimmy/repo/scout/api/utils/helpers.py)): 通用工具函数
+3. **运行时目录** ([runtime/](file:///home/jimmy/repo/scout/api/runtime/))
+   - **会话存储** ([flask_session/](file:///home/jimmy/repo/scout/api/runtime/flask_session/)): Flask会话文件存储
+   - **日志文件** ([logs/](file:///home/jimmy/repo/scout/api/runtime/logs/)): 应用日志文件
 
-4. **服务层** ([services/](file:///home/jimmy/repo/scout/api/services/))
+4. **工具模块** ([utils/](file:///home/jimmy/repo/scout/api/utils/))
+   - **数据库工具** ([database_service.py](file:///home/jimmy/repo/scout/api/utils/database_service.py)): 数据库连接和操作封装
+   - **日志工具** ([logger.py](file:///home/jimmy/repo/scout/api/utils/logger.py)): 统一日志记录
+   - **助手函数** ([helpers.py](file:///home/jimmy/repo/scout/api/utils/helpers.py)): 通用工具函数，包括认证装饰器
+   - **认证模块** ([auth.py](file:///home/jimmy/repo/scout/api/utils/auth.py)): 认证相关功能
+
+5. **服务层** ([services/](file:///home/jimmy/repo/scout/api/services/))
    - **学生服务** ([student_service.py](file:///home/jimmy/repo/scout/api/services/student_service.py)): 学生信息管理
    - **教师服务** ([teacher_service.py](file:///home/jimmy/repo/scout/api/services/teacher_service.py)): 教师信息管理
    - **成绩服务** ([score_service.py](file:///home/jimmy/repo/scout/api/services/score_service.py)): 成绩数据管理
@@ -76,30 +82,37 @@ scout/
    - **考试类型服务** ([exam_type_service.py](file:///home/jimmy/repo/scout/api/services/exam_type_service.py)): 考试类型管理
    - **教师班级服务** ([teacher_class_service.py](file:///home/jimmy/repo/scout/api/services/teacher_class_service.py)): 教师班级关联管理
 
-5. **蓝图路由** ([blueprints/](file:///home/jimmy/repo/scout/api/blueprints/))
+6. **蓝图路由** ([blueprints/](file:///home/jimmy/repo/scout/api/blueprints/))
+   - **认证蓝图** ([auth/](file:///home/jimmy/repo/scout/api/blueprints/auth/)): 用户认证相关API
    - **管理员蓝图** ([admin/](file:///home/jimmy/repo/scout/api/blueprints/admin/)): 管理员相关API
    - **教师蓝图** ([teacher/](file:///home/jimmy/repo/scout/api/blueprints/teacher/)): 教师相关API
    - **学生蓝图** ([student/](file:///home/jimmy/repo/scout/api/blueprints/student/)): 学生相关API
 
 ### API端点
 
+#### 认证API (`/api/auth`)
+- 用户登录: `POST /login`
+- 用户登出: `POST /logout`
+- 健康检查: `GET /health`
+
 #### 管理员API (`/api/admin`)
 - 学生管理: `/students`
 - 教师管理: `/teachers`
 - 班级管理: `/classes`
 - 科目管理: `/subjects`
-- 考试类型管理: `/exam_types`
-- 教师班级关联管理: `/teacher_classes`
+- 考试类型管理: `/exam-types`
+- 教师班级关联管理: `/teacher-classes`
 
 #### 教师API (`/api/teacher`)
-- 成绩管理: `/scores`
+- 学生成绩管理: `/scores`
+- 考试管理: `/exams`
+- 学生管理: `/students`
 - 考试结果: `/exam/results`
 - 教师表现: `/exam/performance`
 - 班级管理: `/exam/classes`
 
 #### 学生API (`/api/student`)
 - 成绩查询: `/scores`
-- 考试结果: `/exam/results`
 
 ### 数据库设计
 
@@ -126,6 +139,7 @@ scout/
 - 查看所教班级学生成绩
 - 录入和修改成绩
 - 查看统计信息和分析报告
+- 管理考试信息
 
 #### 学生
 - 查看个人信息
@@ -188,16 +202,10 @@ ng serve
 cd api
 
 # 运行所有测试
-./run_tests.sh
+python -m pytest tests/
 
-# 运行测试并恢复测试数据库
-./run_tests.sh restore
-
-# 运行测试并生成覆盖率报告
-./run_tests.sh coverage
-
-# 运行测试并恢复数据库及生成覆盖率报告
-./run_tests.sh restore coverage
+# 运行API测试脚本
+./curl_test.sh
 ```
 
 ### 测试结构
