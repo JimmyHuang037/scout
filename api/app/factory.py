@@ -15,6 +15,19 @@ from config.config import config
 from utils.logger import app_logger
 from utils import db
 
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# 创建logger
+logger = logging.getLogger('app')
+
+# 在测试环境中降低数据库相关日志级别
+if os.environ.get('FLASK_ENV') == 'testing':
+    logging.getLogger('app').setLevel(logging.CRITICAL)
+
 
 def create_app(config_name=None):
     """
@@ -36,7 +49,7 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     
     # 配置日志
-    app_logger.info("Flask application created successfully")
+    logger.info("Flask application created successfully")
 
     # 自定义日志过滤器，过滤掉数据库连接的INFO日志
     class NoDbInfoFilter(logging.Filter):

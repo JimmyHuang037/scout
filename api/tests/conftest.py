@@ -14,17 +14,25 @@ from datetime import datetime
 # 将项目根目录添加到Python路径中
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# 设置日志级别，避免显示INFO级别的数据库连接信息
-logging.getLogger('app').setLevel(logging.WARNING)
+# 设置日志级别，完全屏蔽app和mysql.connector的日志
+logging.getLogger('app').setLevel(logging.CRITICAL)
+logging.getLogger('mysql.connector').setLevel(logging.CRITICAL)
 
 from app.factory import create_app
 from utils.db import DatabaseService
+
 
 def pytest_configure(config):
     """pytest配置初始化，用于恢复测试数据库"""
     # 检查是否需要恢复数据库
     if not config.getoption("--no-db-restore", False):
         restore_test_database()
+
+
+def pytest_unconfigure(config):
+    """pytest结束时的清理工作，显示数据库表记录数"""
+    if not config.getoption("--no-db-restore", False):
+        show_database_stats()
 
 
 def restore_test_database():
@@ -83,12 +91,6 @@ def restore_test_database():
             os.chdir(original_cwd)
 
 
-def pytest_unconfigure(config):
-    """pytest结束时的清理工作，显示数据库表记录数"""
-    if not config.getoption("--no-db-restore", False):
-        show_database_stats()
-
-
 def show_database_stats():
     """显示测试数据库中各表的记录数"""
     try:
@@ -130,6 +132,8 @@ def pytest_addoption(parser):
         default=False,
         help="运行测试时不恢复数据库"
     )
+
+
 
 
 @pytest.fixture

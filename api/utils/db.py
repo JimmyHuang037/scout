@@ -15,7 +15,8 @@ logger = logging.getLogger('app')
 # 在测试环境中降低数据库相关日志级别
 import os
 if os.environ.get('FLASK_ENV') == 'testing':
-    logging.getLogger('app').setLevel(logging.WARNING)
+    logging.getLogger('app').setLevel(logging.CRITICAL)
+    logging.getLogger('mysql.connector').setLevel(logging.CRITICAL)
 
 
 def get_db():
