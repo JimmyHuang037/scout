@@ -31,22 +31,26 @@ def create_app(config_name=None):
     # 创建Flask应用实例
     app = Flask(__name__)
     
-    # 应用配置
+    # 加载配置
     app.config.from_object(config[config_name])
     
-    # 初始化扩展
-    CORS(app)
+    # 配置日志
+    app_logger.info("Flask application created successfully")
     
-    # 修复Flask-Session警告：完全移除SESSION_FILE_DIR，只使用SESSION_CACHELIB
-    # 先移除SESSION_FILE_DIR配置
-    app.config.pop('SESSION_FILE_DIR', None)
+    # 配置CORS
+    CORS(app, supports_credentials=True)
     
-    # 配置FileSystemCache实例
-    cache = FileSystemCache(
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'runtime', 'flask_session'),
-        threshold=500,
-        mode=0o600
-    )
+    # 配置静态文件服务
+    app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
+        '/static': os.path.join(os.path.dirname(__file__), '..', 'static')
+    })
+    
+    # 配置Session
+    cache_dir = app.config.get('SESSION_FILE_DIR')
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+    
+    cache = FileSystemCache(cache_dir)
     
     # 设置SESSION_TYPE为cachelib并使用cache实例
     app.config['SESSION_TYPE'] = 'cachelib'
@@ -57,10 +61,12 @@ def create_app(config_name=None):
     from blueprints.admin import admin_bp
     from blueprints.teacher import teacher_bp
     from blueprints.student import student_bp
+    from blueprints.auth import auth_bp
     
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
     app.register_blueprint(student_bp, url_prefix='/api/student')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
     
     # 注册数据库关闭函数
     app.teardown_appcontext(db.close_db)

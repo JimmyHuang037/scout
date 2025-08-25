@@ -12,7 +12,7 @@ def success_response(data=None, message="Success", status_code=200):
         status_code: HTTP状态码
         
     Returns:
-        tuple: (JSON响应, HTTP状态码)
+        Response: Flask响应对象
     """
     response = {
         'success': True,
@@ -32,12 +32,13 @@ def error_response(message="Error", status_code=400):
         status_code: HTTP状态码
         
     Returns:
-        tuple: (JSON响应, HTTP状态码)
+        Response: Flask响应对象
     """
-    return jsonify({
+    response = {
         'success': False,
         'error': message
-    }), status_code
+    }
+    return jsonify(response), status_code
 
 
 def get_current_user():

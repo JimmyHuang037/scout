@@ -14,7 +14,7 @@ def login():
         
         if not user_id or not password:
             app_logger.warning("Login attempt with missing fields")
-            return error_response('Missing required fields: user_id, password'), 400
+            return error_response('Missing required fields: user_id, password', 400)
         
         # 查询用户信息
         db_service = DatabaseService()
@@ -40,7 +40,7 @@ def login():
             }, 'Login successful')
         else:
             app_logger.warning(f"Failed login attempt for user {user_id}")
-            return error_response('Invalid user_id or password'), 401
+            return error_response('Invalid user_id or password', 401)
             
     except Exception as e:
         app_logger.error(f"Login failed: {str(e)}")
@@ -79,7 +79,7 @@ def get_current_user():
             })
         else:
             app_logger.warning("Attempt to get current user when not authenticated")
-            return error_response('User not authenticated'), 401
+            return error_response('User not authenticated', 401)
             
     except Exception as e:
         app_logger.error(f"Failed to get user info: {str(e)}")
