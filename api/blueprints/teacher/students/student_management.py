@@ -16,6 +16,7 @@ def get_my_students():
         # 从session中获取当前教师ID
         current_teacher_id = session.get('user_id')
         if not current_teacher_id:
+            app_logger.warning("Teacher ID not found in session")  # 添加日志记录
             return error_response('User not authenticated'), 401
         
         # 获取查询参数

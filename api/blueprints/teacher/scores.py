@@ -1,5 +1,6 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 from utils import DatabaseService
+from utils.helpers import require_auth
 
 teacher_scores_bp = Blueprint('teacher_scores', __name__, url_prefix='/api/teacher')
 
@@ -8,9 +9,18 @@ teacher_scores_bp = Blueprint('teacher_scores', __name__, url_prefix='/api/teach
 def get_scores():
     """获取所教班级的成绩"""
     try:
-        # 在实际应用中，这里会从JWT token或session中获取当前教师ID
-        # 这里假设教师ID为1
-        current_teacher_id = 1
+        # 检查认证
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+        
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return jsonify({
+                'success': False,
+                'error': 'User not authenticated'
+            }), 401
         
         # 获取筛选参数
         student_id = request.args.get('student_id')
@@ -32,31 +42,36 @@ def get_scores():
             JOIN TeacherClasses tc ON s.class_id = tc.class_id
             WHERE tc.teacher_id = %s
         """
-        params = [current_teacher_id]
         
         # 添加筛选条件
+        params = [current_teacher_id]
         if student_id:
             query += " AND sc.student_id = %s"
             params.append(student_id)
-            
         if subject_id:
             query += " AND sc.subject_id = %s"
             params.append(subject_id)
-            
         if exam_type_id:
             query += " AND sc.exam_type_id = %s"
             params.append(exam_type_id)
             
         query += " ORDER BY sc.student_id, sc.subject_id, sc.exam_type_id"
         
-        scores = db_service.execute_query(query, params)
+        # 执行查询
+        results = db_service.execute_query(query, params)
         db_service.close()
         
         return jsonify({
             'success': True,
-            'data': scores
+            'data': results
         })
+        
     except Exception as e:
+        # 确保数据库连接被关闭
+        try:
+            db_service.close()
+        except:
+            pass
         return jsonify({
             'success': False,
             'error': str(e)

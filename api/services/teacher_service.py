@@ -83,7 +83,7 @@ class TeacherService:
             teacher_data (dict): 教师信息
             
         Returns:
-            bool: 是否创建成功
+            dict: 创建的教师信息
         """
         try:
             query = """
@@ -96,7 +96,21 @@ class TeacherService:
                 teacher_data.get('password')
             )
             self.db_service.execute_update(query, params)
-            return True
+            
+            # 获取新创建的教师信息
+            select_query = """
+                SELECT teacher_id, teacher_name, subject_id
+                FROM Teachers
+                WHERE teacher_name = %s AND subject_id = %s
+                ORDER BY teacher_id DESC
+                LIMIT 1
+            """
+            select_params = (
+                teacher_data.get('teacher_name'),
+                teacher_data.get('subject_id')
+            )
+            teacher = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            return teacher
         except Exception as e:
             raise e
         finally:
@@ -114,17 +128,20 @@ class TeacherService:
             bool: 是否更新成功
         """
         try:
-            query = """
-                UPDATE Teachers 
-                SET teacher_name = %s, subject_id = %s, password = %s
-                WHERE teacher_id = %s
-            """
-            params = (
-                teacher_data.get('teacher_name'),
-                teacher_data.get('subject_id'),
-                teacher_data.get('password'),
-                teacher_id
-            )
+            # 构建动态更新语句
+            fields = []
+            params = []
+            
+            for key, value in teacher_data.items():
+                if key in ['teacher_name', 'subject_id']:
+                    fields.append(f"{key} = %s")
+                    params.append(value)
+            
+            if not fields:
+                return False
+            
+            params.append(teacher_id)
+            query = f"UPDATE Teachers SET {', '.join(fields)} WHERE teacher_id = %s"
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:

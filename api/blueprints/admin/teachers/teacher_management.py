@@ -1,12 +1,22 @@
 """教师管理模块，处理教师相关的所有操作"""
-from flask import jsonify, request
+from flask import jsonify, request, session
 from services import TeacherService
-from utils.helpers import success_response, error_response
+from utils.helpers import success_response, error_response, require_auth, require_role
+from utils.logger import app_logger
 
 
 def get_teachers():
     """获取教师列表"""
     try:
+        # 检查认证和权限
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
+        role_error = require_role('admin')
+        if role_error:
+            return role_error
+        
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -15,21 +25,37 @@ def get_teachers():
         teacher_service = TeacherService()
         result = teacher_service.get_all_teachers(page, per_page)
         
+        app_logger.info("Admin retrieved teacher list")
         return success_response(result)
         
     except Exception as e:
+        app_logger.error(f'Failed to fetch teachers: {str(e)}')
         return error_response(f'Failed to fetch teachers: {str(e)}', 500)
 
 
 def create_teacher():
     """创建教师"""
     try:
+        # 检查认证和权限
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
+        role_error = require_role('admin')
+        if role_error:
+            return role_error
+        
         data = request.get_json()
         teacher_name = data.get('teacher_name')
         subject_id = data.get('subject_id')
         password = data.get('password')
         
+        # 可选字段
+        email = data.get('email')
+        phone = data.get('phone')
+        
         if not all([teacher_name, subject_id, password]):
+            app_logger.warning("Create teacher attempt with missing fields")
             return error_response('Missing required fields: teacher_name, subject_id, password', 400)
         
         # 使用教师服务创建教师
@@ -37,17 +63,29 @@ def create_teacher():
         result = teacher_service.create_teacher(data)
         
         if result:
+            app_logger.info(f"Admin created teacher {result.get('teacher_id')}")
             return success_response(result, 'Teacher created successfully', 201)
         else:
+            app_logger.error("Failed to create teacher")
             return error_response('Failed to create teacher', 400)
             
     except Exception as e:
+        app_logger.error(f'Failed to create teacher: {str(e)}')
         return error_response(f'Failed to create teacher: {str(e)}', 500)
 
 
 def get_teacher(teacher_id):
     """获取单个教师信息"""
     try:
+        # 检查认证和权限
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+            
+        role_error = require_role('admin')
+        if role_error:
+            return role_error
+        
         # 使用教师服务获取教师信息
         teacher_service = TeacherService()
         teacher = teacher_service.get_teacher_by_id(teacher_id)
