@@ -18,7 +18,7 @@ def get_students():
         return success_response(result)
         
     except Exception as e:
-        return error_response(f'Failed to fetch students: {str(e)}'), 500
+        return error_response(f'Failed to fetch students: {str(e)}', 500)
 
 
 def create_student():
@@ -31,19 +31,19 @@ def create_student():
         password = data.get('password')
         
         if not all([student_id, student_name, class_id, password]):
-            return error_response('Missing required fields: student_id, student_name, class_id, password'), 400
+            return error_response('Missing required fields: student_id, student_name, class_id, password', 400)
         
         # 使用学生服务创建学生
         student_service = StudentService()
         result = student_service.create_student(data)
         
         if result:
-            return success_response(message='Student created successfully'), 201
+            return success_response(result, 'Student created successfully', 201)
         else:
-            return error_response('Failed to create student'), 400
+            return error_response('Failed to create student', 400)
             
     except Exception as e:
-        return error_response(f'Failed to create student: {str(e)}'), 500
+        return error_response(f'Failed to create student: {str(e)}', 500)
 
 
 def get_student(student_id):
@@ -56,10 +56,10 @@ def get_student(student_id):
         if student:
             return success_response(student)
         else:
-            return error_response('Student not found'), 404
+            return error_response('Student not found', 404)
             
     except Exception as e:
-        return error_response(f'Failed to fetch student: {str(e)}'), 500
+        return error_response(f'Failed to fetch student: {str(e)}', 500)
 
 
 def update_student(student_id):
@@ -71,19 +71,19 @@ def update_student(student_id):
         password = data.get('password')
         
         if not all([student_name, class_id, password]):
-            return error_response('Missing required fields: student_name, class_id, password'), 400
+            return error_response('Missing required fields: student_name, class_id, password', 400)
         
         # 使用学生服务更新学生信息
         student_service = StudentService()
         result = student_service.update_student(student_id, data)
         
         if result:
-            return success_response(message='Student updated successfully')
+            return success_response(result, 'Student updated successfully')
         else:
-            return error_response('Failed to update student'), 400
+            return error_response('Failed to update student', 400)
             
     except Exception as e:
-        return error_response(f'Failed to update student: {str(e)}'), 500
+        return error_response(f'Failed to update student: {str(e)}', 500)
 
 
 def delete_student(student_id):
@@ -94,9 +94,9 @@ def delete_student(student_id):
         result = student_service.delete_student(student_id)
         
         if result:
-            return success_response(message='Student deleted successfully')
+            return success_response(None, 'Student deleted successfully'), 204
         else:
-            return error_response('Failed to delete student'), 400
+            return error_response('Failed to delete student', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete student: {str(e)}'), 500
+        return error_response(f'Failed to delete student: {str(e)}', 500)

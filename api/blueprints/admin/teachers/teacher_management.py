@@ -18,7 +18,7 @@ def get_teachers():
         return success_response(result)
         
     except Exception as e:
-        return error_response(f'Failed to fetch teachers: {str(e)}'), 500
+        return error_response(f'Failed to fetch teachers: {str(e)}', 500)
 
 
 def create_teacher():
@@ -30,19 +30,19 @@ def create_teacher():
         password = data.get('password')
         
         if not all([teacher_name, subject_id, password]):
-            return error_response('Missing required fields: teacher_name, subject_id, password'), 400
+            return error_response('Missing required fields: teacher_name, subject_id, password', 400)
         
         # 使用教师服务创建教师
         teacher_service = TeacherService()
         result = teacher_service.create_teacher(data)
         
         if result:
-            return success_response(message='Teacher created successfully'), 201
+            return success_response(result, 'Teacher created successfully', 201)
         else:
-            return error_response('Failed to create teacher'), 400
+            return error_response('Failed to create teacher', 400)
             
     except Exception as e:
-        return error_response(f'Failed to create teacher: {str(e)}'), 500
+        return error_response(f'Failed to create teacher: {str(e)}', 500)
 
 
 def get_teacher(teacher_id):
@@ -55,10 +55,10 @@ def get_teacher(teacher_id):
         if teacher:
             return success_response(teacher)
         else:
-            return error_response('Teacher not found'), 404
+            return error_response('Teacher not found', 404)
             
     except Exception as e:
-        return error_response(f'Failed to fetch teacher: {str(e)}'), 500
+        return error_response(f'Failed to fetch teacher: {str(e)}', 500)
 
 
 def update_teacher(teacher_id):
@@ -70,19 +70,19 @@ def update_teacher(teacher_id):
         password = data.get('password')
         
         if not all([teacher_name, subject_id, password]):
-            return error_response('Missing required fields: teacher_name, subject_id, password'), 400
+            return error_response('Missing required fields: teacher_name, subject_id, password', 400)
         
         # 使用教师服务更新教师信息
         teacher_service = TeacherService()
         result = teacher_service.update_teacher(teacher_id, data)
         
         if result:
-            return success_response(message='Teacher updated successfully')
+            return success_response(result, 'Teacher updated successfully')
         else:
-            return error_response('Failed to update teacher'), 400
+            return error_response('Failed to update teacher', 400)
             
     except Exception as e:
-        return error_response(f'Failed to update teacher: {str(e)}'), 500
+        return error_response(f'Failed to update teacher: {str(e)}', 500)
 
 
 def delete_teacher(teacher_id):
@@ -93,9 +93,9 @@ def delete_teacher(teacher_id):
         result = teacher_service.delete_teacher(teacher_id)
         
         if result:
-            return success_response(message='Teacher deleted successfully')
+            return success_response(None, 'Teacher deleted successfully'), 204
         else:
-            return error_response('Failed to delete teacher'), 400
+            return error_response('Failed to delete teacher', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete teacher: {str(e)}'), 500
+        return error_response(f'Failed to delete teacher: {str(e)}', 500)

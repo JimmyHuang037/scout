@@ -63,3 +63,27 @@ def client(app):
 def runner(app):
     """创建CLI运行器"""
     return app.test_cli_runner()
+
+
+@pytest.fixture
+def admin_client(client):
+    """创建管理员身份验证的客户端"""
+    # 这里应该实现管理员登录逻辑
+    # 由于当前系统可能使用session或token验证，暂时返回普通客户端
+    return client
+
+
+@pytest.fixture
+def teacher_client(client):
+    """创建教师身份验证的客户端"""
+    # 这里应该实现教师登录逻辑
+    # 由于当前系统可能使用session或token验证，暂时返回普通客户端
+    return client
+
+
+@pytest.fixture
+def student_client(client):
+    """创建学生身份验证的客户端"""
+    # 这里应该实现学生登录逻辑
+    # 由于当前系统可能使用session或token验证，暂时返回普通客户端
+    return client

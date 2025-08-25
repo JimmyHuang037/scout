@@ -18,7 +18,7 @@ def get_classes():
         return success_response(result)
         
     except Exception as e:
-        return error_response(f'Failed to fetch classes: {str(e)}'), 500
+        return error_response(f'Failed to fetch classes: {str(e)}', 500)
 
 
 def create_class():
@@ -26,21 +26,22 @@ def create_class():
     try:
         data = request.get_json()
         class_name = data.get('class_name')
+        grade = data.get('grade')
         
-        if not class_name:
-            return error_response('Missing required field: class_name'), 400
+        if not all([class_name, grade]):
+            return error_response('Missing required fields: class_name, grade', 400)
         
         # 使用班级服务创建班级
         class_service = ClassService()
         result = class_service.create_class(data)
         
         if result:
-            return success_response(message='Class created successfully'), 201
+            return success_response(result, 'Class created successfully', 201)
         else:
-            return error_response('Failed to create class'), 400
+            return error_response('Failed to create class', 400)
             
     except Exception as e:
-        return error_response(f'Failed to create class: {str(e)}'), 500
+        return error_response(f'Failed to create class: {str(e)}', 500)
 
 
 def get_class(class_id):
@@ -53,10 +54,10 @@ def get_class(class_id):
         if class_info:
             return success_response(class_info)
         else:
-            return error_response('Class not found'), 404
+            return error_response('Class not found', 404)
             
     except Exception as e:
-        return error_response(f'Failed to fetch class: {str(e)}'), 500
+        return error_response(f'Failed to fetch class: {str(e)}', 500)
 
 
 def update_class(class_id):
@@ -64,21 +65,22 @@ def update_class(class_id):
     try:
         data = request.get_json()
         class_name = data.get('class_name')
+        grade = data.get('grade')
         
-        if not class_name:
-            return error_response('Missing required field: class_name'), 400
+        if not all([class_name, grade]):
+            return error_response('Missing required fields: class_name, grade', 400)
         
         # 使用班级服务更新班级信息
         class_service = ClassService()
         result = class_service.update_class(class_id, data)
         
         if result:
-            return success_response(message='Class updated successfully')
+            return success_response(result, 'Class updated successfully')
         else:
-            return error_response('Failed to update class'), 400
+            return error_response('Failed to update class', 400)
             
     except Exception as e:
-        return error_response(f'Failed to update class: {str(e)}'), 500
+        return error_response(f'Failed to update class: {str(e)}', 500)
 
 
 def delete_class(class_id):
@@ -89,9 +91,9 @@ def delete_class(class_id):
         result = class_service.delete_class(class_id)
         
         if result:
-            return success_response(message='Class deleted successfully')
+            return success_response(None, 'Class deleted successfully'), 204
         else:
-            return error_response('Failed to delete class'), 400
+            return error_response('Failed to delete class', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete class: {str(e)}'), 500
+        return error_response(f'Failed to delete class: {str(e)}', 500)

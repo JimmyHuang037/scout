@@ -2,13 +2,14 @@
 from flask import jsonify, session
 
 
-def success_response(data=None, message="Success"):
+def success_response(data=None, message="Success", status_code=200):
     """
     创建成功的JSON响应
     
     Args:
         data: 响应数据
         message: 响应消息
+        status_code: HTTP状态码
         
     Returns:
         tuple: (JSON响应, HTTP状态码)
@@ -19,7 +20,7 @@ def success_response(data=None, message="Success"):
     }
     if data is not None:
         response['data'] = data
-    return jsonify(response), 200
+    return jsonify(response), status_code
 
 
 def error_response(message="Error", status_code=400):

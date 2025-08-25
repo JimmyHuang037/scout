@@ -18,29 +18,30 @@ def get_exam_types():
         return success_response(result)
         
     except Exception as e:
-        return error_response(f'Failed to fetch exam types: {str(e)}'), 500
+        return error_response(f'Failed to fetch exam types: {str(e)}', 500)
 
 
 def create_exam_type():
     """创建考试类型"""
     try:
         data = request.get_json()
-        exam_type_name = data.get('exam_type_name')
+        type_name = data.get('type_name')
+        description = data.get('description')
         
-        if not exam_type_name:
-            return error_response('Missing required field: exam_type_name'), 400
+        if not type_name:
+            return error_response('Missing required field: type_name', 400)
         
         # 使用考试类型服务创建考试类型
         exam_type_service = ExamTypeService()
         result = exam_type_service.create_exam_type(data)
         
         if result:
-            return success_response(message='Exam type created successfully'), 201
+            return success_response(result, 'Exam type created successfully', 201)
         else:
-            return error_response('Failed to create exam type'), 400
+            return error_response('Failed to create exam type', 400)
             
     except Exception as e:
-        return error_response(f'Failed to create exam type: {str(e)}'), 500
+        return error_response(f'Failed to create exam type: {str(e)}', 500)
 
 
 def get_exam_type(type_id):
@@ -53,32 +54,33 @@ def get_exam_type(type_id):
         if exam_type:
             return success_response(exam_type)
         else:
-            return error_response('Exam type not found'), 404
+            return error_response('Exam type not found', 404)
             
     except Exception as e:
-        return error_response(f'Failed to fetch exam type: {str(e)}'), 500
+        return error_response(f'Failed to fetch exam type: {str(e)}', 500)
 
 
 def update_exam_type(type_id):
     """更新考试类型信息"""
     try:
         data = request.get_json()
-        exam_type_name = data.get('exam_type_name')
+        type_name = data.get('type_name')
+        description = data.get('description')
         
-        if not exam_type_name:
-            return error_response('Missing required field: exam_type_name'), 400
+        if not type_name:
+            return error_response('Missing required field: type_name', 400)
         
         # 使用考试类型服务更新考试类型信息
         exam_type_service = ExamTypeService()
         result = exam_type_service.update_exam_type(type_id, data)
         
         if result:
-            return success_response(message='Exam type updated successfully')
+            return success_response(result, 'Exam type updated successfully')
         else:
-            return error_response('Failed to update exam type'), 400
+            return error_response('Failed to update exam type', 400)
             
     except Exception as e:
-        return error_response(f'Failed to update exam type: {str(e)}'), 500
+        return error_response(f'Failed to update exam type: {str(e)}', 500)
 
 
 def delete_exam_type(type_id):
@@ -89,9 +91,9 @@ def delete_exam_type(type_id):
         result = exam_type_service.delete_exam_type(type_id)
         
         if result:
-            return success_response(message='Exam type deleted successfully')
+            return success_response(None, 'Exam type deleted successfully'), 204
         else:
-            return error_response('Failed to delete exam type'), 400
+            return error_response('Failed to delete exam type', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete exam type: {str(e)}'), 500
+        return error_response(f'Failed to delete exam type: {str(e)}', 500)

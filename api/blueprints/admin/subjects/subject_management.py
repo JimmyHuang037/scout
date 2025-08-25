@@ -18,7 +18,7 @@ def get_subjects():
         return success_response(result)
         
     except Exception as e:
-        return error_response(f'Failed to fetch subjects: {str(e)}'), 500
+        return error_response(f'Failed to fetch subjects: {str(e)}', 500)
 
 
 def create_subject():
@@ -26,21 +26,22 @@ def create_subject():
     try:
         data = request.get_json()
         subject_name = data.get('subject_name')
+        description = data.get('description')
         
         if not subject_name:
-            return error_response('Missing required field: subject_name'), 400
+            return error_response('Missing required field: subject_name', 400)
         
         # 使用科目服务创建科目
         subject_service = SubjectService()
         result = subject_service.create_subject(data)
         
         if result:
-            return success_response(message='Subject created successfully'), 201
+            return success_response(result, 'Subject created successfully', 201)
         else:
-            return error_response('Failed to create subject'), 400
+            return error_response('Failed to create subject', 400)
             
     except Exception as e:
-        return error_response(f'Failed to create subject: {str(e)}'), 500
+        return error_response(f'Failed to create subject: {str(e)}', 500)
 
 
 def get_subject(subject_id):
@@ -53,10 +54,10 @@ def get_subject(subject_id):
         if subject:
             return success_response(subject)
         else:
-            return error_response('Subject not found'), 404
+            return error_response('Subject not found', 404)
             
     except Exception as e:
-        return error_response(f'Failed to fetch subject: {str(e)}'), 500
+        return error_response(f'Failed to fetch subject: {str(e)}', 500)
 
 
 def update_subject(subject_id):
@@ -64,21 +65,22 @@ def update_subject(subject_id):
     try:
         data = request.get_json()
         subject_name = data.get('subject_name')
+        description = data.get('description')
         
         if not subject_name:
-            return error_response('Missing required field: subject_name'), 400
+            return error_response('Missing required field: subject_name', 400)
         
         # 使用科目服务更新科目信息
         subject_service = SubjectService()
         result = subject_service.update_subject(subject_id, data)
         
         if result:
-            return success_response(message='Subject updated successfully')
+            return success_response(result, 'Subject updated successfully')
         else:
-            return error_response('Failed to update subject'), 400
+            return error_response('Failed to update subject', 400)
             
     except Exception as e:
-        return error_response(f'Failed to update subject: {str(e)}'), 500
+        return error_response(f'Failed to update subject: {str(e)}', 500)
 
 
 def delete_subject(subject_id):
@@ -89,9 +91,9 @@ def delete_subject(subject_id):
         result = subject_service.delete_subject(subject_id)
         
         if result:
-            return success_response(message='Subject deleted successfully')
+            return success_response(None, 'Subject deleted successfully'), 204
         else:
-            return error_response('Failed to delete subject'), 400
+            return error_response('Failed to delete subject', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete subject: {str(e)}'), 500
+        return error_response(f'Failed to delete subject: {str(e)}', 500)
