@@ -4,9 +4,10 @@ from utils.helpers import success_response, error_response
 from utils.logger import app_logger
 from utils.auth import require_auth, require_role
 from utils import database_service
+from services.score_service import ScoreService
 
 
-def get_exam_classes(exam_id):
+def get_exam_classes():
     """获取教师相关的考试班级列表"""
     try:
         # 检查认证
@@ -22,7 +23,7 @@ def get_exam_classes(exam_id):
         # 使用成绩服务获取考试班级列表
         score_service = ScoreService()
         # 这里我们直接使用数据库服务来获取教师相关的班级信息
-        from utils import DatabaseService
+        from utils.database_service import DatabaseService
         db_service = DatabaseService()
         
         try:
