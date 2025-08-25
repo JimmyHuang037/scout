@@ -206,9 +206,6 @@ python -m pytest tests/
 
 # 运行API测试脚本（带身份验证的API测试）
 ./curl_test.sh
-
-# 运行不带身份验证的API测试
-./test_api.sh
 ```
 
 ### 测试结构
