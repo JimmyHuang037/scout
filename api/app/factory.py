@@ -32,8 +32,6 @@ def create_app(config_name='default'):
     session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'flask_session')
     os.makedirs(session_dir, exist_ok=True)
     
-    # 使用新的方式配置会话缓存
-    app.config['SESSION_CACHELIB'] = FileSystemCache(session_dir, threshold=500, mode=0o600)
     
     
     # 设置日志

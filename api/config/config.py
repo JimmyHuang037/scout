@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from cachelib import FileSystemCache
 
 # 项目根目录
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -13,8 +14,13 @@ class Config:
     # Flask配置
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     
-    # Session配置
-    SESSION_TYPE = 'filesystem'
+    # Session配置 - 使用新的方式避免弃用警告，并确_session会话数据存储在api/runtime目录中
+    SESSION_TYPE = 'cachelib'
+    SESSION_CACHELIB = FileSystemCache(
+        os.path.join(basedir, 'runtime', 'flask_session'),
+        threshold=500,
+        mode=0o600
+    )
     SESSION_PERMANENT = False
     PERMANENT_SESSION_LIFETIME = 3600  # 1小时
     
