@@ -4,6 +4,8 @@ from cachelib import FileSystemCache
 
 # 项目根目录
 basedir = os.path.abspath(os.path.dirname(__file__))
+# API根目录（向上两级目录）
+api_dir = os.path.abspath(os.path.join(basedir, '..'))
 
 # 加载 .env 文件
 load_dotenv(os.path.join(basedir, '.env'))
@@ -17,7 +19,7 @@ class Config:
     # Session配置 - 使用新的方式避免弃用警告，并确_session会话数据存储在api/runtime目录中
     SESSION_TYPE = 'cachelib'
     SESSION_CACHELIB = FileSystemCache(
-        os.path.join(basedir, 'runtime', 'flask_session'),
+        os.path.join(api_dir, 'runtime', 'flask_session'),
         threshold=500,
         mode=0o600
     )
