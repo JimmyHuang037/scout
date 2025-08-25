@@ -10,10 +10,10 @@ API_DIR="$SCRIPT_DIR"
 # 启动API服务器 (在后台运行)
 echo "启动API服务器..."
 cd "$API_DIR"
-# 确保日志目录存在
-mkdir -p runtime/logs
+# 确保日志目录存在，在api/runtime/logs下
+mkdir -p "$API_DIR/runtime/logs"
 # 启动服务器并将日志写入正确的路径，使用端口5000
-python -m flask --app app/factory:create_app run --port 5000 > runtime/logs/test_server.log 2>&1 &
+python -m flask --app app/factory:create_app run --port 5000 > "$API_DIR/runtime/logs/test_server.log" 2>&1 &
 SERVER_PID=$!
 
 # 等待服务器启动

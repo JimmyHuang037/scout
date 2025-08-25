@@ -28,11 +28,9 @@ def create_app(config_name='default'):
     # 加载配置
     app.config.from_object(Config)
     
-    # 确保会话目录存在
+    # 确保会话目录存在，路径相对于app目录
     session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'flask_session')
     os.makedirs(session_dir, exist_ok=True)
-    
-    
     
     # 设置日志
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'logs')
