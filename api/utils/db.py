@@ -1,7 +1,21 @@
 """数据库工具模块，提供统一的数据库操作接口"""
 import mysql.connector
+import logging
 from flask import current_app, g
-from .logger import app_logger
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# 创建logger
+logger = logging.getLogger('app')
+
+# 在测试环境中降低数据库相关日志级别
+import os
+if os.environ.get('FLASK_ENV') == 'testing':
+    logging.getLogger('app').setLevel(logging.WARNING)
 
 
 def get_db():
@@ -14,9 +28,9 @@ def get_db():
                 password=current_app.config['MYSQL_PASSWORD'],
                 database=current_app.config['MYSQL_DB']
             )
-            app_logger.info("Database connection established")
+            logger.info("Database connection established")
         except Exception as e:
-            app_logger.error(f"Failed to connect to database: {str(e)}")
+            logger.error(f"Failed to connect to database: {str(e)}")
             raise e
     return g.db
 
@@ -26,7 +40,7 @@ def close_db(e=None):
     db = g.pop('db', None)
     if db is not None and db.is_connected():
         db.close()
-        app_logger.info("Database connection closed")
+        logger.info("Database connection closed")
 
 
 class DatabaseService:
@@ -37,9 +51,9 @@ class DatabaseService:
         try:
             self.db = get_db()
             self.cursor = self.db.cursor(dictionary=True)
-            app_logger.info("DatabaseService initialized")
+            logger.info("DatabaseService initialized")
         except Exception as e:
-            app_logger.error(f"Failed to initialize DatabaseService: {str(e)}")
+            logger.error(f"Failed to initialize DatabaseService: {str(e)}")
             raise e
     
     def execute_query(self, query, params=None, fetch_one=False):
@@ -55,13 +69,13 @@ class DatabaseService:
             dict or list: 查询结果
         """
         try:
-            app_logger.debug(f"Executing query: {query} with params: {params}")
+            logger.debug(f"Executing query: {query} with params: {params}")
             self.cursor.execute(query, params or ())
             result = self.cursor.fetchone() if fetch_one else self.cursor.fetchall()
-            app_logger.debug(f"Query executed successfully, returned {len(result) if isinstance(result, list) else 1} rows")
+            logger.debug(f"Query executed successfully, returned {len(result) if isinstance(result, list) else 1} rows")
             return result
         except Exception as e:
-            app_logger.error(f"Failed to execute query: {str(e)}")
+            logger.error(f"Failed to execute query: {str(e)}")
             raise e
     
     def execute_update(self, query, params=None):
@@ -76,14 +90,14 @@ class DatabaseService:
             int: 受影响的行数
         """
         try:
-            app_logger.debug(f"Executing update: {query} with params: {params}")
+            logger.debug(f"Executing update: {query} with params: {params}")
             self.cursor.execute(query, params or ())
             self.db.commit()
             affected_rows = self.cursor.rowcount
-            app_logger.debug(f"Update executed successfully, affected {affected_rows} rows")
+            logger.debug(f"Update executed successfully, affected {affected_rows} rows")
             return affected_rows
         except Exception as e:
-            app_logger.error(f"Failed to execute update: {str(e)}")
+            logger.error(f"Failed to execute update: {str(e)}")
             self.db.rollback()
             raise e
     
@@ -106,6 +120,6 @@ class DatabaseService:
         try:
             if self.cursor:
                 self.cursor.close()
-            app_logger.info("DatabaseService closed")
+            logger.info("DatabaseService closed")
         except Exception as e:
-            app_logger.error(f"Error closing DatabaseService: {str(e)}")
+            logger.error(f"数据库服务关闭失败: {str(e)}")

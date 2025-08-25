@@ -4,6 +4,7 @@
 """
 
 import os
+import logging
 from flask import Flask
 from flask_cors import CORS
 from flask_session import Session
@@ -36,6 +37,14 @@ def create_app(config_name=None):
     
     # 配置日志
     app_logger.info("Flask application created successfully")
+
+    # 自定义日志过滤器，过滤掉数据库连接的INFO日志
+    class NoDbInfoFilter(logging.Filter):
+        def filter(self, record):
+            return 'Connected to' not in record.getMessage()
+
+    # 获取根日志记录器并添加过滤器
+    logging.getLogger().addFilter(NoDbInfoFilter())
     
     # 配置CORS
     CORS(app, supports_credentials=True)
