@@ -1,131 +1,119 @@
 #!/bin/bash
 
 # API测试脚本
-# 功能：恢复测试数据库并测试API端点
+# 该脚本用于测试所有API端点，包括需要身份验证和不需要身份验证的端点
 
-echo "=============================="
-echo "API功能测试脚本"
-echo "=============================="
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+API_DIR="$SCRIPT_DIR"
 
-# 进入项目根目录
-cd /home/jimmy/repo/scout
+# 设置Python警告过滤
+PYTHONWARNINGS="ignore:Unverified HTTPS request"
 
-# 恢复测试数据库
-echo ""
-echo "1. 恢复测试数据库..."
-echo "=============================="
-echo "执行命令: ./db/restore_db.sh school_management_backup_20250825_220152.sql school_management_test"
-./db/restore_db.sh school_management_backup_20250825_220152.sql school_management_test << EOF
-y
-EOF
+# 启动API服务器 (在后台运行)
+echo "启动API服务器..."
+cd "$API_DIR"
+python -W ignore::Warning -m flask --app app/factory:create_app run --port 5001 > ../runtime/logs/test_server.log 2>&1 &
+SERVER_PID=$!
 
-if [ $? -ne 0 ]; then
-    echo "数据库恢复失败，退出测试"
+# 等待服务器启动
+sleep 3
+
+# 检查服务器是否启动成功
+if ! curl -s http://localhost:5001/api/health > /dev/null; then
+    echo "API服务器启动失败，请检查日志文件: ../runtime/logs/test_server.log"
+    kill $SERVER_PID 2>/dev/null
     exit 1
 fi
 
-# 启动API服务器（后台运行）
-echo ""
-echo "2. 启动API服务器..."
-echo "=============================="
-echo "执行命令: cd api && python app.py"
-cd api
-python app.py > /dev/null 2>&1 & 
-API_PID=$!
-echo "API服务器已在后台启动，PID: $API_PID"
+echo "API服务器启动成功!"
 
-# 等待服务器启动
-sleep 5
+# 测试不需要身份验证的端点
+echo "=== 测试不需要身份验证的端点 ==="
 
-# 测试API端点
-echo ""
-echo "3. 测试API端点..."
-echo "=============================="
+echo "1. 测试健康检查端点"
+curl -s http://localhost:5001/api/health | jq '.'
 
-# 测试管理员API端点
 echo ""
-echo "3.1 测试管理员API端点"
-echo "------------------------"
+echo "2. 测试获取科目列表"
+curl -s http://localhost:5001/api/subjects | jq '.'
 
-# 测试获取所有学生
-echo "测试: 获取所有学生"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/students' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/students' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "3. 测试获取考试类型列表"
+curl -s http://localhost:5001/api/exam-types | jq '.'
 
-# 测试获取所有教师
-echo "测试: 获取所有教师"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/teachers' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/teachers' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "4. 测试用户登录"
+curl -s -X POST http://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "admin", "password": "admin"}' | jq '.'
 
-# 测试获取所有班级
-echo "测试: 获取所有班级"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/classes' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/classes' | jq '.'
+# 测试需要身份验证的端点
 echo ""
-echo "------------------------------------------------------------"
+echo "=== 测试需要身份验证的端点 ==="
 
-# 测试获取所有科目
-echo "测试: 获取所有科目"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/subjects' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/subjects' | jq '.'
-echo ""
-echo "------------------------------------------------------------"
+# 先登录并保存cookie
+echo "5. 登录并保存会话"
+curl -s -X POST http://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "admin", "password": "admin"}' \
+  -c /tmp/test_cookie.txt > /dev/null
 
-# 测试获取所有考试类型
-echo "测试: 获取所有考试类型"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/exam-types' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/exam-types' | jq '.'
-echo ""
-echo "------------------------------------------------------------"
+echo "6. 使用会话获取学生列表"
+curl -s http://localhost:5001/api/admin/students \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试教师API端点
 echo ""
-echo "3.2 测试教师API端点"
-echo "------------------------"
+echo "7. 使用会话获取教师列表"
+curl -s http://localhost:5001/api/admin/teachers \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取成绩
-echo "测试: 获取所有成绩"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/scores' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/scores' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "8. 使用会话获取班级列表"
+curl -s http://localhost:5001/api/admin/classes \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取考试结果
-echo "测试: 获取考试结果"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/exam/results' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/exam/results' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "9. 使用会话获取科目列表(管理员)"
+curl -s http://localhost:5001/api/admin/subjects \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取教学表现
-echo "测试: 获取教学表现"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/exam/performance' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/exam/performance' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "10. 使用会话获取考试类型列表(管理员)"
+curl -s http://localhost:5001/api/admin/exam-types \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试学生API端点
 echo ""
-echo "3.3 测试学生API端点"
-echo "------------------------"
+echo "11. 使用会话获取教师班级关系列表"
+curl -s http://localhost:5001/api/admin/teacher-classes \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取成绩
-echo "测试: 获取学生成绩"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/student/scores' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/student/scores' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "12. 使用会话获取学生成绩"
+curl -s http://localhost:5001/api/student/scores \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "13. 使用会话获取教师管理的学生列表"
+curl -s http://localhost:5001/api/teacher/students \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "14. 使用会话获取考试列表"
+curl -s http://localhost:5001/api/teacher/exams \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "15. 使用会话获取成绩列表"
+curl -s http://localhost:5001/api/teacher/scores \
+  -b /tmp/test_cookie.txt | jq '.'
+
+# 清理临时文件
+rm -f /tmp/test_cookie.txt
 
 # 关闭API服务器
 echo ""
-echo "4. 清理..."
-echo "=============================="
-kill $API_PID
-echo "API服务器已关闭"
+echo "关闭API服务器..."
+kill $SERVER_PID
 
-echo ""
-echo "API测试完成！"
+echo "API测试完成!"

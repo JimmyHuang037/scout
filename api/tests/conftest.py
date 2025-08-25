@@ -7,6 +7,12 @@ import pytest
 import sys
 import os
 import subprocess
+import warnings
+import glob
+
+# 忽略flask_session的所有弃用警告
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="flask_session")
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="cachelib")
 
 # 将api目录添加到Python路径中
 api_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -20,14 +26,25 @@ def pytest_configure(config):
     # 获取项目根目录
     project_root = os.path.join(os.path.dirname(__file__), '..', '..')
     db_restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
-    backup_file = 'school_management_backup_20250825_220152.sql'
+    
+    # 查找最新的备份文件
+    backup_dir = os.path.join(project_root, 'db', 'backup')
+    backup_files = glob.glob(os.path.join(backup_dir, 'school_management_backup_*.sql'))
+    
+    if backup_files:
+        # 选择最新的备份文件
+        backup_file = max(backup_files, key=os.path.getctime)
+        backup_filename = os.path.basename(backup_file)
+    else:
+        # 默认备份文件
+        backup_filename = 'school_management_backup_20250825_220152.sql'
     
     # 检查恢复脚本是否存在
     if os.path.exists(db_restore_script):
         try:
             # 运行数据库恢复脚本，恢复测试数据库
             result = subprocess.run(
-                [db_restore_script, backup_file, 'school_management_test'],
+                [db_restore_script, backup_filename, 'school_management_test'],
                 cwd=os.path.join(project_root, 'db'),
                 input='y\n',  # 自动确认
                 text=True,
@@ -85,10 +102,10 @@ def admin_client(client):
 @pytest.fixture
 def teacher_client(client):
     """创建教师身份验证的客户端"""
-    # 模拟教师登录 (使用教师ID 1，密码在数据库中应该存在)
+    # 模拟教师登录 (使用教师ID T1001，密码在数据库中应该存在)
     login_data = {
-        'user_id': '1',
-        'password': 'newpassword123'
+        'user_id': 'T1001',
+        'password': 'pass123'
     }
     
     # 发送登录请求

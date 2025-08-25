@@ -7,6 +7,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 from flask_session import Session
+from cachelib import FileSystemCache
 from config.config import Config
 from utils.logger import setup_logger
 
@@ -27,10 +28,19 @@ def create_app(config_name='default'):
     # 加载配置
     app.config.from_object(Config)
     
+    # 确保会话目录存在
+    session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'flask_session')
+    os.makedirs(session_dir, exist_ok=True)
+    
+    # 使用新的方式配置会话缓存
+    app.config['SESSION_CACHELIB'] = FileSystemCache(session_dir, threshold=500, mode=0o600)
+    
+    
     # 设置日志
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'logs')
     os.makedirs(log_dir, exist_ok=True)
-    setup_logger('app', os.path.join(log_dir, 'app.log'))
+    setup_logger('app', os.path.join(log_dir, 'app.log'), level=logging.INFO)
+    app.logger.setLevel(logging.INFO)
     app.logger.info('Flask application created successfully')
     
     # 初始化扩展
@@ -38,17 +48,22 @@ def create_app(config_name='default'):
     Session(app)
     
     # 注册蓝图
-    from blueprints.auth import auth_bp
-    app.register_blueprint(auth_bp)
-    
-    from blueprints.admin import admin_bp
-    app.register_blueprint(admin_bp)
-    
-    from blueprints.teacher import teacher_bp
-    app.register_blueprint(teacher_bp)
-    
-    from blueprints.student import student_bp
-    app.register_blueprint(student_bp)
+    try:
+        blueprint_modules = [
+            ('auth', 'auth_bp'),
+            ('admin', 'admin_bp'),
+            ('teacher', 'teacher_bp'),
+            ('student', 'student_bp')
+        ]
+        
+        for module_name, blueprint_name in blueprint_modules:
+            module = __import__(f'blueprints.{module_name}', fromlist=[blueprint_name])
+            blueprint = getattr(module, blueprint_name)
+            app.register_blueprint(blueprint)
+            
+    except Exception as e:
+        app.logger.error(f'Error registering blueprints: {str(e)}')
+        raise
     
     # 注册数据库关闭函数
     from utils import database_service

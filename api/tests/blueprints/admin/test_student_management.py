@@ -5,6 +5,8 @@
 
 import pytest
 import json
+import time
+import random
 
 
 class TestAdminStudentManagement:
@@ -21,8 +23,11 @@ class TestAdminStudentManagement:
 
     def test_create_student(self, admin_client):
         """测试创建学生"""
+        # 使用唯一的时间戳确保测试数据不重复
+        timestamp = int(time.time())
+        random_num = random.randint(1000, 9999)
         student_data = {
-            'student_id': 'S9999',
+            'student_id': f'S{timestamp}{random_num}',
             'student_name': 'Test Student',
             'class_id': 1,
             'password': 'password123'

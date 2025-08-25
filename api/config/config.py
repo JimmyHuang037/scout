@@ -16,7 +16,6 @@ class Config:
     # Session配置
     SESSION_TYPE = 'filesystem'
     SESSION_PERMANENT = False
-    SESSION_FILE_DIR = os.path.join(basedir, '..', 'runtime', 'flask_session')
     PERMANENT_SESSION_LIFETIME = 3600  # 1小时
     
     # MySQL数据库配置

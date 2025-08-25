@@ -1,156 +1,287 @@
 #!/bin/bash
 
-# API测试脚本（带认证）
-# 功能：恢复测试数据库，进行用户认证，然后测试需要认证的API端点
+# 带身份验证的API测试脚本
+# 该脚本专门用于测试需要身份验证的API端点
 
-echo "=============================="
-echo "API功能测试脚本（带认证）"
-echo "=============================="
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+API_DIR="$SCRIPT_DIR"
 
-# 进入项目根目录
-cd /home/jimmy/repo/scout
+# 启动API服务器 (在后台运行)
+echo "启动API服务器..."
+cd "$API_DIR"
+python -m flask --app app/factory:create_app run --port 5001 > ../runtime/logs/test_server.log 2>&1 &
+SERVER_PID=$!
 
-# 恢复测试数据库
-echo ""
-echo "1. 恢复测试数据库..."
-echo "=============================="
-echo "执行命令: ./db/restore_db.sh school_management_backup_20250825_220152.sql school_management_test"
-./db/restore_db.sh school_management_backup_20250825_220152.sql school_management_test << EOF
-y
-EOF
+# 等待服务器启动
+sleep 3
 
-if [ $? -ne 0 ]; then
-    echo "数据库恢复失败，退出测试"
+# 检查服务器是否启动成功
+if ! curl -s http://localhost:5001/api/health > /dev/null; then
+    echo "API服务器启动失败，请检查日志文件: ../runtime/logs/test_server.log"
+    kill $SERVER_PID 2>/dev/null
     exit 1
 fi
 
-# 启动API服务器（后台运行）
+echo "API服务器启动成功!"
+
+# 登录并保存cookie
+echo "登录并保存会话..."
+curl -s -X POST http://localhost:5001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "admin", "password": "admin"}' \
+  -c /tmp/test_cookie.txt > /dev/null
+
+# 测试需要身份验证的端点
+echo "=== 测试需要身份验证的端点 ==="
+
+echo "1. 获取学生列表"
+curl -s http://localhost:5001/api/admin/students \
+  -b /tmp/test_cookie.txt | jq '.'
+
 echo ""
-echo "2. 启动API服务器..."
-echo "=============================="
-echo "执行命令: cd api && python app.py"
-cd api
-python app.py > /dev/null 2>&1 & 
-API_PID=$!
-echo "API服务器已在后台启动，PID: $API_PID"
+echo "2. 创建学生"
+curl -s -X POST http://localhost:5001/api/admin/students \
+  -H "Content-Type: application/json" \
+  -d '{"student_id": "S9999", "student_name": "Test Student", "class_id": 1, "password": "password123"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 等待服务器启动
-sleep 5
-
-# 测试不需要认证的API端点
 echo ""
-echo "3. 测试不需要认证的API端点..."
-echo "=============================="
+echo "3. 获取特定学生"
+curl -s http://localhost:5001/api/admin/students/1 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取所有学生
-echo "测试: 获取所有学生"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/students' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/students' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "4. 更新学生信息"
+curl -s -X PUT http://localhost:5001/api/admin/students/1 \
+  -H "Content-Type: application/json" \
+  -d '{"student_name": "Updated Student Name"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取所有教师
-echo "测试: 获取所有教师"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/teachers' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/teachers' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "5. 删除学生"
+curl -s -X DELETE http://localhost:5001/api/admin/students/S9999 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取所有班级
-echo "测试: 获取所有班级"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/classes' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/classes' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "6. 获取教师列表"
+curl -s http://localhost:5001/api/admin/teachers \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取所有科目
-echo "测试: 获取所有科目"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/subjects' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/subjects' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "7. 创建教师"
+curl -s -X POST http://localhost:5001/api/admin/teachers \
+  -H "Content-Type: application/json" \
+  -d '{"teacher_id": "T9999", "teacher_name": "Test Teacher", "password": "password123"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取所有考试类型
-echo "测试: 获取所有考试类型"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/admin/exam-types' | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/admin/exam-types' | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "8. 获取特定教师"
+curl -s http://localhost:5001/api/admin/teachers/1 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 学生认证测试
 echo ""
-echo "4. 学生认证测试..."
-echo "=============================="
+echo "9. 更新教师信息"
+curl -s -X PUT http://localhost:5001/api/admin/teachers/1 \
+  -H "Content-Type: application/json" \
+  -d '{"teacher_name": "Updated Teacher Name"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 创建Cookie jar用于存储会话
-COOKIE_JAR=$(mktemp)
-
-# 学生登录 (使用学生ID S0101，密码pass123)
-echo "学生登录测试 (学生ID: S0101)"
-echo "命令: curl -s -X POST 'http://localhost:5000/api/auth/login' -H 'Content-Type: application/json' -d '{\"user_id\": \"S0101\", \"password\": \"pass123\"}' -c $COOKIE_JAR"
-curl -s -X POST 'http://localhost:5000/api/auth/login' -H 'Content-Type: application/json' -d '{"user_id": "S0101", "password": "pass123"}' -c $COOKIE_JAR
 echo ""
-echo "------------------------------------------------------------"
+echo "10. 删除教师"
+curl -s -X DELETE http://localhost:5001/api/admin/teachers/T9999 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 使用认证信息测试学生API端点
 echo ""
-echo "5. 测试需要学生认证的API端点..."
-echo "=============================="
+echo "11. 获取班级列表"
+curl -s http://localhost:5001/api/admin/classes \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取学生成绩
-echo "测试: 获取学生成绩"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/student/scores' -b $COOKIE_JAR | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/student/scores' -b $COOKIE_JAR | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "12. 创建班级"
+curl -s -X POST http://localhost:5001/api/admin/classes \
+  -H "Content-Type: application/json" \
+  -d '{"class_name": "Test Class"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 教师认证测试
 echo ""
-echo "6. 教师认证测试..."
-echo "=============================="
+echo "13. 获取特定班级"
+curl -s http://localhost:5001/api/admin/classes/1 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 教师登录 (使用教师ID 1，密码test123)
-echo "教师登录测试 (教师ID: 1)"
-echo "命令: curl -s -X POST 'http://localhost:5000/api/auth/login' -H 'Content-Type: application/json' -d '{\"user_id\": \"1\", \"password\": \"test123\"}' -c $COOKIE_JAR"
-curl -s -X POST 'http://localhost:5000/api/auth/login' -H 'Content-Type: application/json' -d '{"user_id": "1", "password": "test123"}' -c $COOKIE_JAR
 echo ""
-echo "------------------------------------------------------------"
+echo "14. 更新班级信息"
+curl -s -X PUT http://localhost:5001/api/admin/classes/1 \
+  -H "Content-Type: application/json" \
+  -d '{"class_name": "Updated Class Name"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 使用认证信息测试教师API端点
 echo ""
-echo "7. 测试需要教师认证的API端点..."
-echo "=============================="
+echo "15. 删除班级"
+curl -s -X DELETE http://localhost:5001/api/admin/classes/1 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取教师成绩
-echo "测试: 获取教师成绩"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/scores' -b $COOKIE_JAR | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/scores' -b $COOKIE_JAR | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "16. 获取科目列表(管理员)"
+curl -s http://localhost:5001/api/admin/subjects \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取考试结果
-echo "测试: 获取考试结果"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/exam/results' -b $COOKIE_JAR | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/exam/results' -b $COOKIE_JAR | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "17. 创建科目"
+curl -s -X POST http://localhost:5001/api/admin/subjects \
+  -H "Content-Type: application/json" \
+  -d '{"subject_name": "Test Subject"}' \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 测试获取教学表现
-echo "测试: 获取教学表现"
-echo "命令: curl -s -X GET 'http://localhost:5000/api/teacher/exam/performance' -b $COOKIE_JAR | jq '.'"
-curl -s -X GET 'http://localhost:5000/api/teacher/exam/performance' -b $COOKIE_JAR | jq '.'
 echo ""
-echo "------------------------------------------------------------"
+echo "18. 获取特定科目"
+curl -s http://localhost:5001/api/admin/subjects/1 \
+  -b /tmp/test_cookie.txt | jq '.'
 
-# 清理Cookie jar
-rm -f $COOKIE_JAR
+echo ""
+echo "19. 更新科目信息"
+curl -s -X PUT http://localhost:5001/api/admin/subjects/1 \
+  -H "Content-Type: application/json" \
+  -d '{"subject_name": "Updated Subject Name"}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "20. 删除科目"
+curl -s -X DELETE http://localhost:5001/api/admin/subjects/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "21. 获取考试类型列表(管理员)"
+curl -s http://localhost:5001/api/admin/exam-types \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "22. 创建考试类型"
+curl -s -X POST http://localhost:5001/api/admin/exam-types \
+  -H "Content-Type: application/json" \
+  -d '{"exam_type_name": "Test Exam Type"}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "23. 获取特定考试类型"
+curl -s http://localhost:5001/api/admin/exam-types/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "24. 更新考试类型"
+curl -s -X PUT http://localhost:5001/api/admin/exam-types/1 \
+  -H "Content-Type: application/json" \
+  -d '{"type_name": "Updated Exam Type"}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "25. 删除考试类型"
+curl -s -X DELETE http://localhost:5001/api/admin/exam-types/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "26. 获取教师班级关系列表"
+curl -s http://localhost:5001/api/admin/teacher-classes \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "27. 创建教师班级关系"
+curl -s -X POST http://localhost:5001/api/admin/teacher-classes \
+  -H "Content-Type: application/json" \
+  -d '{"teacher_id": 1, "class_id": 1, "subject_id": 1}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "28. 获取特定教师班级关系"
+curl -s http://localhost:5001/api/admin/teacher-classes/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "29. 更新教师班级关系"
+curl -s -X PUT http://localhost:5001/api/admin/teacher-classes/1 \
+  -H "Content-Type: application/json" \
+  -d '{"teacher_id": 1, "class_id": 2, "subject_id": 1}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "30. 删除教师班级关系"
+curl -s -X DELETE http://localhost:5001/api/admin/teacher-classes/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "31. 获取学生成绩"
+curl -s http://localhost:5001/api/student/scores \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "32. 获取教师管理的学生列表"
+curl -s http://localhost:5001/api/teacher/students \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "33. 获取考试列表"
+curl -s http://localhost:5001/api/teacher/exams \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "34. 创建考试"
+curl -s -X POST http://localhost:5001/api/teacher/exams \
+  -H "Content-Type: application/json" \
+  -d '{"exam_name": "Test Exam", "subject_id": 1, "class_id": 1, "exam_type_id": 1, "exam_date": "2023-01-01"}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "35. 获取特定考试"
+curl -s http://localhost:5001/api/teacher/exams/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "36. 更新考试信息"
+curl -s -X PUT http://localhost:5001/api/teacher/exams/1 \
+  -H "Content-Type: application/json" \
+  -d '{"exam_name": "Updated Exam"}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "37. 删除考试"
+curl -s -X DELETE http://localhost:5001/api/teacher/exams/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "38. 获取成绩列表"
+curl -s http://localhost:5001/api/teacher/scores \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "39. 创建成绩"
+curl -s -X POST http://localhost:5001/api/teacher/scores \
+  -H "Content-Type: application/json" \
+  -d '{"student_id": 1, "exam_id": 1, "score": 95.5}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "40. 获取特定成绩"
+curl -s http://localhost:5001/api/teacher/scores/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "41. 更新成绩"
+curl -s -X PUT http://localhost:5001/api/teacher/scores/1 \
+  -H "Content-Type: application/json" \
+  -d '{"score": 90.0}' \
+  -b /tmp/test_cookie.txt | jq '.'
+
+echo ""
+echo "42. 删除成绩"
+curl -s -X DELETE http://localhost:5001/api/teacher/scores/1 \
+  -b /tmp/test_cookie.txt | jq '.'
+
+# 清理临时文件
+rm -f /tmp/test_cookie.txt
 
 # 关闭API服务器
 echo ""
-echo "8. 清理..."
-echo "=============================="
-kill $API_PID
-echo "API服务器已关闭"
+echo "关闭API服务器..."
+kill $SERVER_PID
 
-echo ""
-echo "API测试完成！"
+echo "带身份验证的API测试完成!"
