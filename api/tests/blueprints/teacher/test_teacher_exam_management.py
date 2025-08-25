@@ -18,7 +18,7 @@ class TestTeacherExamManagement:
         assert response.status_code in [200, 401, 403]
 
     def test_get_performance(self, client):
-        """测试获取教师表现数据"""
+        """测试获取成绩表现"""
         response = client.get('/api/teacher/exam/performance')
         # 由于需要教师身份验证，这里可能需要添加身份验证逻辑
         # 目前我们验证路由是否存在

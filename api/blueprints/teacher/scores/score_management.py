@@ -15,17 +15,13 @@ def create_score():
         score = data.get('score')
         
         if not all([student_id, subject_id, exam_type_id, score is not None]):
-            return jsonify({
-                'success': False,
-                'error': 'Missing required fields: student_id, subject_id, exam_type_id, score'
-            }), 400
+            app_logger.warning("Create score attempt with missing fields")
+            return error_response('Missing required fields: student_id, subject_id, exam_type_id, score'), 400
         
         # 验证分数范围
         if not (0 <= score <= 100):
-            return jsonify({
-                'success': False,
-                'error': 'Score must be between 0 and 100'
-            }), 400
+            app_logger.warning(f"Create score attempt with invalid score: {score}")
+            return error_response('Score must be between 0 and 100'), 400
         
         # 检查认证
         auth_error = require_auth()
@@ -68,10 +64,7 @@ def create_score():
             return error_response('Failed to create score'), 400
             
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Failed to create score: {str(e)}'
-        }), 500
+        return error_response(f'Failed to create score: {str(e)}'), 500
 
 
 def update_score(score_id):
@@ -81,17 +74,13 @@ def update_score(score_id):
         score = data.get('score')
         
         if score is None:
-            return jsonify({
-                'success': False,
-                'error': 'Missing required field: score'
-            }), 400
+            app_logger.warning("Update score attempt with missing score field")
+            return error_response('Missing required field: score'), 400
         
         # 验证分数范围
         if not (0 <= score <= 100):
-            return jsonify({
-                'success': False,
-                'error': 'Score must be between 0 and 100'
-            }), 400
+            app_logger.warning(f"Update score attempt with invalid score: {score}")
+            return error_response('Score must be between 0 and 100'), 400
         
         # 检查认证
         auth_error = require_auth()
@@ -131,7 +120,4 @@ def update_score(score_id):
             return error_response('Failed to update score'), 400
             
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': f'Failed to update score: {str(e)}'
-        }), 500
+        return error_response(f'Failed to update score: {str(e)}'), 500

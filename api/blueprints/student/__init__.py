@@ -10,3 +10,7 @@ student_bp.add_url_rule('/scores', view_func=get_my_scores, methods=['GET'])
 # 导入并注册考试相关路由
 from .exam.exam_results_management import get_my_exam_results
 student_bp.add_url_rule('/exam/results', view_func=get_my_exam_results, methods=['GET'])
+
+# 导入并注册个人信息相关路由
+from .profile.profile_management import get_my_profile
+student_bp.add_url_rule('/profile', view_func=get_my_profile, methods=['GET'])
