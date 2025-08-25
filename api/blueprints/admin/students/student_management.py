@@ -1,22 +1,15 @@
 """学生管理模块，处理学生相关的所有操作"""
 from flask import jsonify, request, session
 from services import StudentService
-from utils.helpers import success_response, error_response, require_auth, require_role
+from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
 
 
+@auth_required
+@role_required('admin')
 def get_students():
     """获取学生列表"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -33,18 +26,11 @@ def get_students():
         return error_response(f'Failed to fetch students: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def create_student():
     """创建学生"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         data = request.get_json()
         student_id = data.get('student_id')
         student_name = data.get('student_name')
@@ -71,18 +57,11 @@ def create_student():
         return error_response(f'Failed to create student: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def get_student(student_id):
     """获取单个学生信息"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 使用学生服务获取学生信息
         student_service = StudentService()
         student = student_service.get_student_by_id(student_id)
@@ -96,6 +75,8 @@ def get_student(student_id):
         return error_response(f'Failed to fetch student: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def update_student(student_id):
     """更新学生信息"""
     try:
@@ -120,6 +101,8 @@ def update_student(student_id):
         return error_response(f'Failed to update student: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def delete_student(student_id):
     """删除学生"""
     try:

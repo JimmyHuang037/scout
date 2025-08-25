@@ -1,22 +1,15 @@
 """科目管理模块，处理科目相关的所有操作"""
 from flask import jsonify, request, session
 from services import SubjectService
-from utils.helpers import success_response, error_response, require_auth, require_role
+from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
 
 
+@auth_required
+@role_required('admin')
 def get_subjects():
     """获取科目列表"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -33,18 +26,11 @@ def get_subjects():
         return error_response(f'Failed to fetch subjects: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def create_subject():
     """创建科目"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         data = request.get_json()
         subject_name = data.get('subject_name')
         description = data.get('description')
@@ -69,18 +55,11 @@ def create_subject():
         return error_response(f'Failed to create subject: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def get_subject(subject_id):
     """获取单个科目信息"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 使用科目服务获取科目信息
         subject_service = SubjectService()
         subject = subject_service.get_subject_by_id(subject_id)
@@ -94,6 +73,8 @@ def get_subject(subject_id):
         return error_response(f'Failed to fetch subject: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def update_subject(subject_id):
     """更新科目信息"""
     try:
@@ -117,6 +98,8 @@ def update_subject(subject_id):
         return error_response(f'Failed to update subject: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def delete_subject(subject_id):
     """删除科目"""
     try:

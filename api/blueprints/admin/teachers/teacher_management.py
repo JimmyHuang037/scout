@@ -1,22 +1,15 @@
 """教师管理模块，处理教师相关的所有操作"""
 from flask import jsonify, request, session
 from services import TeacherService
-from utils.helpers import success_response, error_response, require_auth, require_role
+from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
 
 
+@auth_required
+@role_required('admin')
 def get_teachers():
     """获取教师列表"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -33,31 +26,12 @@ def get_teachers():
         return error_response(f'Failed to fetch teachers: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def create_teacher():
     """创建教师"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         data = request.get_json()
-        teacher_name = data.get('teacher_name')
-        subject_id = data.get('subject_id')
-        password = data.get('password')
-        
-        # 可选字段
-        email = data.get('email')
-        phone = data.get('phone')
-        
-        if not all([teacher_name, subject_id, password]):
-            app_logger.warning("Create teacher attempt with missing fields")
-            return error_response('Missing required fields: teacher_name, subject_id, password', 400)
-        
         # 使用教师服务创建教师
         teacher_service = TeacherService()
         result = teacher_service.create_teacher(data)
@@ -74,18 +48,11 @@ def create_teacher():
         return error_response(f'Failed to create teacher: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def get_teacher(teacher_id):
     """获取单个教师信息"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 使用教师服务获取教师信息
         teacher_service = TeacherService()
         teacher = teacher_service.get_teacher_by_id(teacher_id)
@@ -99,17 +66,12 @@ def get_teacher(teacher_id):
         return error_response(f'Failed to fetch teacher: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def update_teacher(teacher_id):
     """更新教师信息"""
     try:
         data = request.get_json()
-        teacher_name = data.get('teacher_name')
-        subject_id = data.get('subject_id')
-        password = data.get('password')
-        
-        if not all([teacher_name, subject_id, password]):
-            return error_response('Missing required fields: teacher_name, subject_id, password', 400)
-        
         # 使用教师服务更新教师信息
         teacher_service = TeacherService()
         result = teacher_service.update_teacher(teacher_id, data)
@@ -123,6 +85,8 @@ def update_teacher(teacher_id):
         return error_response(f'Failed to update teacher: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def delete_teacher(teacher_id):
     """删除教师"""
     try:

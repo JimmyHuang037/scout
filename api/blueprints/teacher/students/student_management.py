@@ -1,19 +1,16 @@
 """教师学生管理模块，处理教师查看学生信息相关操作"""
 from flask import jsonify, request, session
-from utils.helpers import success_response, error_response
+from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
-from utils.auth import require_auth, require_role
 from utils import database_service
+from services.student_service import StudentService
 
 
+@auth_required
+@role_required('teacher')
 def get_my_students():
     """获取当前教师所教班级的学生列表"""
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
         # 从session中获取当前教师ID
         current_teacher_id = session.get('user_id')
         if not current_teacher_id:

@@ -1,22 +1,15 @@
 """教师班级关联管理模块，处理教师班级关联相关的所有操作"""
 from flask import jsonify, request, session
 from services import TeacherClassService
-from utils.helpers import success_response, error_response, require_auth, require_role
+from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
 
 
+@auth_required
+@role_required('admin')
 def get_teacher_classes():
     """获取教师班级关联列表"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -33,18 +26,11 @@ def get_teacher_classes():
         return error_response(f'Failed to fetch teacher-class associations: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def create_teacher_class():
     """创建教师班级关联"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         data = request.get_json()
         teacher_id = data.get('teacher_id')
         class_id = data.get('class_id')
@@ -69,18 +55,11 @@ def create_teacher_class():
         return error_response(f'Failed to create teacher-class association: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def get_teacher_class_by_teacher(teacher_id):
     """根据教师ID获取教师班级关联信息"""
     try:
-        # 检查认证和权限
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        role_error = require_role('admin')
-        if role_error:
-            return role_error
-        
         # 使用教师班级服务根据教师ID获取教师班级关联信息
         teacher_class_service = TeacherClassService()
         teacher_classes = teacher_class_service.get_teacher_classes_by_teacher(teacher_id)
@@ -94,6 +73,8 @@ def get_teacher_class_by_teacher(teacher_id):
         return error_response(f'Failed to fetch teacher classes: {str(e)}', 500)
 
 
+@auth_required
+@role_required('admin')
 def delete_teacher_class(teacher_id, class_id):
     """删除教师班级关联"""
     try:

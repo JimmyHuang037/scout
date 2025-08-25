@@ -1,4 +1,5 @@
 """通用工具函数模块"""
+from functools import wraps
 from flask import jsonify, session
 
 
@@ -91,3 +92,50 @@ def require_role(required_role):
         return error_response('Insufficient permissions', 403)
     
     return None
+
+
+def auth_required(f):
+    """
+    认证检查装饰器
+    
+    Args:
+        f (function): 被装饰的函数
+        
+    Returns:
+        function: 装饰后的函数
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_error = require_auth()
+        if auth_error:
+            return auth_error
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def role_required(required_role):
+    """
+    角色权限检查装饰器
+    
+    Args:
+        required_role (str): 需要的角色
+        
+    Returns:
+        function: 装饰后的函数
+    """
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            # 先检查认证
+            auth_error = require_auth()
+            if auth_error:
+                return auth_error
+                
+            # 再检查角色
+            role_error = require_role(required_role)
+            if role_error:
+                return role_error
+                
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
