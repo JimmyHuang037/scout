@@ -36,35 +36,26 @@ def restore_test_database():
             print(f"警告: 备份目录 {backup_dir} 不存在")
             return
             
-        # 首先尝试使用指定的备份文件
-        backup_file = os.path.join(db_dir, 'school_management_backup_20250823_233411.sql')
-        if not os.path.exists(backup_file):
-            # 如果db目录下没有指定文件，则在backup目录中查找
-            backup_file = os.path.join(backup_dir, 'school_management_backup_20250823_233411.sql')
-            
-        if not os.path.exists(backup_file):
-            print(f"警告: 指定的备份文件 {backup_file} 不存在")
-            # 如果指定文件不存在，查找最新的备份文件
-            backup_files = glob.glob(os.path.join(backup_dir, 'school_management_backup_*.sql'))
-            if not backup_files:
-                print("警告: 没有找到备份文件")
-                return
-                
-            # 按修改时间排序，获取最新的备份文件
-            backup_file = max(backup_files, key=os.path.getmtime)
-        
-        backup_filename = os.path.basename(backup_file)
-        
-        # 切换到db目录执行恢复脚本
+        # 切换到db目录
         original_cwd = os.getcwd()
         os.chdir(db_dir)
+        
+        # 查找最新的备份文件
+        backup_files = glob.glob(os.path.join(backup_dir, 'school_management_backup_*.sql'))
+        if not backup_files:
+            print("警告: 没有找到备份文件")
+            return
+            
+        # 按修改时间排序，获取最新的备份文件
+        latest_backup = max(backup_files, key=os.path.getmtime)
+        backup_filename = os.path.basename(latest_backup)
         
         # 调用restore_db.sh脚本恢复数据库
         result = subprocess.run(
             ['./restore_db.sh', backup_filename, 'school_management_test'],
             capture_output=True,
             text=True,
-            input='y\n',  # 自动确认恢复操作
+            input='y\n'  # 自动确认恢复操作
         )
         
         if result.returncode == 0:
@@ -78,6 +69,45 @@ def restore_test_database():
         # 恢复原来的工作目录
         if 'original_cwd' in locals():
             os.chdir(original_cwd)
+
+
+def pytest_unconfigure(config):
+    """pytest结束时的清理工作，显示数据库表记录数"""
+    if not config.getoption("--no-db-restore", False):
+        show_database_stats()
+
+
+def show_database_stats():
+    """显示测试数据库中各表的记录数"""
+    try:
+        app = create_app('testing')
+        with app.app_context():
+            db_service = DatabaseService()
+            
+            # 查询各表记录数
+            tables = ['Classes', 'Students', 'Teachers', 'Subjects', 'ExamTypes', 'Scores', 'TeacherClasses']
+            stats = []
+            
+            for table in tables:
+                try:
+                    query = f"SELECT COUNT(*) as count FROM {table}"
+                    result = db_service.execute_query(query, fetch_one=True)
+                    count = result['count'] if result else 0
+                    stats.append((table, count))
+                except Exception:
+                    stats.append((table, 'Error'))
+            
+            db_service.close()
+            
+            # 显示统计信息
+            print("\n测试数据库表记录数统计:")
+            print("=" * 30)
+            for table, count in stats:
+                print(f"{table:15} : {count}")
+            print("=" * 30)
+            
+    except Exception as e:
+        print(f"显示数据库统计信息时出错: {str(e)}")
 
 
 def pytest_addoption(parser):
