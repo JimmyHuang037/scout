@@ -1,12 +1,27 @@
-from flask import Blueprint, jsonify, request
-from utils import DatabaseService
+"""教师成绩录入蓝图模块"""
+from flask import Blueprint, request, jsonify, session
+from utils import database_service
+from utils.helpers import success_response, error_response
+from utils.logger import app_logger
 
-teacher_score_create_bp = Blueprint('teacher_score_create', __name__, url_prefix='/api/teacher')
+
+score_create_bp = Blueprint('score_create_bp', __name__)
 
 
-@teacher_score_create_bp.route('/scores', methods=['POST'])
+@score_create_bp.route('/scores', methods=['POST'])
 def create_score():
     """录入成绩"""
+    from utils.auth import require_auth, require_role
+    
+    # 应用认证和角色检查
+    auth_result = require_auth()
+    if auth_result is not None:
+        return auth_result
+        
+    role_result = require_role('teacher')
+    if role_result is not None:
+        return role_result
+        
     try:
         data = request.get_json()
         student_id = data.get('student_id')
@@ -17,73 +32,37 @@ def create_score():
         if not all([student_id, subject_id, exam_type_id, score is not None]):
             return jsonify({
                 'success': False,
-                'error': 'Missing required fields: student_id, subject_id, exam_type_id, score'
+                'error': 'MISSING_FIELDS',
+                'message': 'Missing required fields',
+                'code': 400
             }), 400
         
-        # 验证分数范围
-        if not (0 <= score <= 100):
+        # 检查教师是否有权限录入该学生的成绩
+        from services.teacher_service import TeacherService
+        teacher_service = TeacherService()
+        teacher_id = session.get('user_id')
+        
+        if not teacher_service.is_teacher_authorized_for_student(teacher_id, student_id):
+            app_logger.warning(f"Teacher {teacher_id} attempted to enter scores for unauthorized student {student_id}")
             return jsonify({
                 'success': False,
-                'error': 'Score must be between 0 and 100'
-            }), 400
-        
-        db_service = DatabaseService()
-        
-        # 检查学生是否在教师所教班级中
-        current_teacher_id = 1  # 示例教师ID
-        check_query = """
-            SELECT COUNT(*) as count
-            FROM Students s
-            JOIN TeacherClasses tc ON s.class_id = tc.class_id
-            WHERE s.student_id = %s AND tc.teacher_id = %s
-        """
-        check_result = db_service.execute_query(check_query, (student_id, current_teacher_id), fetch_one=True)
-        
-        if check_result['count'] == 0:
-            db_service.close()
-            return jsonify({
-                'success': False,
-                'error': 'Student not in your class'
+                'error': 'UNAUTHORIZED',
+                'message': 'Not authorized to enter scores for this student',
+                'code': 403
             }), 403
         
-        # 检查成绩是否已存在
-        exist_query = """
-            SELECT score_id FROM Scores 
-            WHERE student_id = %s AND subject_id = %s AND exam_type_id = %s
-        """
-        exist_result = db_service.execute_query(exist_query, (student_id, subject_id, exam_type_id), fetch_one=True)
+        # 录入成绩
+        from services.score_service import ScoreService
+        score_service = ScoreService()
+        result = score_service.create_score(student_id, subject_id, exam_type_id, score)
         
-        if exist_result:
-            # 更新已存在的成绩
-            update_query = """
-                UPDATE Scores 
-                SET score = %s 
-                WHERE score_id = %s
-            """
-            db_service.execute_update(update_query, (score, exist_result['score_id']))
-            message = 'Score updated successfully'
+        if result:
+            app_logger.info(f"Teacher {teacher_id} entered score for student {student_id}")
+            return success_response(result, "Score created successfully", 201)
         else:
-            # 插入新成绩
-            insert_query = """
-                INSERT INTO Scores (student_id, subject_id, exam_type_id, score)
-                VALUES (%s, %s, %s, %s)
-            """
-            db_service.execute_update(insert_query, (student_id, subject_id, exam_type_id, score))
-            message = 'Score created successfully'
-        
-        db_service.close()
-        
-        return jsonify({
-            'success': True,
-            'message': message
-        }), 201
+            app_logger.error("Failed to create score")
+            return error_response('CREATE_FAILED', 'Failed to create score', 500)
+            
     except Exception as e:
-        # 确保数据库连接被关闭
-        try:
-            db_service.close()
-        except:
-            pass
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        app_logger.error(f'Failed to create score: {str(e)}')
+        return error_response('INTERNAL_ERROR', f'Failed to create score: {str(e)}', 500)

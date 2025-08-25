@@ -1,6 +1,10 @@
+"""教师成绩管理模块"""
 from flask import Blueprint, jsonify, request, session
-from utils import DatabaseService
-from utils.helpers import require_auth
+from utils.helpers import success_response, error_response
+from utils.logger import app_logger
+from utils.auth import require_auth, require_role
+from utils import database_service
+
 
 teacher_scores_bp = Blueprint('teacher_scores', __name__, url_prefix='/api/teacher')
 

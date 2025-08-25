@@ -1,8 +1,8 @@
-"""认证管理模块，处理用户登录、登出等操作"""
+"""认证管理模块，处理用户登录和登出"""
 from flask import jsonify, request, session
-from utils import DatabaseService
-from utils.logger import app_logger
+from utils import database_service
 from utils.helpers import success_response, error_response
+from utils.logger import app_logger
 
 
 def login():
@@ -17,7 +17,7 @@ def login():
             return error_response('Missing required fields: user_id, password', 400)
         
         # 查询用户信息
-        db_service = DatabaseService()
+        db_service = database_service.DatabaseService()
         query = """
             SELECT user_id, user_name, password, role 
             FROM users 

@@ -3,18 +3,18 @@ from flask import Blueprint
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
-# 导入学生管理相关路由
-from .students.student_management import get_my_students
+# 学生管理模块
+from .students.student_management import get_my_students  # 学生列表
 
-# 导入成绩管理相关路由
-from .scores import get_scores
-from .score_create import create_score
-from .score_update import update_score
+# 成绩管理模块
+from .scores import get_scores  # 获取成绩列表
+from .score_create import create_score  # 创建成绩
+from .score_update import update_score  # 更新成绩
 
-# 导入考试相关路由
-from .exam.exam_results_management import get_exam_results
-from .exam.performance_management import get_performance
-from .exam.exam_class_management import get_exam_classes
+# 考试管理模块
+from .exam.exam_results_management import get_exam_results  # 考试成绩
+from .exam.performance_management import get_performance  # 学习表现
+from .exam.exam_class_management import get_exam_classes  # 考试班级
 
 # 注册学生管理路由
 teacher_bp.add_url_rule('/students', view_func=get_my_students, methods=['GET'])

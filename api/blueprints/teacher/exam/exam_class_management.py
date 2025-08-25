@@ -1,11 +1,12 @@
-"""教师考试班级管理模块"""
-from flask import jsonify, session
-from services import ScoreService
+"""考试班级管理模块，处理考试班级相关操作"""
+from flask import jsonify, request, session
+from utils.helpers import success_response, error_response
 from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from utils.auth import require_auth, require_role
+from utils import database_service
 
 
-def get_exam_classes():
+def get_exam_classes(exam_id):
     """获取教师相关的考试班级列表"""
     try:
         # 检查认证

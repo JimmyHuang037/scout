@@ -1,13 +1,13 @@
-"""教师班级关联服务模块，处理与教师班级关联相关的业务逻辑"""
-from utils import DatabaseService
+"""教师班级服务模块，处理与教师班级关联相关的业务逻辑"""
+from utils import database_service
 
 
 class TeacherClassService:
-    """教师班级关联服务类"""
+    """教师班级服务类"""
     
     def __init__(self):
-        """初始化教师班级关联服务"""
-        self.db_service = DatabaseService()
+        """初始化教师班级服务"""
+        self.db_service = database_service.DatabaseService()
     
     def get_all_teacher_classes(self, page=1, per_page=10):
         """

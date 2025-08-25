@@ -1,5 +1,5 @@
 """班级服务模块，处理与班级相关的业务逻辑"""
-from utils import DatabaseService
+from utils import database_service
 
 
 class ClassService:
@@ -7,7 +7,7 @@ class ClassService:
     
     def __init__(self):
         """初始化班级服务"""
-        self.db_service = DatabaseService()
+        self.db_service = database_service.DatabaseService()
     
     def get_all_classes(self, page=1, per_page=10):
         """

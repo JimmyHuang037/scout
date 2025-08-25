@@ -1,5 +1,5 @@
 """考试类型服务模块，处理与考试类型相关的业务逻辑"""
-from utils import DatabaseService
+from utils import database_service
 
 
 class ExamTypeService:
@@ -7,7 +7,7 @@ class ExamTypeService:
     
     def __init__(self):
         """初始化考试类型服务"""
-        self.db_service = DatabaseService()
+        self.db_service = database_service.DatabaseService()
     
     def get_all_exam_types(self, page=1, per_page=10):
         """

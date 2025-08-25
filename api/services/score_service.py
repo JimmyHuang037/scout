@@ -1,5 +1,5 @@
 """成绩服务模块，处理与成绩相关的业务逻辑"""
-from utils import DatabaseService
+from utils import database_service
 
 
 class ScoreService:
@@ -7,7 +7,7 @@ class ScoreService:
     
     def __init__(self):
         """初始化成绩服务"""
-        self.db_service = DatabaseService()
+        self.db_service = database_service.DatabaseService()
     
     def get_scores(self, teacher_id=None, student_id=None, subject_id=None, exam_type_id=None):
         """

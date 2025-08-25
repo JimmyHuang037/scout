@@ -1,8 +1,9 @@
-"""教师学生管理模块，处理教师查看学生相关的操作"""
+"""教师学生管理模块，处理教师查看学生信息相关操作"""
 from flask import jsonify, request, session
-from services import StudentService
+from utils.helpers import success_response, error_response
 from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from utils.auth import require_auth, require_role
+from utils import database_service
 
 
 def get_my_students():
