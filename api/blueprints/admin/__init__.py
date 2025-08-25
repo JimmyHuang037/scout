@@ -19,7 +19,8 @@ from .subjects.subject_management import get_subjects, create_subject, get_subje
 from .exam_types.exam_type_management import get_exam_types, create_exam_type, get_exam_type, update_exam_type, delete_exam_type
 
 # 导入教师班级关联管理相关路由
-from .teacher_classes.teacher_class_management import get_teacher_classes, create_teacher_class, get_teacher_class_by_teacher, delete_teacher_class
+# 修复导入错误，使用正确的函数名
+from .teacher_classes.teacher_class_management import get_teacher_classes, create_teacher_class, get_teacher_class, update_teacher_class, delete_teacher_class
 
 # 注册学生管理路由
 admin_bp.add_url_rule('/students', view_func=get_students, methods=['GET'])
@@ -59,5 +60,7 @@ admin_bp.add_url_rule('/exam-types/<int:type_id>', view_func=delete_exam_type, m
 # 注册教师班级关联管理路由
 admin_bp.add_url_rule('/teacher-classes', view_func=get_teacher_classes, methods=['GET'])
 admin_bp.add_url_rule('/teacher-classes', view_func=create_teacher_class, methods=['POST'])
-admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=get_teacher_class_by_teacher, methods=['GET'])
-admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>/<int:class_id>', view_func=delete_teacher_class, methods=['DELETE'])
+# 修复函数引用错误，使用正确的函数名
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=get_teacher_class, methods=['GET'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=update_teacher_class, methods=['PUT'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=delete_teacher_class, methods=['DELETE'])

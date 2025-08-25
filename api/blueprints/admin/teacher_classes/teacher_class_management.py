@@ -41,7 +41,12 @@ def create_teacher_class():
         
         # 使用教师班级服务创建教师班级关联
         teacher_class_service = TeacherClassService()
-        result = teacher_class_service.create_teacher_class(teacher_id, class_id)
+        # 修复参数传递问题，将参数封装成字典
+        teacher_class_data = {
+            'teacher_id': teacher_id,
+            'class_id': class_id
+        }
+        result = teacher_class_service.create_teacher_class(teacher_class_data)
         
         if result:
             app_logger.info(f"Admin created teacher-class association: teacher_id={teacher_id}, class_id={class_id}")
@@ -57,36 +62,90 @@ def create_teacher_class():
 
 @auth_required
 @role_required('admin')
-def get_teacher_class_by_teacher(teacher_id):
-    """根据教师ID获取教师班级关联信息"""
+def get_teacher_class(teacher_id):
+    """获取特定教师的班级关联"""
     try:
-        # 使用教师班级服务根据教师ID获取教师班级关联信息
+        # 使用教师班级服务获取教师班级关联详情
         teacher_class_service = TeacherClassService()
-        teacher_classes = teacher_class_service.get_teacher_classes_by_teacher(teacher_id)
+        result = teacher_class_service.get_teacher_class_by_teacher(teacher_id)
         
-        if teacher_classes is not None:
-            return success_response(teacher_classes)
-        else:
-            return error_response('Teacher classes not found', 404)
-            
+        app_logger.info(f"Admin retrieved teacher-class associations for teacher_id={teacher_id}")
+        return success_response(result)
+        
     except Exception as e:
+        app_logger.error(f'Failed to fetch teacher classes: {str(e)}')
         return error_response(f'Failed to fetch teacher classes: {str(e)}', 500)
 
 
 @auth_required
 @role_required('admin')
-def delete_teacher_class(teacher_id, class_id):
+def update_teacher_class(teacher_id):
+    """更新教师班级关联"""
+    try:
+        data = request.get_json()
+        class_id = data.get('class_id')
+        new_teacher_id = data.get('new_teacher_id')
+        new_class_id = data.get('new_class_id')
+        
+        if not all([class_id, new_teacher_id, new_class_id]):
+            app_logger.warning("Update teacher-class association attempt with missing fields")
+            return error_response('Missing required fields', 400)
+        
+        # 先删除旧的关联
+        teacher_class_service = TeacherClassService()
+        delete_result = teacher_class_service.delete_teacher_class(teacher_id, class_id)
+        
+        if delete_result:
+            # 创建新的关联
+            teacher_class_data = {
+                'teacher_id': new_teacher_id,
+                'class_id': new_class_id
+            }
+            create_result = teacher_class_service.create_teacher_class(teacher_class_data)
+            
+            if create_result:
+                app_logger.info(f"Admin updated teacher-class association: {teacher_id}:{class_id} -> {new_teacher_id}:{new_class_id}")
+                return success_response(create_result, 'Teacher-class association updated successfully')
+            else:
+                # 如果创建新关联失败，尝试恢复旧关联
+                teacher_class_service.create_teacher_class({
+                    'teacher_id': teacher_id,
+                    'class_id': class_id
+                })
+                app_logger.error("Failed to create new teacher-class association during update")
+                return error_response('Failed to update teacher-class association', 400)
+        else:
+            app_logger.error("Failed to delete old teacher-class association during update")
+            return error_response('Failed to update teacher-class association', 400)
+            
+    except Exception as e:
+        app_logger.error(f'Failed to update teacher-class association: {str(e)}')
+        return error_response(f'Failed to update teacher-class association: {str(e)}', 500)
+
+
+@auth_required
+@role_required('admin')
+def delete_teacher_class(teacher_id):
     """删除教师班级关联"""
     try:
+        data = request.get_json()
+        class_id = data.get('class_id')
+        
+        if not class_id:
+            app_logger.warning("Delete teacher-class association attempt with missing class_id")
+            return error_response('Missing required field: class_id', 400)
+        
         # 使用教师班级服务删除教师班级关联
         teacher_class_service = TeacherClassService()
         result = teacher_class_service.delete_teacher_class(teacher_id, class_id)
         
         if result:
-            # 修复返回值格式，避免返回嵌套元组
-            return success_response(None, 'Teacher class deleted successfully', 204)
+            app_logger.info(f"Admin deleted teacher-class association: teacher_id={teacher_id}, class_id={class_id}")
+            return success_response(result, 'Teacher-class association deleted successfully')
         else:
-            return error_response('Failed to delete teacher class', 400)
+            app_logger.error("Failed to delete teacher-class association")
+            return error_response('Failed to delete teacher-class association', 400)
             
     except Exception as e:
-        return error_response(f'Failed to delete teacher class: {str(e)}', 500)
+        app_logger.error(f'Failed to delete teacher-class association: {str(e)}')
+        return error_response(f'Failed to delete teacher-class association: {str(e)}', 500)
