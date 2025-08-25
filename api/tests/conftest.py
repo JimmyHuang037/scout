@@ -40,15 +40,23 @@ def restore_test_database():
         original_cwd = os.getcwd()
         os.chdir(db_dir)
         
-        # 查找最新的备份文件
-        backup_files = glob.glob(os.path.join(backup_dir, 'school_management_backup_*.sql'))
-        if not backup_files:
-            print("警告: 没有找到备份文件")
-            return
-            
-        # 按修改时间排序，获取最新的备份文件
-        latest_backup = max(backup_files, key=os.path.getmtime)
-        backup_filename = os.path.basename(latest_backup)
+        # 使用指定的备份文件
+        backup_filename = 'school_management_backup_20250825_220152.sql'
+        backup_path = os.path.join(backup_dir, backup_filename)
+        
+        # 检查指定的备份文件是否存在
+        if not os.path.exists(backup_path):
+            print(f"警告: 指定的备份文件 {backup_path} 不存在")
+            # 查找最新的备份文件作为回退方案
+            backup_files = glob.glob(os.path.join(backup_dir, 'school_management_backup_*.sql'))
+            if not backup_files:
+                print("警告: 没有找到备份文件")
+                return
+                
+            # 按修改时间排序，获取最新的备份文件
+            latest_backup = max(backup_files, key=os.path.getmtime)
+            backup_filename = os.path.basename(latest_backup)
+            print(f"使用最新的备份文件: {backup_filename}")
         
         # 调用restore_db.sh脚本恢复数据库
         result = subprocess.run(
