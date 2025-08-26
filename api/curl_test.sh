@@ -3,6 +3,11 @@
 # 带身份验证的API测试脚本
 # 该脚本专门用于测试需要身份验证的API端点
 
+# 设置变量
+API_BASE_URL="http://localhost:5000"
+TEST_COOKIE="/tmp/test_cookie.txt"
+RESULT_DIR="$API_DIR/runtime/curl_test/$(date +%Y%m%d_%H%M%S)"
+
 # 获取脚本所在目录的绝对路径
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 API_DIR="$SCRIPT_DIR"
@@ -57,11 +62,12 @@ fi
 
 echo "API服务器启动成功!"
 
-# 登录并保存cookie (使用管理员账户)
-echo "登录并保存会话..."
-LOGIN_CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"admin\", \"password\": \"admin\"}' -c /tmp/test_cookie.txt"
-echo "执行命令: $LOGIN_CMD" | tee -a "$RESULT_DIR/test_results.log"
-eval $LOGIN_CMD > /dev/null
+# 登录并保存会话 (使用管理员账户)
+echo "登录并保存会话..." | tee -a "$RESULT_DIR/test_results.log"
+CMD0="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"admin\", \"password\": \"admin\"}' -c /tmp/test_cookie.txt"
+echo "执行命令: $CMD0" | tee -a "$RESULT_DIR/test_results.log"
+RESPONSE0=$(eval $CMD0)
+echo "$RESPONSE0" | tee -a "$RESULT_DIR/test_results.log"
 
 # 测试需要身份验证的端点
 echo "=== 测试需要身份验证的端点 ===" | tee "$RESULT_DIR/test_results.log"
