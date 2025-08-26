@@ -95,7 +95,7 @@ def delete_teacher(teacher_id):
         result = teacher_service.delete_teacher(teacher_id)
         
         if result:
-            return success_response(None, 'Teacher deleted successfully'), 204
+            return success_response(None, 'Teacher deleted successfully')
         else:
             return error_response('Failed to delete teacher', 400)
             

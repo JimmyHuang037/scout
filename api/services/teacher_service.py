@@ -160,6 +160,11 @@ class TeacherService:
             bool: 是否删除成功
         """
         try:
+            # 先删除相关的教师班级关联记录
+            delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
+            self.db_service.execute_update(delete_teacher_classes_query, (teacher_id,))
+            
+            # 再删除教师记录
             query = "DELETE FROM Teachers WHERE teacher_id = %s"
             self.db_service.execute_update(query, (teacher_id,))
             return True

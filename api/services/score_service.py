@@ -266,3 +266,84 @@ class ScoreService:
             raise e
         finally:
             self.db_service.close()
+    
+    def get_exam_results(self, teacher_id, exam_type_id=None, class_id=None):
+        """
+        获取考试结果
+        
+        Args:
+            teacher_id (int): 教师ID
+            exam_type_id (int, optional): 考试类型ID
+            class_id (int, optional): 班级ID
+            
+        Returns:
+            list: 考试结果数据
+        """
+        try:
+            query = """
+                SELECT er.*
+                FROM exam_results er
+                JOIN Students s ON er.student_name = s.student_name
+                JOIN TeacherClasses tc ON s.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+            """
+            params = (teacher_id,)
+            
+            # 添加筛选条件
+            if exam_type_id:
+                query += " AND er.exam_type_name = %s"
+                params += (exam_type_id,)
+                
+            if class_id:
+                query += " AND er.class_id = %s"
+                params += (class_id,)
+            
+            query += " ORDER BY er.ranking"
+            
+            exam_results = self.db_service.execute_query(query, params)
+            return exam_results
+            
+        except Exception as e:
+            raise e
+        finally:
+            self.db_service.close()
+    
+    def get_teacher_performance(self, teacher_id, exam_type_id=None, class_id=None):
+        """
+        获取教师教学表现统计
+        
+        Args:
+            teacher_id (int): 教师ID
+            exam_type_id (int, optional): 考试类型ID
+            class_id (int, optional): 班级ID
+            
+        Returns:
+            list: 教师表现统计数据
+        """
+        try:
+            query = """
+                SELECT tp.*
+                FROM teacher_performance tp
+                JOIN Teachers t ON tp.teacher_name = t.teacher_name
+                WHERE t.teacher_id = %s
+            """
+            params = (teacher_id,)
+            
+            # 添加筛选条件
+            if exam_type_id:
+                query += " AND tp.exam_type_name = %s"
+                params += (exam_type_id,)
+                
+            if class_id:
+                query += " AND tp.class_id = %s"
+                params += (class_id,)
+            
+            query += " ORDER BY tp.ranking"
+            
+            performance = self.db_service.execute_query(query, params)
+            return performance
+            
+        except Exception as e:
+            raise e
+        finally:
+            self.db_service.close()

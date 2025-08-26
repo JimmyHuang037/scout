@@ -1,7 +1,12 @@
 """认证蓝图模块"""
-from flask import Blueprint
+from flask import Blueprint, jsonify
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+
+# 添加健康检查端点
+@auth_bp.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}), 200
 
 # 导入认证相关路由
 from .auth_management import login, logout, get_current_user

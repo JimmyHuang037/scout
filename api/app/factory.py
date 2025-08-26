@@ -4,7 +4,8 @@
 """
 import os
 import logging
-from flask import Flask
+import traceback
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_session import Session
 from cachelib import FileSystemCache
@@ -38,6 +39,20 @@ def create_app(config_name='default'):
     setup_logger('app', os.path.join(log_dir, 'app.log'), level=logging.INFO)
     app.logger.setLevel(logging.INFO)
     app.logger.info('Flask application created successfully')
+    
+    # 添加全局错误处理
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # 记录完整的错误堆栈
+        app.logger.error(f'Unhandled exception: {str(e)}')
+        app.logger.error(traceback.format_exc())
+        
+        # 返回JSON格式的错误响应
+        return jsonify({
+            'success': False,
+            'error': 'Internal server error',
+            'message': str(e) if app.config.get('DEBUG') else 'An internal error occurred'
+        }), 500
     
     # 初始化扩展
     CORS(app)

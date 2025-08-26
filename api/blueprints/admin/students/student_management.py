@@ -111,7 +111,7 @@ def delete_student(student_id):
         result = student_service.delete_student(student_id)
         
         if result:
-            return success_response(None, 'Student deleted successfully'), 204
+            return success_response(None, 'Student deleted successfully')
         else:
             return error_response('Failed to delete student', 400)
             

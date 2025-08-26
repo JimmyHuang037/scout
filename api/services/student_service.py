@@ -144,6 +144,11 @@ class StudentService:
             bool: 是否删除成功
         """
         try:
+            # 先删除相关的成绩记录
+            delete_scores_query = "DELETE FROM Scores WHERE student_id = %s"
+            self.db_service.execute_update(delete_scores_query, (student_id,))
+            
+            # 再删除学生记录
             query = "DELETE FROM Students WHERE student_id = %s"
             self.db_service.execute_update(query, (student_id,))
             return True
