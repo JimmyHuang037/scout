@@ -82,14 +82,14 @@ echo "$RESPONSE2" | jq '.' > "$RESULT_DIR/2_create_student.json" 2>/dev/null || 
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "3. 获取特定学生" | tee -a "$RESULT_DIR/test_results.log"
-CMD3="curl -s http://localhost:5000/api/admin/students/1 -b /tmp/test_cookie.txt"
+CMD3="curl -s http://localhost:5000/api/admin/students/S0101 -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD3" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE3=$(eval $CMD3)
 echo "$RESPONSE3" | jq '.' > "$RESULT_DIR/3_get_student.json" 2>/dev/null || echo "$RESPONSE3" > "$RESULT_DIR/3_get_student.json"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "4. 更新学生信息" | tee -a "$RESULT_DIR/test_results.log"
-CMD4="curl -s -X PUT http://localhost:5000/api/admin/students/1 -H \"Content-Type: application/json\" -d '{\"student_name\": \"Updated Student Name\"}' -b /tmp/test_cookie.txt"
+CMD4="curl -s -X PUT http://localhost:5000/api/admin/students/S0101 -H \"Content-Type: application/json\" -d '{\"student_name\": \"Updated Student Name\", \"class_id\": 1, \"password\": \"password123\"}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD4" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE4=$(eval $CMD4)
 echo "$RESPONSE4" | jq '.' > "$RESULT_DIR/4_update_student.json" 2>/dev/null || echo "$RESPONSE4" > "$RESULT_DIR/4_update_student.json"
@@ -167,7 +167,7 @@ echo "$RESPONSE13" | jq '.' > "$RESULT_DIR/13_get_class.json" 2>/dev/null || ech
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "14. 更新班级信息" | tee -a "$RESULT_DIR/test_results.log"
-CMD14="curl -s -X PUT http://localhost:5000/api/admin/classes/1 -H \"Content-Type: application/json\" -d '{\"class_name\": \"Updated Class Name\"}' -b /tmp/test_cookie.txt"
+CMD14="curl -s -X PUT http://localhost:5000/api/admin/classes/1 -H \"Content-Type: application/json\" -d '{\"class_name\": \"Updated Class Name\", \"grade\": 1}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD14" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE14=$(eval $CMD14)
 echo "$RESPONSE14" | jq '.' > "$RESULT_DIR/14_update_class.json" 2>/dev/null || echo "$RESPONSE14" > "$RESULT_DIR/14_update_class.json"
@@ -258,7 +258,7 @@ echo "$RESPONSE26" | jq '.' > "$RESULT_DIR/26_get_teacher_classes.json" 2>/dev/n
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "27. 创建教师班级关系" | tee -a "$RESULT_DIR/test_results.log"
-CMD27="curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 2}' -b /tmp/test_cookie.txt"
+CMD27="curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 1, \"class_id\": 1}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD27" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE27=$(eval $CMD27)
 echo "$RESPONSE27" | jq '.' > "$RESULT_DIR/27_create_teacher_class.json" 2>/dev/null || echo "$RESPONSE27" > "$RESULT_DIR/27_create_teacher_class.json"
@@ -272,7 +272,7 @@ echo "$RESPONSE28" | jq '.' > "$RESULT_DIR/28_get_teacher_class.json" 2>/dev/nul
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "29. 更新教师班级关系" | tee -a "$RESULT_DIR/test_results.log"
-CMD29="curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"class_id\": 6, \"new_teacher_id\": 1, \"new_class_id\": 2}' -b /tmp/test_cookie.txt"
+CMD29="curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"class_id\": 1, \"new_teacher_id\": 2, \"new_class_id\": 2}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD29" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE29=$(eval $CMD29)
 echo "$RESPONSE29" | jq '.' > "$RESULT_DIR/29_update_teacher_class.json" 2>/dev/null || echo "$RESPONSE29" > "$RESULT_DIR/29_update_teacher_class.json"
@@ -342,7 +342,7 @@ echo "$RESPONSE38" | jq '.' > "$RESULT_DIR/38_get_scores.json" 2>/dev/null || ec
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "39. 创建成绩" | tee -a "$RESULT_DIR/test_results.log"
-CMD39="curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": 1, \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt"
+CMD39="curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0101\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD39" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE39=$(eval $CMD39)
 echo "$RESPONSE39" | jq '.' > "$RESULT_DIR/39_create_score.json" 2>/dev/null || echo "$RESPONSE39" > "$RESULT_DIR/39_create_score.json"
