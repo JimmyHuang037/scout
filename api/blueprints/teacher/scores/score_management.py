@@ -122,3 +122,33 @@ def update_score(score_id):
     except Exception as e:
         app_logger.error(f'Failed to update score: {str(e)}')
         return error_response(f'Failed to update score: {str(e)}'), 500
+
+
+@auth_required
+@role_required('teacher')
+def delete_score(score_id):
+    """删除成绩"""
+    try:
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        score_service = ScoreService()
+        # 检查教师是否有权限删除该成绩
+        is_valid = score_service.validate_teacher_for_score(current_teacher_id, score_id)
+        
+        if not is_valid:
+            app_logger.warning(f"Teacher {current_teacher_id} attempted to delete score {score_id} not in their class")
+            return error_response('Not authorized to delete this score', 403)
+        
+        # 删除成绩
+        result = score_service.delete_score(score_id)
+        
+        if result:
+            app_logger.info(f"Teacher {current_teacher_id} successfully deleted score {score_id}")
+            return success_response(result, 'Score deleted successfully')
+        else:
+            app_logger.error(f"Failed to delete score {score_id}")
+            return error_response('Failed to delete score', 500)
+            
+    except Exception as e:
+        app_logger.error(f'Failed to delete score: {str(e)}')
+        return error_response(f'Failed to delete score: {str(e)}'), 500

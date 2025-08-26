@@ -5,10 +5,6 @@ from utils import database_service
 class TeacherClassService:
     """教师班级服务类"""
     
-    def __init__(self):
-        """初始化教师班级服务"""
-        self.db_service = database_service.DatabaseService()
-    
     def get_all_teacher_classes(self, page=1, per_page=10):
         """
         获取所有教师班级关联（带分页）
@@ -20,12 +16,13 @@ class TeacherClassService:
         Returns:
             dict: 教师班级关联列表和分页信息
         """
+        db_service = database_service.DatabaseService()
         try:
             offset = (page - 1) * per_page
             
             # 获取总数
             count_query = "SELECT COUNT(*) as count FROM TeacherClasses"
-            total = self.db_service.get_count(count_query)
+            total = db_service.get_count(count_query)
             
             # 获取教师班级关联列表
             query = """
@@ -36,7 +33,7 @@ class TeacherClassService:
                 ORDER BY tc.teacher_id, tc.class_id
                 LIMIT %s OFFSET %s
             """
-            teacher_classes = self.db_service.execute_query(query, (per_page, offset))
+            teacher_classes = db_service.execute_query(query, (per_page, offset))
             
             return {
                 'teacher_classes': teacher_classes,
@@ -51,7 +48,7 @@ class TeacherClassService:
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def get_teacher_class_by_teacher(self, teacher_id):
         """
@@ -63,6 +60,7 @@ class TeacherClassService:
         Returns:
             list: 教师班级关联列表
         """
+        db_service = database_service.DatabaseService()
         try:
             query = """
                 SELECT tc.teacher_id, t.teacher_name, tc.class_id, c.class_name
@@ -72,11 +70,11 @@ class TeacherClassService:
                 WHERE tc.teacher_id = %s
                 ORDER BY tc.class_id
             """
-            return self.db_service.execute_query(query, (teacher_id,))
+            return db_service.execute_query(query, (teacher_id,))
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def create_teacher_class(self, teacher_class_data):
         """
@@ -88,6 +86,7 @@ class TeacherClassService:
         Returns:
             bool: 是否创建成功
         """
+        db_service = database_service.DatabaseService()
         try:
             query = """
                 INSERT INTO TeacherClasses (teacher_id, class_id)
@@ -97,12 +96,12 @@ class TeacherClassService:
                 teacher_class_data.get('teacher_id'),
                 teacher_class_data.get('class_id')
             )
-            self.db_service.execute_update(query, params)
+            db_service.execute_update(query, params)
             return True
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def delete_teacher_class(self, teacher_id, class_id):
         """
@@ -115,14 +114,15 @@ class TeacherClassService:
         Returns:
             bool: 是否删除成功
         """
+        db_service = database_service.DatabaseService()
         try:
             query = """
                 DELETE FROM TeacherClasses 
                 WHERE teacher_id = %s AND class_id = %s
             """
-            self.db_service.execute_update(query, (teacher_id, class_id))
+            db_service.execute_update(query, (teacher_id, class_id))
             return True
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()

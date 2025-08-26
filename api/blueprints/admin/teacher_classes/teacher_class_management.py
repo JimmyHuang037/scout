@@ -91,8 +91,9 @@ def update_teacher_class(teacher_id):
             app_logger.warning("Update teacher-class association attempt with missing fields")
             return error_response('Missing required fields', 400)
         
-        # 先删除旧的关联
+        # 使用教师班级服务更新教师班级关联
         teacher_class_service = TeacherClassService()
+        # 先删除旧的关联
         delete_result = teacher_class_service.delete_teacher_class(teacher_id, class_id)
         
         if delete_result:

@@ -47,6 +47,19 @@ scout/
 └── web/                # Angular前端
 ```
 
+## 默认用户信息
+
+系统包含以下默认用户账户用于测试：
+
+| 用户ID  | 用户名     | 角色   | 密码             |
+|---------|------------|--------|------------------|
+| admin   | 管理员     | admin  | admin            |
+| T0101   | 谷雪       | teacher| teacher_password |
+| T0102   | 植波明     | teacher| teacher_password |
+| T0103   | 董龙铭     | teacher| teacher_password |
+| S0101   | 薛磊       | student| student_password |
+| S0102   | 易敏       | student| student_password |
+
 ## API架构
 
 ### 核心组件
