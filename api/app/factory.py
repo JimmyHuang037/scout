@@ -9,7 +9,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_session import Session
 from cachelib import FileSystemCache
-from config.config import Config
+from config.config import config
 from utils.logger import setup_logger
 
 
@@ -27,7 +27,7 @@ def create_app(config_name='default'):
     app = Flask(__name__)
     
     # 加载配置
-    app.config.from_object(Config)
+    app.config.from_object(config[config_name])
     
     # 确保会话目录存在，路径相对于app目录
     session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'flask_session')

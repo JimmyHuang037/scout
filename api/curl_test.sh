@@ -23,15 +23,15 @@ mkdir -p "$RESULT_DIR"
 echo "正在恢复数据库..."
 cd "$DB_DIR"
 
-# 查找最新的备份文件
-BACKUP_FILE=$(ls -t backup/school_management_backup_*.sql | head -n1)
-if [ -z "$BACKUP_FILE" ]; then
-    echo "未找到数据库备份文件"
+# 使用最新的备份文件
+BACKUP_FILENAME="school_management_backup_20250827_205825.sql"
+echo "使用备份文件: $BACKUP_FILENAME"
+
+# 检查备份文件是否存在
+if [ ! -f "backup/$BACKUP_FILENAME" ]; then
+    echo "备份文件不存在: backup/$BACKUP_FILENAME"
     exit 1
 fi
-
-BACKUP_FILENAME=$(basename "$BACKUP_FILE")
-echo "使用备份文件: $BACKUP_FILENAME"
 
 # 运行数据库恢复脚本，恢复测试数据库
 echo "y" | ./restore_db.sh "$BACKUP_FILENAME" school_management > /dev/null 2>&1

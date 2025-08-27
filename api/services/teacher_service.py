@@ -74,7 +74,8 @@ class TeacherService:
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            # 注意：不要在这里关闭数据库连接，因为这会导致后续查询失败
+            pass
     
     def create_teacher(self, teacher_data):
         """
@@ -86,7 +87,9 @@ class TeacherService:
         Returns:
             dict: 创建的教师信息
         """
+        db_service = None
         try:
+            db_service = database_service.DatabaseService()
             query = """
                 INSERT INTO Teachers (teacher_name, subject_id, password)
                 VALUES (%s, %s, %s)
@@ -96,26 +99,23 @@ class TeacherService:
                 teacher_data.get('subject_id'),
                 teacher_data.get('password')
             )
-            self.db_service.execute_update(query, params)
+            db_service.execute_update(query, params)
             
             # 获取新创建的教师信息
-            select_query = """
-                SELECT teacher_id, teacher_name, subject_id
-                FROM Teachers
-                WHERE teacher_name = %s AND subject_id = %s
-                ORDER BY teacher_id DESC
-                LIMIT 1
+            teacher_id = db_service.cursor.lastrowid
+            get_query = """
+                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
+                FROM Teachers t
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
+                WHERE t.teacher_id = %s
             """
-            select_params = (
-                teacher_data.get('teacher_name'),
-                teacher_data.get('subject_id')
-            )
-            teacher = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            teacher = db_service.execute_query(get_query, (teacher_id,), fetch_one=True)
             return teacher
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            if db_service:
+                db_service.close()
     
     def update_teacher(self, teacher_id, teacher_data):
         """
@@ -126,29 +126,49 @@ class TeacherService:
             teacher_data (dict): 教师信息
             
         Returns:
-            bool: 是否更新成功
+            dict: 更新后的教师信息
         """
+        db_service = None
         try:
+            db_service = database_service.DatabaseService()
             # 构建动态更新语句
-            fields = []
+            update_fields = []
             params = []
             
-            for key, value in teacher_data.items():
-                if key in ['teacher_name', 'subject_id']:
-                    fields.append(f"{key} = %s")
-                    params.append(value)
+            if 'teacher_name' in teacher_data:
+                update_fields.append("teacher_name = %s")
+                params.append(teacher_data['teacher_name'])
             
-            if not fields:
-                return False
+            if 'subject_id' in teacher_data:
+                update_fields.append("subject_id = %s")
+                params.append(teacher_data['subject_id'])
+            
+            if 'password' in teacher_data:
+                update_fields.append("password = %s")
+                params.append(teacher_data['password'])
+            
+            if not update_fields:
+                raise ValueError("没有提供要更新的字段")
             
             params.append(teacher_id)
-            query = f"UPDATE Teachers SET {', '.join(fields)} WHERE teacher_id = %s"
-            self.db_service.execute_update(query, params)
-            return True
+            
+            query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
+            db_service.execute_update(query, params)
+            
+            # 获取更新后的教师信息
+            get_query = """
+                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
+                FROM Teachers t
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
+                WHERE t.teacher_id = %s
+            """
+            teacher = db_service.execute_query(get_query, (teacher_id,), fetch_one=True)
+            return teacher
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            if db_service:
+                db_service.close()
     
     def delete_teacher(self, teacher_id):
         """
@@ -158,18 +178,44 @@ class TeacherService:
             teacher_id (int): 教师ID
             
         Returns:
-            bool: 是否删除成功
+            bool: 删除是否成功
         """
+        db_service = None
         try:
-            # 先删除相关的教师班级关联记录
-            delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
-            self.db_service.execute_update(delete_teacher_classes_query, (teacher_id,))
-            
-            # 再删除教师记录
+            db_service = database_service.DatabaseService()
             query = "DELETE FROM Teachers WHERE teacher_id = %s"
-            self.db_service.execute_update(query, (teacher_id,))
-            return True
+            result = db_service.execute_update(query, (teacher_id,))
+            return result > 0
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            if db_service:
+                db_service.close()
+    
+    def get_teachers_by_subject(self, subject_id):
+        """
+        根据科目ID获取教师列表
+        
+        Args:
+            subject_id (int): 科目ID
+            
+        Returns:
+            list: 教师列表
+        """
+        db_service = None
+        try:
+            db_service = database_service.DatabaseService()
+            query = """
+                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
+                FROM Teachers t
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
+                WHERE t.subject_id = %s
+                ORDER BY t.teacher_id
+            """
+            teachers = db_service.execute_query(query, (subject_id,))
+            return teachers
+        except Exception as e:
+            raise e
+        finally:
+            if db_service:
+                db_service.close()
