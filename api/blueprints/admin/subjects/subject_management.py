@@ -33,7 +33,6 @@ def create_subject():
     try:
         data = request.get_json()
         subject_name = data.get('subject_name')
-        description = data.get('description')
         
         if not subject_name:
             app_logger.warning("Create subject attempt with missing subject_name")
@@ -41,11 +40,14 @@ def create_subject():
         
         # 使用科目服务创建科目
         subject_service = SubjectService()
-        result = subject_service.create_subject(subject_name, description)
+        subject_data = {
+            'subject_name': subject_name
+        }
+        result = subject_service.create_subject(subject_data)  # 修复参数传递问题
         
         if result:
-            app_logger.info(f"Admin created subject {result.get('subject_id')}")
-            return success_response(result, 'Subject created successfully', 201)
+            app_logger.info("Admin created subject")
+            return success_response({'message': 'Subject created successfully'}, 'Subject created successfully', 201)
         else:
             app_logger.error("Failed to create subject")
             return error_response('Failed to create subject', 400)
@@ -80,7 +82,6 @@ def update_subject(subject_id):
     try:
         data = request.get_json()
         subject_name = data.get('subject_name')
-        description = data.get('description')
         
         if not subject_name:
             return error_response('Missing required field: subject_name', 400)

@@ -123,7 +123,7 @@ class ExamTypeService:
     
     def delete_exam_type(self, type_id):
         """
-        删除考试类型
+        删除考试类型（同时删除相关的成绩）
         
         Args:
             type_id (int): 考试类型ID
@@ -132,10 +132,23 @@ class ExamTypeService:
             bool: 是否删除成功
         """
         try:
-            query = "DELETE FROM ExamTypes WHERE type_id = %s"
-            self.db_service.execute_update(query, (type_id,))
+            # 开始事务
+            self.db_service.start_transaction()
+            
+            # 删除与该考试类型相关的成绩
+            delete_scores_query = "DELETE FROM Scores WHERE exam_type_id = %s"
+            self.db_service.execute_update(delete_scores_query, (type_id,))
+            
+            # 删除考试类型
+            delete_exam_type_query = "DELETE FROM ExamTypes WHERE type_id = %s"
+            self.db_service.execute_update(delete_exam_type_query, (type_id,))
+            
+            # 提交事务
+            self.db_service.commit()
             return True
         except Exception as e:
+            # 回滚事务
+            self.db_service.rollback()
             raise e
         finally:
             self.db_service.close()

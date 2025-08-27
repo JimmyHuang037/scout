@@ -116,6 +116,40 @@ class DatabaseService:
         result = self.execute_query(query, params, fetch_one=True)
         return result['count'] if result else 0
     
+    def start_transaction(self):
+        """开始事务"""
+        try:
+            # 开始事务前确保处于自动提交模式
+            self.db.autocommit = True
+            self.db.autocommit = False
+            logger.debug("Transaction started")
+        except Exception as e:
+            logger.error(f"Failed to start transaction: {str(e)}")
+            raise e
+    
+    def commit(self):
+        """提交事务"""
+        try:
+            self.db.commit()
+            # 提交后恢复自动提交模式
+            self.db.autocommit = True
+            logger.debug("Transaction committed")
+        except Exception as e:
+            logger.error(f"Failed to commit transaction: {str(e)}")
+            self.rollback()
+            raise e
+    
+    def rollback(self):
+        """回滚事务"""
+        try:
+            self.db.rollback()
+            # 回滚后恢复自动提交模式
+            self.db.autocommit = True
+            logger.debug("Transaction rolled back")
+        except Exception as e:
+            logger.error(f"Failed to rollback transaction: {str(e)}")
+            raise e
+    
     def close(self):
         """关闭数据库连接"""
         try:

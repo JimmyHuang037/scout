@@ -112,7 +112,7 @@ class SubjectService:
     
     def delete_subject(self, subject_id):
         """
-        删除科目
+        删除科目（同时删除相关的成绩）
         
         Args:
             subject_id (int): 科目ID
@@ -121,10 +121,23 @@ class SubjectService:
             bool: 是否删除成功
         """
         try:
-            query = "DELETE FROM Subjects WHERE subject_id = %s"
-            self.db_service.execute_update(query, (subject_id,))
+            # 开始事务
+            self.db_service.start_transaction()
+            
+            # 删除与该科目相关的成绩
+            delete_scores_query = "DELETE FROM Scores WHERE subject_id = %s"
+            self.db_service.execute_update(delete_scores_query, (subject_id,))
+            
+            # 删除科目
+            delete_subject_query = "DELETE FROM Subjects WHERE subject_id = %s"
+            self.db_service.execute_update(delete_subject_query, (subject_id,))
+            
+            # 提交事务
+            self.db_service.commit()
             return True
         except Exception as e:
+            # 回滚事务
+            self.db_service.rollback()
             raise e
         finally:
             self.db_service.close()
