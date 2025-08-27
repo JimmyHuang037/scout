@@ -278,7 +278,7 @@ echo "$RESPONSE28" | jq '.' > "$RESULT_DIR/28_get_teacher_class.json" 2>/dev/nul
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "29. 更新教师班级关系" | tee -a "$RESULT_DIR/test_results.log"
-CMD29="curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"class_id\": 1, \"new_teacher_id\": 2, \"new_class_id\": 2}' -b /tmp/test_cookie.txt"
+CMD29="curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 2}' -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD29" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE29=$(eval $CMD29)
 echo "$RESPONSE29" | jq '.' > "$RESULT_DIR/29_update_teacher_class.json" 2>/dev/null || echo "$RESPONSE29" > "$RESULT_DIR/29_update_teacher_class.json"
@@ -291,22 +291,29 @@ RESPONSE30=$(eval $CMD30)
 echo "$RESPONSE30" | jq '.' > "$RESULT_DIR/30_delete_teacher_class.json" 2>/dev/null || echo "$RESPONSE30" > "$RESULT_DIR/30_delete_teacher_class.json"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
+echo "登录教师账户以测试教师API" | tee -a "$RESULT_DIR/test_results.log"
+CMD_TEACHER_LOGIN="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"T0101\", \"password\": \"teacher_password\"}' -c /tmp/teacher_cookie.txt"
+echo "执行命令: $CMD_TEACHER_LOGIN" | tee -a "$RESULT_DIR/test_results.log"
+RESPONSE_TEACHER_LOGIN=$(eval $CMD_TEACHER_LOGIN)
+echo "$RESPONSE_TEACHER_LOGIN" | tee -a "$RESULT_DIR/test_results.log"
+
+echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "31. 获取学生成绩" | tee -a "$RESULT_DIR/test_results.log"
-CMD31="curl -s http://localhost:5000/api/student/scores -b /tmp/test_cookie.txt"
+CMD31="curl -s http://localhost:5000/api/student/scores -b /tmp/teacher_cookie.txt"
 echo "执行命令: $CMD31" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE31=$(eval $CMD31)
 echo "$RESPONSE31" | jq '.' > "$RESULT_DIR/31_get_student_scores.json" 2>/dev/null || echo "$RESPONSE31" > "$RESULT_DIR/31_get_student_scores.json"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "32. 获取教师管理的学生列表" | tee -a "$RESULT_DIR/test_results.log"
-CMD32="curl -s http://localhost:5000/api/teacher/students -b /tmp/test_cookie.txt"
+CMD32="curl -s http://localhost:5000/api/teacher/students -b /tmp/teacher_cookie.txt"
 echo "执行命令: $CMD32" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE32=$(eval $CMD32)
 echo "$RESPONSE32" | jq '.' > "$RESULT_DIR/32_get_teacher_students.json" 2>/dev/null || echo "$RESPONSE32" > "$RESULT_DIR/32_get_teacher_students.json"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "33. 获取考试列表" | tee -a "$RESULT_DIR/test_results.log"
-CMD33="curl -s http://localhost:5000/api/teacher/exams -b /tmp/test_cookie.txt"
+CMD33="curl -s http://localhost:5000/api/teacher/exams -b /tmp/teacher_cookie.txt"
 echo "执行命令: $CMD33" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE33=$(eval $CMD33)
 echo "$RESPONSE33" | jq '.' > "$RESULT_DIR/33_get_exams.json" 2>/dev/null || echo "$RESPONSE33" > "$RESULT_DIR/33_get_exams.json"
