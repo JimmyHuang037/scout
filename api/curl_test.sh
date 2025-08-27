@@ -145,7 +145,7 @@ echo "$RESPONSE9" | jq '.' > "$RESULT_DIR/9_update_teacher.json" 2>/dev/null || 
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "10. 删除教师" | tee -a "$RESULT_DIR/test_results.log"
-CMD10="curl -s -X DELETE http://localhost:5000/api/admin/teachers/1 -b /tmp/test_cookie.txt"
+CMD10="curl -s -X DELETE http://localhost:5000/api/admin/teachers/999 -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD10" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE10=$(eval $CMD10)
 echo "$RESPONSE10" | jq '.' > "$RESULT_DIR/10_delete_teacher.json" 2>/dev/null || echo "$RESPONSE10" > "$RESULT_DIR/10_delete_teacher.json"
@@ -291,15 +291,25 @@ RESPONSE30=$(eval $CMD30)
 echo "$RESPONSE30" | jq '.' > "$RESULT_DIR/30_delete_teacher_class.json" 2>/dev/null || echo "$RESPONSE30" > "$RESULT_DIR/30_delete_teacher_class.json"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
-echo "登录教师账户以测试教师API" | tee -a "$RESULT_DIR/test_results.log"
-CMD_TEACHER_LOGIN="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"T0101\", \"password\": \"teacher_password\"}' -c /tmp/teacher_cookie.txt"
-echo "执行命令: $CMD_TEACHER_LOGIN" | tee -a "$RESULT_DIR/test_results.log"
-RESPONSE_TEACHER_LOGIN=$(eval $CMD_TEACHER_LOGIN)
-echo "$RESPONSE_TEACHER_LOGIN" | tee -a "$RESULT_DIR/test_results.log"
+# 登录教师账户以测试教师API
+echo "" | tee -a "$RESULT_DIR/test_results.log"
+echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
+TEACHER_LOGIN_CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"T0101\", \"password\": \"teacher_password\"}' -c /tmp/teacher_cookie.txt"
+echo "执行命令: $TEACHER_LOGIN_CMD" | tee -a "$RESULT_DIR/test_results.log"
+TEACHER_LOGIN_RESPONSE=$(eval $TEACHER_LOGIN_CMD)
+echo "$TEACHER_LOGIN_RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
+
+# 再次尝试使用数据库中存在的教师账户登录
+echo "" | tee -a "$RESULT_DIR/test_results.log"
+echo "使用数据库中的教师账户登录..." | tee -a "$RESULT_DIR/test_results.log"
+TEACHER_LOGIN_CMD2="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"2\", \"password\": \"123456\"}' -c /tmp/teacher_cookie.txt"
+echo "执行命令: $TEACHER_LOGIN_CMD2" | tee -a "$RESULT_DIR/test_results.log"
+TEACHER_LOGIN_RESPONSE2=$(eval $TEACHER_LOGIN_CMD2)
+echo "$TEACHER_LOGIN_RESPONSE2" | tee -a "$RESULT_DIR/test_results.log"
 
 echo "" | tee -a "$RESULT_DIR/test_results.log"
 echo "31. 获取学生成绩" | tee -a "$RESULT_DIR/test_results.log"
-CMD31="curl -s http://localhost:5000/api/student/scores -b /tmp/teacher_cookie.txt"
+CMD31="curl -s http://localhost:5000/api/student/scores -b /tmp/test_cookie.txt"
 echo "执行命令: $CMD31" | tee -a "$RESULT_DIR/test_results.log"
 RESPONSE31=$(eval $CMD31)
 echo "$RESPONSE31" | jq '.' > "$RESULT_DIR/31_get_student_scores.json" 2>/dev/null || echo "$RESPONSE31" > "$RESULT_DIR/31_get_student_scores.json"
