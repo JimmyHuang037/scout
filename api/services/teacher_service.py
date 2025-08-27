@@ -66,10 +66,11 @@ class TeacherService:
             query = """
                 SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
                 FROM Teachers t
-                JOIN Subjects s ON t.subject_id = s.subject_id
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
                 WHERE t.teacher_id = %s
             """
-            return self.db_service.execute_query(query, (teacher_id,), fetch_one=True)
+            result = self.db_service.execute_query(query, (teacher_id,), fetch_one=True)
+            return result
         except Exception as e:
             raise e
         finally:

@@ -26,10 +26,12 @@ class TestTeacherService:
             result = service.get_teacher_by_id(1)
             
             # 验证结果
-            assert result is not None
-            assert 'teacher_id' in result
-            assert result['teacher_id'] == 1
-            assert 'teacher_name' in result
+            # 先检查结果是否为None，如果不是再检查具体内容
+            assert result is not None, "Expected teacher data but got None"
+            if result is not None:
+                assert 'teacher_id' in result
+                assert result['teacher_id'] == 1
+                assert 'teacher_name' in result
     
     def test_get_all_teachers_success(self, app):
         """测试获取所有教师成功"""

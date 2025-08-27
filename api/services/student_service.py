@@ -66,10 +66,11 @@ class StudentService:
             query = """
                 SELECT s.student_id, s.student_name, s.class_id, c.class_name
                 FROM Students s
-                JOIN Classes c ON s.class_id = c.class_id
+                LEFT JOIN Classes c ON s.class_id = c.class_id
                 WHERE s.student_id = %s
             """
-            return self.db_service.execute_query(query, (student_id,), fetch_one=True)
+            result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
+            return result
         except Exception as e:
             raise e
         finally:

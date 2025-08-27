@@ -39,6 +39,10 @@ class TestAdminTeacherManagement:
         # 获取一个已存在的教师
         response = admin_client.get("/api/admin/teachers/1")
         # 验证响应
+        # 先检查状态码，如果失败则输出响应内容帮助调试
+        if response.status_code != 200:
+            print(f"Response status: {response.status_code}")
+            print(f"Response data: {response.data}")
         assert response.status_code == 200
         data = json.loads(response.data)
         assert 'data' in data
