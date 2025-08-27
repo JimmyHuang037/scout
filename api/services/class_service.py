@@ -157,10 +157,10 @@ class ClassService:
             # 开始事务
             self.db_service.start_transaction()
             
-            # 删除与该班级相关的成绩（使用JOIN方式）
+            # 删除与该班级相关的成绩
             delete_scores_query = """
-                DELETE sc.* FROM Scores sc
-                INNER JOIN Students st ON sc.student_id = st.student_id
+                DELETE s FROM Scores s
+                INNER JOIN Students st ON s.student_id = st.student_id 
                 WHERE st.class_id = %s
             """
             self.db_service.execute_update(delete_scores_query, (class_id,))
