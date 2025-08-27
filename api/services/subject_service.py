@@ -81,7 +81,7 @@ class SubjectService:
         """
         try:
             query = "INSERT INTO Subjects (subject_name) VALUES (%s)"
-            params = (subject_data.get('subject_name'),)
+            params = (subject_data['subject_name'],)  # 修改参数访问方式
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
