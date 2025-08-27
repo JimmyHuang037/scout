@@ -93,7 +93,7 @@ class DatabaseService:
         try:
             logger.debug(f"Executing update: {query} with params: {params}")
             self.cursor.execute(query, params or ())
-            self.db.commit()
+            self.db.commit()  # 确保每次都提交事务
             affected_rows = self.cursor.rowcount
             logger.debug(f"Update executed successfully, affected {affected_rows} rows")
             return affected_rows
@@ -119,9 +119,7 @@ class DatabaseService:
     def start_transaction(self):
         """开始事务"""
         try:
-            # 开始事务前确保处于自动提交模式
-            self.db.autocommit = True
-            self.db.autocommit = False
+            self.db.start_transaction()
             logger.debug("Transaction started")
         except Exception as e:
             logger.error(f"Failed to start transaction: {str(e)}")
@@ -131,8 +129,6 @@ class DatabaseService:
         """提交事务"""
         try:
             self.db.commit()
-            # 提交后恢复自动提交模式
-            self.db.autocommit = True
             logger.debug("Transaction committed")
         except Exception as e:
             logger.error(f"Failed to commit transaction: {str(e)}")
@@ -143,8 +139,6 @@ class DatabaseService:
         """回滚事务"""
         try:
             self.db.rollback()
-            # 回滚后恢复自动提交模式
-            self.db.autocommit = True
             logger.debug("Transaction rolled back")
         except Exception as e:
             logger.error(f"Failed to rollback transaction: {str(e)}")

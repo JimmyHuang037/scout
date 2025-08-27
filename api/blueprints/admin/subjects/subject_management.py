@@ -43,11 +43,11 @@ def create_subject():
         subject_data = {
             'subject_name': subject_name
         }
-        result = subject_service.create_subject(subject_data)  # 修复参数传递问题
+        result = subject_service.create_subject(subject_data)
         
         if result:
             app_logger.info("Admin created subject")
-            return success_response({'message': 'Subject created successfully'}, 'Subject created successfully', 201)
+            return success_response({'message': 'Subject created successfully'}, status_code=201)
         else:
             app_logger.error("Failed to create subject")
             return error_response('Failed to create subject', 400)
@@ -88,10 +88,10 @@ def update_subject(subject_id):
         
         # 使用科目服务更新科目信息
         subject_service = SubjectService()
-        result = subject_service.update_subject(subject_id, data)
+        result = subject_service.update_subject(subject_id, {'subject_name': subject_name})
         
         if result:
-            return success_response(result, 'Subject updated successfully')
+            return success_response(None, 'Subject updated successfully')
         else:
             return error_response('Failed to update subject', 400)
             
