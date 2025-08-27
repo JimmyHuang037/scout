@@ -1,0 +1,7 @@
+# System Status Check Commands
+os_version: cat /etc/os-release
+kernel_version: uname -r
+architecture: uname -m
+system_load: uptime
+disk_usage: df -h
+memory_usage: free -h
