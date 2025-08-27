@@ -94,7 +94,7 @@ def update_class(class_id):
         
         if result:
             app_logger.info(f"Admin updated class {class_id}")
-            return success_response(result, 'Class updated successfully')
+            return success_response(True, 'Class updated successfully')  # 修复返回数据结构
         else:
             app_logger.error(f"Failed to update class {class_id}")
             return error_response('Failed to update class', 400)

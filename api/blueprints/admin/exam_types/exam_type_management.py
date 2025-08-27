@@ -76,17 +76,17 @@ def update_exam_type(type_id):
     """更新考试类型"""
     try:
         data = request.get_json()
-        type_name = data.get('type_name')
+        exam_type_name = data.get('exam_type_name')  # 使用正确的字段名
         
-        if not type_name:
-            return error_response('Missing required field: type_name', 400)
+        if not exam_type_name:
+            return error_response('Missing required field: exam_type_name', 400)
         
         # 使用考试类型服务更新考试类型信息
         exam_type_service = ExamTypeService()
-        result = exam_type_service.update_exam_type(type_id, {'exam_type_name': type_name})
+        result = exam_type_service.update_exam_type(type_id, {'exam_type_name': exam_type_name})
         
         if result:
-            return success_response({'message': 'Exam type updated successfully'}, 'Exam type updated successfully')
+            return success_response(True, 'Exam type updated successfully')  # 修复返回数据结构
         else:
             return error_response('Failed to update exam type', 400)
             

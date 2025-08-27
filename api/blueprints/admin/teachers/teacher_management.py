@@ -77,7 +77,7 @@ def update_teacher(teacher_id):
         result = teacher_service.update_teacher(teacher_id, data)
         
         if result:
-            return success_response(result, 'Teacher updated successfully')
+            return success_response(True, 'Teacher updated successfully')  # 修复返回数据结构
         else:
             return error_response('Failed to update teacher', 400)
             
