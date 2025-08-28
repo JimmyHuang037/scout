@@ -113,7 +113,7 @@ def main():
                 ('Teachers', 'SELECT teacher_id, teacher_name, subject_id, password FROM Teachers'),
                 ('Subjects', 'SELECT subject_id, subject_name FROM Subjects'),
                 ('Scores', 'SELECT score_id, student_id, subject_id, exam_type_id, score FROM Scores'),
-                ('ExamTypes', 'SELECT exam_type_id, exam_type_name FROM ExamTypes'),
+                ('ExamTypes', 'SELECT type_id, exam_type_name FROM ExamTypes'),
                 ('TeacherClasses', 'SELECT teacher_id, class_id FROM TeacherClasses')
             ]
             
