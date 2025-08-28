@@ -154,36 +154,25 @@ class ClassService:
         :param class_id: 班级ID
         :return: None
         """
-        # 检查班级是否存在
-        class_info = self.get_class_by_id(class_id)
-        if not class_info:
-            raise ClassNotFoundError(f"班级ID {class_id} 不存在")
-
         try:
-            # 开始事务
-            self.db_service.start_transaction()
-
             # 删除与该班级相关的成绩
             delete_scores_query = "DELETE FROM Scores WHERE student_id IN (SELECT student_id FROM Students WHERE class_id = %s)"
-            self.db_service.cursor.execute(delete_scores_query, (class_id,))
+            self.db_service.execute_update(delete_scores_query, (class_id,))
             
             # 删除与该班级相关的教师班级关联
             delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE class_id = %s"
-            self.db_service.cursor.execute(delete_teacher_classes_query, (class_id,))
+            self.db_service.execute_update(delete_teacher_classes_query, (class_id,))
             
             # 删除与该班级相关的学生
             delete_students_query = "DELETE FROM Students WHERE class_id = %s"
-            self.db_service.cursor.execute(delete_students_query, (class_id,))
+            self.db_service.execute_update(delete_students_query, (class_id,))
             
             # 删除班级
             delete_class_query = "DELETE FROM Classes WHERE class_id = %s"
-            self.db_service.cursor.execute(delete_class_query, (class_id,))
+            self.db_service.execute_update(delete_class_query, (class_id,))
 
-            # 提交事务
-            self.db_service.commit()
+            return True
         except Exception as e:
-            # 回滚事务
-            self.db_service.rollback()
             raise e
         finally:
             self.db_service.close()

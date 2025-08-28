@@ -1,6 +1,7 @@
 """班级管理模块，处理班级相关的所有操作"""
 from flask import jsonify, request, session
 from services import ClassService
+from services.class_service import ClassNotFoundError
 from utils.helpers import success_response, error_response, auth_required, role_required
 from utils.logger import app_logger
 
@@ -109,13 +110,21 @@ def update_class(class_id):
 def delete_class(class_id):
     """删除班级"""
     try:
-        # 使用班级服务删除班级
+        # 使用班级服务检查班级是否存在
         class_service = ClassService()
-        result = class_service.delete_class(class_id)
+        class_info = class_service.get_class_by_id(class_id)
+        
+        if not class_info:
+            app_logger.warning(f"Class not found: {class_id}")
+            return error_response('Class not found', 404)
+        
+        # 使用新的班级服务实例执行删除操作，避免连接问题
+        delete_class_service = ClassService()
+        result = delete_class_service.delete_class(class_id)
         
         if result:
             app_logger.info(f"Admin deleted class {class_id}")
-            return success_response(None, 'Class deleted successfully'), 204
+            return success_response(None, 'Class deleted successfully')
         else:
             app_logger.error(f"Failed to delete class {class_id}")
             return error_response('Failed to delete class', 400)

@@ -144,6 +144,14 @@ class DatabaseService:
             logger.error(f"Failed to rollback transaction: {str(e)}")
             raise e
     
+    def in_transaction(self):
+        """检查是否在事务中"""
+        try:
+            return self.db.in_transaction
+        except Exception as e:
+            logger.error(f"Failed to check transaction status: {str(e)}")
+            return False
+    
     def close(self):
         """关闭数据库连接"""
         try:
