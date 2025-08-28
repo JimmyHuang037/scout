@@ -47,9 +47,9 @@ DROP TABLE IF EXISTS `ExamTypes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ExamTypes` (
-  `type_id` int NOT NULL AUTO_INCREMENT,
+  `exam_type_id` int NOT NULL AUTO_INCREMENT,
   `exam_type_name` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`type_id`),
+  PRIMARY KEY (`exam_type_id`),
   UNIQUE KEY `exam_type` (`exam_type_name`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -82,8 +82,7 @@ CREATE TABLE `Scores` (
   KEY `subject_id` (`subject_id`),
   KEY `exam_type_id` (`exam_type_id`),
   CONSTRAINT `Scores_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `Students` (`student_id`),
-  CONSTRAINT `Scores_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `Subjects` (`subject_id`),
-  CONSTRAINT `Scores_ibfk_3` FOREIGN KEY (`exam_type_id`) REFERENCES `ExamTypes` (`type_id`)
+  CONSTRAINT `Scores_ibfk_3` FOREIGN KEY (`exam_type_id`) REFERENCES `ExamTypes` (`exam_type_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -133,10 +132,10 @@ DROP TABLE IF EXISTS `Subjects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Subjects` (
-  `subject_id` int NOT NULL,
+  `subject_id` int NOT NULL AUTO_INCREMENT,
   `subject_name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`subject_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,8 +189,7 @@ CREATE TABLE `Teachers` (
   `subject_id` int NOT NULL,
   `password` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`teacher_id`),
-  KEY `subject_id` (`subject_id`),
-  CONSTRAINT `Teachers_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `Subjects` (`subject_id`)
+  KEY `subject_id` (`subject_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -310,14 +308,17 @@ DROP TABLE IF EXISTS `teacher_performance`;
 SET @saved_cs_client     = @@character_set_client;
 /*!50503 SET character_set_client = utf8mb4 */;
 /*!50001 CREATE VIEW `teacher_performance` AS SELECT 
+ 1 AS `teacher_id`,
  1 AS `teacher_name`,
- 1 AS `subject`,
- 1 AS `class`,
+ 1 AS `subject_id`,
+ 1 AS `subject_name`,
+ 1 AS `class_id`,
+ 1 AS `class_name`,
+ 1 AS `exam_type_id`,
  1 AS `exam_type_name`,
  1 AS `average_score`,
- 1 AS `highest_score`,
- 1 AS `lowest_score`,
- 1 AS `ranking`*/;
+ 1 AS `rank_in_subject`,
+ 1 AS `rank_in_school`*/;
 SET character_set_client = @saved_cs_client;
 
 --
@@ -363,7 +364,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `exam_class` AS select `student_grades`.`class_name` AS `class_name`,`student_grades`.`exam_type` AS `exam_type`,sum((case when (`student_grades`.`grade_level` = 'A') then 1 else 0 end)) AS `A`,sum((case when (`student_grades`.`grade_level` = 'B') then 1 else 0 end)) AS `B`,sum((case when (`student_grades`.`grade_level` = 'C') then 1 else 0 end)) AS `C`,sum((case when (`student_grades`.`grade_level` = 'D') then 1 else 0 end)) AS `D` from (select `c`.`class_name` AS `class_name`,`et`.`exam_type_name` AS `exam_type`,`s`.`student_id` AS `student_id`,`s`.`student_name` AS `student_name`,(case when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 1) then 'A' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 2) then 'B' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 3) then 'C' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 4) then 'D' end) AS `grade_level` from (((`Students` `s` join `Classes` `c` on((`s`.`class_id` = `c`.`class_id`))) join `Scores` `sc` on((`s`.`student_id` = `sc`.`student_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`type_id`))) group by `c`.`class_name`,`et`.`exam_type_name`,`s`.`student_id`,`s`.`student_name`) `student_grades` group by `student_grades`.`class_name`,`student_grades`.`exam_type` order by `student_grades`.`class_name`,`student_grades`.`exam_type` */;
+/*!50001 VIEW `exam_class` AS select `student_grades`.`class_name` AS `class_name`,`student_grades`.`exam_type` AS `exam_type`,sum((case when (`student_grades`.`grade_level` = 'A') then 1 else 0 end)) AS `A`,sum((case when (`student_grades`.`grade_level` = 'B') then 1 else 0 end)) AS `B`,sum((case when (`student_grades`.`grade_level` = 'C') then 1 else 0 end)) AS `C`,sum((case when (`student_grades`.`grade_level` = 'D') then 1 else 0 end)) AS `D` from (select `c`.`class_name` AS `class_name`,`et`.`exam_type_name` AS `exam_type`,`s`.`student_id` AS `student_id`,`s`.`student_name` AS `student_name`,(case when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 1) then 'A' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 2) then 'B' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 3) then 'C' when (ntile(4) OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  = 4) then 'D' end) AS `grade_level` from (((`Students` `s` join `Classes` `c` on((`s`.`class_id` = `c`.`class_id`))) join `Scores` `sc` on((`s`.`student_id` = `sc`.`student_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`exam_type_id`))) group by `c`.`class_name`,`et`.`exam_type_name`,`s`.`student_id`,`s`.`student_name`) `student_grades` group by `student_grades`.`class_name`,`student_grades`.`exam_type` order by `student_grades`.`class_name`,`student_grades`.`exam_type` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -381,7 +382,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `exam_results` AS select `et`.`exam_type_name` AS `exam_type`,`s`.`student_name` AS `student_name`,sum((case when (`sub`.`subject_name` = '语文') then `sc`.`score` else 0 end)) AS `chinese`,sum((case when (`sub`.`subject_name` = '数学') then `sc`.`score` else 0 end)) AS `math`,sum((case when (`sub`.`subject_name` = '英语') then `sc`.`score` else 0 end)) AS `english`,sum((case when (`sub`.`subject_name` = '物理') then `sc`.`score` else 0 end)) AS `physics`,sum((case when (`sub`.`subject_name` = '化学') then `sc`.`score` else 0 end)) AS `chemistry`,sum((case when (`sub`.`subject_name` = '政治') then `sc`.`score` else 0 end)) AS `politics`,sum(`sc`.`score`) AS `total_score`,row_number() OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  AS `ranking` from (((`Students` `s` join `Scores` `sc` on((`s`.`student_id` = `sc`.`student_id`))) join `Subjects` `sub` on((`sc`.`subject_id` = `sub`.`subject_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`type_id`))) group by `et`.`exam_type_name`,`s`.`student_id`,`s`.`student_name` order by `et`.`exam_type_name`,`ranking` */;
+/*!50001 VIEW `exam_results` AS select `et`.`exam_type_name` AS `exam_type`,`s`.`student_name` AS `student_name`,sum((case when (`sub`.`subject_name` = '语文') then `sc`.`score` else 0 end)) AS `chinese`,sum((case when (`sub`.`subject_name` = '数学') then `sc`.`score` else 0 end)) AS `math`,sum((case when (`sub`.`subject_name` = '英语') then `sc`.`score` else 0 end)) AS `english`,sum((case when (`sub`.`subject_name` = '物理') then `sc`.`score` else 0 end)) AS `physics`,sum((case when (`sub`.`subject_name` = '化学') then `sc`.`score` else 0 end)) AS `chemistry`,sum((case when (`sub`.`subject_name` = '政治') then `sc`.`score` else 0 end)) AS `politics`,sum(`sc`.`score`) AS `total_score`,row_number() OVER (PARTITION BY `et`.`exam_type_name` ORDER BY sum(`sc`.`score`) desc )  AS `ranking` from (((`Students` `s` join `Scores` `sc` on((`s`.`student_id` = `sc`.`student_id`))) join `Subjects` `sub` on((`sc`.`subject_id` = `sub`.`subject_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`exam_type_id`))) group by `et`.`exam_type_name`,`s`.`student_id`,`s`.`student_name` order by `et`.`exam_type_name`,`ranking` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -399,7 +400,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `scores` AS select `sc`.`score_id` AS `score_id`,`st`.`student_name` AS `student_name`,`sub`.`subject_name` AS `subject_name`,`et`.`exam_type_name` AS `exam_type_name`,`sc`.`score` AS `score_value` from (((`Scores` `sc` join `Students` `st` on((`sc`.`student_id` = `st`.`student_id`))) join `Subjects` `sub` on((`sc`.`subject_id` = `sub`.`subject_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`type_id`))) */;
+/*!50001 VIEW `scores` AS select `sc`.`score_id` AS `score_id`,`s`.`student_name` AS `student_name`,`sub`.`subject_name` AS `subject_name`,`et`.`exam_type_name` AS `exam_type_name`,`sc`.`score` AS `score_value` from (((`Scores` `sc` join `Students` `s` on((`sc`.`student_id` = `s`.`student_id`))) join `Subjects` `sub` on((`sc`.`subject_id` = `sub`.`subject_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`exam_type_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -435,7 +436,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `teacher_classes` AS select `t`.`teacher_name` AS `teacher_name`,`c`.`class_name` AS `class_name` from ((`TeacherClasses` `tc` join `Teachers` `t` on((`tc`.`teacher_id` = `t`.`teacher_id`))) join `Classes` `c` on((`tc`.`class_id` = `c`.`class_id`))) */;
+/*!50001 VIEW `teacher_classes` AS select `t`.`teacher_name` AS `teacher_name`,`c`.`class_name` AS `class_name` from ((`Teachers` `t` join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) join `Classes` `c` on((`tc`.`class_id` = `c`.`class_id`))) */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -453,7 +454,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `teacher_counts` AS select `t`.`teacher_name` AS `teacher_name`,`sub`.`subject_name` AS `subject_name`,count(`tc`.`class_id`) AS `class_count` from ((`Teachers` `t` join `Subjects` `sub` on((`t`.`subject_id` = `sub`.`subject_id`))) left join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) group by `t`.`teacher_id`,`t`.`teacher_name`,`sub`.`subject_name` */;
+/*!50001 VIEW `teacher_counts` AS select `t`.`teacher_name` AS `teacher_name`,`s`.`subject_name` AS `subject_name`,count(`tc`.`class_id`) AS `class_count` from ((`Teachers` `t` join `Subjects` `s` on((`t`.`subject_id` = `s`.`subject_id`))) join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) group by `t`.`teacher_id`,`t`.`teacher_name`,`s`.`subject_name` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -471,7 +472,7 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
 /*!50001 CREATE ALGORITHM=UNDEFINED */
 /*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `teacher_performance` AS select `t`.`teacher_name` AS `teacher_name`,`sub`.`subject_name` AS `subject`,`c`.`class_name` AS `class`,`et`.`exam_type_name` AS `exam_type_name`,(((sum(`sc`.`score`) - max(`sc`.`score`)) - min(`sc`.`score`)) / (count(`sc`.`score`) - 2)) AS `average_score`,max(`sc`.`score`) AS `highest_score`,min(`sc`.`score`) AS `lowest_score`,row_number() OVER (PARTITION BY `sub`.`subject_name`,`et`.`exam_type_name` ORDER BY (((sum(`sc`.`score`) - max(`sc`.`score`)) - min(`sc`.`score`)) / (count(`sc`.`score`) - 2)) desc )  AS `ranking` from ((((((`Teachers` `t` join `Subjects` `sub` on((`t`.`subject_id` = `sub`.`subject_id`))) join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) join `Classes` `c` on((`tc`.`class_id` = `c`.`class_id`))) join `Students` `s` on((`c`.`class_id` = `s`.`class_id`))) join `Scores` `sc` on(((`s`.`student_id` = `sc`.`student_id`) and (`sc`.`subject_id` = `sub`.`subject_id`)))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`type_id`))) group by `t`.`teacher_name`,`sub`.`subject_name`,`c`.`class_name`,`et`.`exam_type_name` order by `sub`.`subject_name`,`et`.`exam_type_name`,`ranking` */;
+/*!50001 VIEW `teacher_performance` AS select `t`.`teacher_id` AS `teacher_id`,`t`.`teacher_name` AS `teacher_name`,`s`.`subject_id` AS `subject_id`,`s`.`subject_name` AS `subject_name`,`c`.`class_id` AS `class_id`,`c`.`class_name` AS `class_name`,`et`.`exam_type_id` AS `exam_type_id`,`et`.`exam_type_name` AS `exam_type_name`,avg(`sc`.`score`) AS `average_score`,row_number() OVER (PARTITION BY `s`.`subject_id`,`et`.`exam_type_id` ORDER BY avg(`sc`.`score`) desc )  AS `rank_in_subject`,row_number() OVER (PARTITION BY `et`.`exam_type_id` ORDER BY avg(`sc`.`score`) desc )  AS `rank_in_school` from ((((((`Teachers` `t` join `Subjects` `s` on((`t`.`subject_id` = `s`.`subject_id`))) join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) join `Classes` `c` on((`tc`.`class_id` = `c`.`class_id`))) join `Students` `st` on((`c`.`class_id` = `st`.`class_id`))) join `Scores` `sc` on((`st`.`student_id` = `sc`.`student_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`exam_type_id`))) group by `t`.`teacher_id`,`t`.`teacher_name`,`s`.`subject_id`,`s`.`subject_name`,`c`.`class_id`,`c`.`class_name`,`et`.`exam_type_id`,`et`.`exam_type_name` */;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
@@ -521,4 +522,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-27 20:58:25
+-- Dump completed on 2025-08-28 23:07:26
