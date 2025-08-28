@@ -54,12 +54,12 @@ def create_exam_type():
 
 @auth_required
 @role_required('admin')
-def get_exam_type(type_id):
+def get_exam_type(exam_type_id):
     """获取考试类型详情"""
     try:
         # 使用考试类型服务获取考试类型信息
         exam_type_service = ExamTypeService()
-        exam_type = exam_type_service.get_exam_type_by_id(type_id)
+        exam_type = exam_type_service.get_exam_type_by_id(exam_type_id)
         
         if exam_type:
             return success_response(exam_type)
@@ -72,7 +72,7 @@ def get_exam_type(type_id):
 
 @auth_required
 @role_required('admin')
-def update_exam_type(type_id):
+def update_exam_type(exam_type_id):
     """更新考试类型"""
     try:
         data = request.get_json()
@@ -83,7 +83,7 @@ def update_exam_type(type_id):
         
         # 使用考试类型服务更新考试类型信息
         exam_type_service = ExamTypeService()
-        result = exam_type_service.update_exam_type(type_id, {'exam_type_name': exam_type_name})
+        result = exam_type_service.update_exam_type(exam_type_id, {'exam_type_name': exam_type_name})
         
         if result:
             return success_response(True, 'Exam type updated successfully')  # 修复返回数据结构
@@ -96,12 +96,12 @@ def update_exam_type(type_id):
 
 @auth_required
 @role_required('admin')
-def delete_exam_type(type_id):
+def delete_exam_type(exam_type_id):
     """删除考试类型"""
     try:
         # 使用考试类型服务删除考试类型
         exam_type_service = ExamTypeService()
-        result = exam_type_service.delete_exam_type(type_id)
+        result = exam_type_service.delete_exam_type(exam_type_id)
         
         if result:
             return success_response({'message': 'Exam type deleted successfully'}, 'Exam type deleted successfully', 204)

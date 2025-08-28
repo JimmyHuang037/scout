@@ -29,9 +29,9 @@ class ExamTypeService:
             
             # 获取考试类型列表
             query = """
-                SELECT type_id, exam_type_name
+                SELECT exam_type_id, exam_type_name
                 FROM ExamTypes
-                ORDER BY type_id
+                ORDER BY exam_type_id
                 LIMIT %s OFFSET %s
             """
             exam_types = self.db_service.execute_query(query, (per_page, offset))
@@ -51,19 +51,19 @@ class ExamTypeService:
         finally:
             self.db_service.close()
     
-    def get_exam_type_by_id(self, type_id):
+    def get_exam_type_by_id(self, exam_type_id):
         """
         根据ID获取考试类型详情
         
         Args:
-            type_id (int): 考试类型ID
+            exam_type_id (int): 考试类型ID
             
         Returns:
             dict: 考试类型信息
         """
         try:
-            query = "SELECT type_id, exam_type_name FROM ExamTypes WHERE type_id = %s"
-            return self.db_service.execute_query(query, (type_id,), fetch_one=True)
+            query = "SELECT exam_type_id, exam_type_name FROM ExamTypes WHERE exam_type_id = %s"
+            return self.db_service.execute_query(query, (exam_type_id,), fetch_one=True)
         except Exception as e:
             raise e
         finally:
@@ -86,10 +86,10 @@ class ExamTypeService:
             
             # 获取新创建的考试类型信息
             select_query = """
-                SELECT type_id, exam_type_name
+                SELECT exam_type_id, exam_type_name
                 FROM ExamTypes
                 WHERE exam_type_name = %s
-                ORDER BY type_id DESC
+                ORDER BY exam_type_id DESC
                 LIMIT 1
             """
             select_params = (exam_type_data.get('exam_type_name'),)
@@ -100,20 +100,20 @@ class ExamTypeService:
         finally:
             self.db_service.close()
     
-    def update_exam_type(self, type_id, exam_type_data):
+    def update_exam_type(self, exam_type_id, exam_type_data):
         """
         更新考试类型信息
         
         Args:
-            type_id (int): 考试类型ID
+            exam_type_id (int): 考试类型ID
             exam_type_data (dict): 考试类型信息
             
         Returns:
             bool: 是否更新成功
         """
         try:
-            query = "UPDATE ExamTypes SET exam_type_name = %s WHERE type_id = %s"
-            params = (exam_type_data.get('exam_type_name'), type_id)
+            query = "UPDATE ExamTypes SET exam_type_name = %s WHERE exam_type_id = %s"
+            params = (exam_type_data.get('exam_type_name'), exam_type_id)
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
@@ -121,12 +121,12 @@ class ExamTypeService:
         finally:
             self.db_service.close()
     
-    def delete_exam_type(self, type_id):
+    def delete_exam_type(self, exam_type_id):
         """
         删除考试类型（同时删除相关的成绩）
         
         Args:
-            type_id (int): 考试类型ID
+            exam_type_id (int): 考试类型ID
             
         Returns:
             bool: 是否删除成功
@@ -137,11 +137,11 @@ class ExamTypeService:
             
             # 删除与该考试类型相关的成绩
             delete_scores_query = "DELETE FROM Scores WHERE exam_type_id = %s"
-            self.db_service.execute_update(delete_scores_query, (type_id,))
+            self.db_service.execute_update(delete_scores_query, (exam_type_id,))
             
             # 删除考试类型
-            delete_exam_type_query = "DELETE FROM ExamTypes WHERE type_id = %s"
-            self.db_service.execute_update(delete_exam_type_query, (type_id,))
+            delete_exam_type_query = "DELETE FROM ExamTypes WHERE exam_type_id = %s"
+            self.db_service.execute_update(delete_exam_type_query, (exam_type_id,))
             
             # 提交事务
             self.db_service.commit()

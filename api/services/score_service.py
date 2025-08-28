@@ -32,45 +32,62 @@ class ScoreService:
                     FROM Scores sc
                     JOIN Students st ON sc.student_id = st.student_id
                     JOIN Subjects sub ON sc.subject_id = sub.subject_id
-                    JOIN ExamTypes et ON sc.exam_type_id = et.type_id
+                    JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                     JOIN Classes c ON st.class_id = c.class_id
                     JOIN TeacherClasses tc ON c.class_id = tc.class_id
                     WHERE tc.teacher_id = %s
                 """
-                params = (teacher_id,)
-            else:
-                # 基本查询（可按学生、科目、考试类型筛选）
-                query = """
-                    SELECT s.score_id, s.student_id, st.student_name, 
-                           s.subject_id, sub.subject_name,
-                           s.exam_type_id, et.exam_type_name, s.score
-                    FROM Scores s
-                    JOIN Students st ON s.student_id = st.student_id
-                    JOIN Subjects sub ON s.subject_id = sub.subject_id
-                    JOIN ExamTypes et ON s.exam_type_id = et.type_id
-                """
-                params = ()
+                params = [teacher_id]
                 
-                # 添加筛选条件
-                conditions = []
                 if student_id:
-                    conditions.append("s.student_id = %s")
-                    params += (student_id,)
+                    query += " AND sc.student_id = %s"
+                    params.append(student_id)
+                    
                 if subject_id:
-                    conditions.append("s.subject_id = %s")
-                    params += (subject_id,)
+                    query += " AND sc.subject_id = %s"
+                    params.append(subject_id)
+                    
                 if exam_type_id:
-                    conditions.append("s.exam_type_id = %s")
-                    params += (exam_type_id,)
+                    query += " AND sc.exam_type_id = %s"
+                    params.append(exam_type_id)
+                    
+                query += " ORDER BY sc.score_id DESC"
                 
-                if conditions:
-                    query += " WHERE " + " AND ".join(conditions)
-            
-            query += " ORDER BY s.score_id DESC"
-            
-            # 执行查询
-            score_list = self.db_service.execute_query(query, params)
-            return score_list
+                return self.db_service.execute_query(query, params)
+            else:
+                # 管理员或其他角色可以查看所有成绩
+                query = """
+                    SELECT sc.score_id, sc.student_id, st.student_name, 
+                           sc.subject_id, sub.subject_name,
+                           sc.exam_type_id, et.exam_type_name, sc.score
+                    FROM Scores sc
+                    JOIN Students st ON sc.student_id = st.student_id
+                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
+                """
+                params = []
+                
+                if student_id:
+                    query += " WHERE sc.student_id = %s"
+                    params.append(student_id)
+                    
+                if subject_id:
+                    if student_id:
+                        query += " AND sc.subject_id = %s"
+                    else:
+                        query += " WHERE sc.subject_id = %s"
+                    params.append(subject_id)
+                    
+                if exam_type_id:
+                    if student_id or subject_id:
+                        query += " AND sc.exam_type_id = %s"
+                    else:
+                        query += " WHERE sc.exam_type_id = %s"
+                    params.append(exam_type_id)
+                
+                query += " ORDER BY sc.score_id DESC"
+                
+                return self.db_service.execute_query(query, params)
             
         except Exception as e:
             raise e
