@@ -400,7 +400,7 @@ class ScoreService:
                 query += " AND tp.class_id = %s"
                 params += (class_id,)
             
-            query += " ORDER BY tp.ranking"
+            query += " ORDER BY tp.rank_in_school"
             
             performance = self.db_service.execute_query(query, params)
             return performance
