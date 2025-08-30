@@ -7,7 +7,7 @@ class ScoreService:
     
     def __init__(self):
         """初始化成绩服务"""
-        self.db_service = database_service.DatabaseService()
+        pass  # 不在初始化时创建数据库连接
     
     def get_scores(self, teacher_id=None, student_id=None, subject_id=None, exam_type_id=None):
         """
@@ -22,6 +22,7 @@ class ScoreService:
         Returns:
             list: 成绩列表
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             if teacher_id:
                 # 教师只能查看自己班级的成绩
@@ -53,7 +54,7 @@ class ScoreService:
                     
                 query += " ORDER BY sc.score_id DESC"
                 
-                return self.db_service.execute_query(query, params)
+                return db_service.execute_query(query, params)
             else:
                 # 管理员或其他角色可以查看所有成绩
                 query = """
@@ -87,12 +88,12 @@ class ScoreService:
                 
                 query += " ORDER BY sc.score_id DESC"
                 
-                return self.db_service.execute_query(query, params)
+                return db_service.execute_query(query, params)
             
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def get_teacher_scores(self, teacher_id, student_id=None, subject_id=None, exam_type_id=None):
         """
@@ -107,6 +108,7 @@ class ScoreService:
         Returns:
             list: 成绩列表
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             # 教师只能查看自己班级的成绩
             query = """
@@ -116,7 +118,7 @@ class ScoreService:
                 FROM Scores sc
                 JOIN Students st ON sc.student_id = st.student_id
                 JOIN Subjects sub ON sc.subject_id = sub.subject_id
-                JOIN ExamTypes et ON sc.exam_type_id = et.type_id
+                JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                 JOIN Classes c ON st.class_id = c.class_id
                 JOIN TeacherClasses tc ON c.class_id = tc.class_id
                 WHERE tc.teacher_id = %s
@@ -141,13 +143,13 @@ class ScoreService:
             query += " ORDER BY sc.score_id DESC"
             
             # 执行查询
-            score_list = self.db_service.execute_query(query, params)
+            score_list = db_service.execute_query(query, params)
             return score_list
             
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def create_score(self, student_id, subject_id, exam_type_id, score):
         """
@@ -162,18 +164,19 @@ class ScoreService:
         Returns:
             bool: 是否创建成功
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 INSERT INTO Scores (student_id, subject_id, exam_type_id, score)
                 VALUES (%s, %s, %s, %s)
             """
             params = (student_id, subject_id, exam_type_id, score)
-            self.db_service.execute_update(query, params)
+            db_service.execute_update(query, params)
             return True
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def update_score(self, score_id, score):
         """
@@ -186,15 +189,16 @@ class ScoreService:
         Returns:
             bool: 是否更新成功
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = "UPDATE Scores SET score = %s WHERE score_id = %s"
             params = (score, score_id)
-            self.db_service.execute_update(query, params)
+            db_service.execute_update(query, params)
             return True
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def delete_score(self, score_id):
         """
@@ -206,15 +210,16 @@ class ScoreService:
         Returns:
             bool: 是否删除成功
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = "DELETE FROM Scores WHERE score_id = %s"
             params = (score_id,)
-            self.db_service.execute_update(query, params)
+            db_service.execute_update(query, params)
             return True
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def is_student_in_teacher_class(self, student_id, teacher_id):
         """
@@ -227,6 +232,7 @@ class ScoreService:
         Returns:
             bool: 学生是否在教师所教的班级中
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 SELECT COUNT(*) as count
@@ -236,12 +242,12 @@ class ScoreService:
                 WHERE s.student_id = %s AND tc.teacher_id = %s
             """
             params = (student_id, teacher_id)
-            result = self.db_service.execute_query(query, params, fetch_one=True)
+            result = db_service.execute_query(query, params, fetch_one=True)
             return result['count'] > 0
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def validate_student_for_teacher(self, student_id, teacher_id):
         """
@@ -267,6 +273,7 @@ class ScoreService:
         Returns:
             bool: 验证结果
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 SELECT COUNT(*) as count
@@ -277,12 +284,12 @@ class ScoreService:
                 WHERE s.score_id = %s AND tc.teacher_id = %s
             """
             params = (score_id, teacher_id)
-            result = self.db_service.execute_query(query, params, fetch_one=True)
+            result = db_service.execute_query(query, params, fetch_one=True)
             return result['count'] > 0
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def get_exam_results(self, teacher_id, exam_type_id=None, class_id=None):
         """
@@ -296,6 +303,7 @@ class ScoreService:
         Returns:
             list: 考试结果数据
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 SELECT er.*
@@ -317,13 +325,63 @@ class ScoreService:
             
             query += " ORDER BY er.ranking"
             
-            exam_results = self.db_service.execute_query(query, params)
+            exam_results = db_service.execute_query(query, params)
             return exam_results
             
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
+    
+    def get_score_by_id(self, score_id, teacher_id=None):
+        """
+        根据成绩ID获取特定成绩
+        
+        Args:
+            score_id (int): 成绩ID
+            teacher_id (int, optional): 教师ID，用于权限验证
+            
+        Returns:
+            dict: 成绩信息
+        """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
+        try:
+            if teacher_id:
+                # 教师只能查看自己班级的成绩
+                query = """
+                    SELECT sc.score_id, sc.student_id, st.student_name, 
+                           sc.subject_id, sub.subject_name,
+                           sc.exam_type_id, et.exam_type_name, sc.score
+                    FROM Scores sc
+                    JOIN Students st ON sc.student_id = st.student_id
+                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
+                    JOIN Classes c ON st.class_id = c.class_id
+                    JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                    WHERE sc.score_id = %s AND tc.teacher_id = %s
+                """
+                params = (score_id, teacher_id)
+            else:
+                # 管理员或其他角色可以查看所有成绩
+                query = """
+                    SELECT sc.score_id, sc.student_id, st.student_name, 
+                           sc.subject_id, sub.subject_name,
+                           sc.exam_type_id, et.exam_type_name, sc.score
+                    FROM Scores sc
+                    JOIN Students st ON sc.student_id = st.student_id
+                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
+                    WHERE sc.score_id = %s
+                """
+                params = (score_id,)
+            
+            result = db_service.execute_query(query, params, fetch_one=True)
+            return result
+            
+        except Exception as e:
+            raise e
+        finally:
+            db_service.close()
     
     def get_student_exam_results(self, student_id, exam_type_id=None):
         """
@@ -336,11 +394,12 @@ class ScoreService:
         Returns:
             list: 学生的考试结果数据
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             # 首先获取学生姓名
             student_query = "SELECT student_name FROM Students WHERE student_id = %s"
             student_params = (student_id,)
-            student_result = self.db_service.execute_query(student_query, student_params, fetch_one=True)
+            student_result = db_service.execute_query(student_query, student_params, fetch_one=True)
             
             if not student_result:
                 return []
@@ -362,13 +421,13 @@ class ScoreService:
             
             query += " ORDER BY exam_type"
             
-            exam_results = self.db_service.execute_query(query, params)
+            exam_results = db_service.execute_query(query, params)
             return exam_results
             
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()
     
     def get_teacher_performance(self, teacher_id, exam_type_id=None, class_id=None):
         """
@@ -382,6 +441,7 @@ class ScoreService:
         Returns:
             list: 教师表现统计数据
         """
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 SELECT tp.*
@@ -402,10 +462,10 @@ class ScoreService:
             
             query += " ORDER BY tp.rank_in_school"
             
-            performance = self.db_service.execute_query(query, params)
+            performance = db_service.execute_query(query, params)
             return performance
             
         except Exception as e:
             raise e
         finally:
-            self.db_service.close()
+            db_service.close()

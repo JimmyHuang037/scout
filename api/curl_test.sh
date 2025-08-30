@@ -311,19 +311,19 @@ run_test_case 40 "获取成绩列表" \
     "40_get_scores.json" "teacher"
 
 run_test_case 41 "创建成绩" \
-    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0101\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0601\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt" \
     "41_create_score.json" "teacher"
 
 run_test_case 42 "获取特定成绩" \
-    "curl -s http://localhost:5000/api/teacher/scores/1 -b /tmp/test_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/scores/3611 -b /tmp/test_cookie.txt" \
     "42_get_score.json" "teacher"
 
 run_test_case 43 "更新成绩" \
-    "curl -s -X PUT http://localhost:5000/api/teacher/scores/1 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/teacher/scores/3611 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/test_cookie.txt" \
     "43_update_score.json" "teacher"
 
 run_test_case 44 "删除成绩" \
-    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/1 -b /tmp/test_cookie.txt" \
+    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/3611 -b /tmp/test_cookie.txt" \
     "44_delete_score.json" "teacher"
 
 run_test_case 45 "获取考试结果" \

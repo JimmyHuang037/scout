@@ -39,6 +39,32 @@ def get_scores():
 
 @auth_required
 @role_required('teacher')
+def get_score(score_id):
+    """获取特定成绩"""
+    try:
+        # 从session中获取当前教师ID
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response('User not authenticated'), 401
+        
+        # 使用成绩服务获取特定成绩
+        score_service = ScoreService()
+        result = score_service.get_score_by_id(score_id, current_teacher_id)
+        
+        if result:
+            app_logger.info(f"Teacher {current_teacher_id} retrieved score {score_id}")
+            return success_response(result)
+        else:
+            app_logger.warning(f"Teacher {current_teacher_id} attempted to retrieve non-existent score {score_id}")
+            return error_response('Score not found'), 404
+        
+    except Exception as e:
+        app_logger.error(f'Failed to fetch score: {str(e)}')
+        return error_response(f'Failed to fetch score: {str(e)}'), 500
+
+
+@auth_required
+@role_required('teacher')
 def create_score():
     """录入成绩"""
     try:
