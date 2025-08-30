@@ -37,8 +37,9 @@ def create_teacher():
         result = teacher_service.create_teacher(data)
         
         if result:
-            app_logger.info(f"Admin created teacher {result.get('teacher_id')}")
-            return success_response(result, 'Teacher created successfully', 201)
+            # 修复：create_teacher服务方法返回的是布尔值，不是包含teacher_id的对象
+            app_logger.info("Admin created teacher")
+            return success_response(None, 'Teacher created successfully', 201)
         else:
             app_logger.error("Failed to create teacher")
             return error_response('Failed to create teacher', 400)

@@ -138,11 +138,11 @@ class TeacherService:
                 update_fields.append("password = %s")
                 params.append(teacher_data['password'])
             
-            if not fields:
+            if not update_fields:
                 return False
             
             params.append(teacher_id)
-            query = f"UPDATE Teachers SET {', '.join(fields)} WHERE teacher_id = %s"
+            query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
