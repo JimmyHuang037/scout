@@ -92,8 +92,8 @@ login_admin() {
 
 login_teacher() {
     echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
-    # 使用默认教师账户
-    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"1\", \"password\": \"test123\"}' -c /tmp/test_cookie.txt"
+    # 使用教师ID 2而不是1
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"2\", \"password\": \"123456\"}' -c /tmp/test_cookie.txt"
     echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
     RESPONSE=$(eval $CMD)
     echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
@@ -255,7 +255,7 @@ run_test_case 26 "获取教师班级关系列表" \
     "26_get_teacher_classes.json" "admin"
 
 run_test_case 27 "创建教师班级关系" \
-    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 1, \"class_id\": 2}' -b /tmp/test_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 2}' -b /tmp/test_cookie.txt" \
     "27_create_teacher_class.json" "admin"
 
 run_test_case 28 "获取特定教师班级关系" \
@@ -263,7 +263,7 @@ run_test_case 28 "获取特定教师班级关系" \
     "28_get_teacher_class.json" "admin"
 
 run_test_case 29 "更新教师班级关系" \
-    "curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"teacher_id\": 3, \"class_id\": 3}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 3}' -b /tmp/test_cookie.txt" \
     "29_update_teacher_class.json" "admin"
 
 run_test_case 30 "删除教师班级关系" \
