@@ -81,12 +81,32 @@ fi
 
 echo "API服务器启动成功!"
 
-# 登录并保存会话 (使用管理员账户)
-echo "登录并保存会话..." | tee -a "$RESULT_DIR/test_results.log"
-CMD0="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"admin\", \"password\": \"admin\"}' -c /tmp/test_cookie.txt"
-echo "执行命令: $CMD0" | tee -a "$RESULT_DIR/test_results.log"
-RESPONSE0=$(eval $CMD0)
-echo "$RESPONSE0" | tee -a "$RESULT_DIR/test_results.log"
+# 定义不同角色的登录函数
+login_admin() {
+    echo "登录管理员账户..." | tee -a "$RESULT_DIR/test_results.log"
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"admin\", \"password\": \"admin\"}' -c /tmp/test_cookie.txt"
+    echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
+    RESPONSE=$(eval $CMD)
+    echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
+}
+
+login_teacher() {
+    echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
+    # 先尝试使用默认教师账户
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"1\", \"password\": \"test123\"}' -c /tmp/test_cookie.txt"
+    echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
+    RESPONSE=$(eval $CMD)
+    echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
+}
+
+login_student() {
+    echo "登录学生账户..." | tee -a "$RESULT_DIR/test_results.log"
+    # 使用默认学生账户
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"S0101\", \"password\": \"pass123\"}' -c /tmp/test_cookie.txt"
+    echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
+    RESPONSE=$(eval $CMD)
+    echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
+}
 
 # 测试需要身份验证的端点
 echo "=== 测试需要身份验证的端点 ===" | tee "$RESULT_DIR/test_results.log"
@@ -108,6 +128,19 @@ run_test_case() {
     if [ -n "$TEST_BLUEPRINT" ] && [ "$TEST_BLUEPRINT" != "$blueprint_type" ]; then
         return
     fi
+    
+    # 根据蓝图类型登录对应角色
+    case "$blueprint_type" in
+        "admin")
+            login_admin
+            ;;
+        "teacher")
+            login_teacher
+            ;;
+        "student")
+            login_student
+            ;;
+    esac
     
     echo "" | tee -a "$RESULT_DIR/test_results.log"
     echo "$case_number. $case_description" | tee -a "$RESULT_DIR/test_results.log"
@@ -267,11 +300,11 @@ run_test_case 33 "获取学生个人信息" \
     "33_get_student_profile.json" "student"
 
 run_test_case 34 "获取教师管理的学生列表" \
-    "curl -s http://localhost:5000/api/teacher/students -b /tmp/teacher_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/students -b /tmp/test_cookie.txt" \
     "34_get_teacher_students.json" "teacher"
 
 run_test_case 35 "获取考试列表" \
-    "curl -s http://localhost:5000/api/teacher/exams -b /tmp/teacher_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/exams -b /tmp/test_cookie.txt" \
     "35_get_exams.json" "teacher"
 
 run_test_case 36 "创建考试" \
