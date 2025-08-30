@@ -42,7 +42,7 @@ def create_exam_type():
         
         if result:
             app_logger.info("Admin created exam type")
-            return success_response({'message': 'Exam type created successfully'}, 'Exam type created successfully', 201)
+            return success_response(result, 'Exam type created successfully', 201)
         else:
             app_logger.error("Failed to create exam type")
             return error_response('Failed to create exam type', 400)

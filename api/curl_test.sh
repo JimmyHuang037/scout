@@ -10,13 +10,17 @@ if [ "$#" -eq 1 ]; then
     # 检查是否为数字（特定测试用例）
     if [[ "$1" =~ ^[0-9]+$ ]]; then
         TEST_CASE_NUMBER="$1"
+    # 检查是否为数字范围（如40-44）
+    elif [[ "$1" =~ ^[0-9]+-[0-9]+$ ]]; then
+        TEST_CASE_NUMBER="$1"
     # 检查是否为蓝图名称
     elif [[ "$1" =~ ^(admin|student|teacher)$ ]]; then
         TEST_BLUEPRINT="$1"
     else
-        echo "错误: 参数必须是测试用例编号(数字)或蓝图名称(admin|student|teacher)"
-        echo "用法: $0 [测试用例编号|蓝图名称]"
+        echo "错误: 参数必须是测试用例编号(数字)、测试用例范围(如40-44)或蓝图名称(admin|student|teacher)"
+        echo "用法: $0 [测试用例编号|测试用例范围|蓝图名称]"
         echo "示例: $0 5 (只运行第5个测试用例)"
+        echo "示例: $0 40-44 (运行第40到44个测试用例)"
         echo "示例: $0 admin (运行所有admin蓝图下的测试)"
         exit 1
     fi
@@ -92,8 +96,8 @@ login_admin() {
 
 login_teacher() {
     echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
-    # 使用教师ID 2而不是1
-    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"2\", \"password\": \"123456\"}' -c /tmp/test_cookie.txt"
+    # 使用教师ID 3而不是2
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"3\", \"password\": \"123456\"}' -c /tmp/test_cookie.txt"
     echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
     RESPONSE=$(eval $CMD)
     echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
@@ -101,8 +105,8 @@ login_teacher() {
 
 login_student() {
     echo "登录学生账户..." | tee -a "$RESULT_DIR/test_results.log"
-    # 使用默认学生账户
-    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"S0101\", \"password\": \"pass123\"}' -c /tmp/test_cookie.txt"
+    # 使用学生ID S0201而不是S0101
+    CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"S0201\", \"password\": \"pass123\"}' -c /tmp/test_cookie.txt"
     echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
     RESPONSE=$(eval $CMD)
     echo "$RESPONSE" | tee -a "$RESULT_DIR/test_results.log"
@@ -120,8 +124,17 @@ run_test_case() {
     local blueprint_type=$5
     
     # 如果指定了测试用例编号，则只运行指定的测试用例
-    if [ -n "$TEST_CASE_NUMBER" ] && [ "$TEST_CASE_NUMBER" -ne "$case_number" ]; then
+    if [ -n "$TEST_CASE_NUMBER" ] && [[ "$TEST_CASE_NUMBER" =~ ^[0-9]+$ ]] && [ "$TEST_CASE_NUMBER" -ne "$case_number" ]; then
         return
+    fi
+    
+    # 如果指定了测试用例范围（如40-44），则只运行范围内的测试用例
+    if [ -n "$TEST_CASE_NUMBER" ] && [[ "$TEST_CASE_NUMBER" =~ ^[0-9]+-[0-9]+$ ]]; then
+        local start_range=$(echo "$TEST_CASE_NUMBER" | cut -d'-' -f1)
+        local end_range=$(echo "$TEST_CASE_NUMBER" | cut -d'-' -f2)
+        if [ "$case_number" -lt "$start_range" ] || [ "$case_number" -gt "$end_range" ]; then
+            return
+        fi
     fi
     
     # 如果指定了蓝图类型，则只运行该蓝图下的测试用例
@@ -145,6 +158,8 @@ run_test_case() {
     echo "" | tee -a "$RESULT_DIR/test_results.log"
     echo "$case_number. $case_description" | tee -a "$RESULT_DIR/test_results.log"
     echo "执行命令: $case_command" | tee -a "$RESULT_DIR/test_results.log"
+    
+    # 移除DELETE请求的特殊处理，统一处理所有请求
     RESPONSE=$(eval $case_command)
     echo "$RESPONSE" | jq '.' > "$RESULT_DIR/${output_file}" 2>/dev/null || echo "$RESPONSE" > "$RESULT_DIR/${output_file}"
 }
@@ -243,11 +258,11 @@ run_test_case 23 "获取特定考试类型" \
     "23_get_exam_type.json" "admin"
 
 run_test_case 24 "更新考试类型" \
-    "curl -s -X PUT http://localhost:5000/api/admin/exam-types/1 -H \"Content-Type: application/json\" -d '{\"exam_type_name\": \"Updated Exam Type\"}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/admin/exam-types/5 -H \"Content-Type: application/json\" -d '{\"exam_type_name\": \"Updated Exam Type\"}' -b /tmp/test_cookie.txt" \
     "24_update_exam_type.json" "admin"
 
 run_test_case 25 "删除考试类型" \
-    "curl -s -X DELETE http://localhost:5000/api/admin/exam-types/1 -b /tmp/test_cookie.txt" \
+    "curl -s -X DELETE http://localhost:5000/api/admin/exam-types/5 -b /tmp/test_cookie.txt" \
     "25_delete_exam_type.json" "admin"
 
 run_test_case 26 "获取教师班级关系列表" \
@@ -255,7 +270,7 @@ run_test_case 26 "获取教师班级关系列表" \
     "26_get_teacher_classes.json" "admin"
 
 run_test_case 27 "创建教师班级关系" \
-    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 2}' -b /tmp/test_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 12}' -b /tmp/test_cookie.txt" \
     "27_create_teacher_class.json" "admin"
 
 run_test_case 28 "获取特定教师班级关系" \
@@ -311,19 +326,19 @@ run_test_case 40 "获取成绩列表" \
     "40_get_scores.json" "teacher"
 
 run_test_case 41 "创建成绩" \
-    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0601\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0201\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt" \
     "41_create_score.json" "teacher"
 
 run_test_case 42 "获取特定成绩" \
-    "curl -s http://localhost:5000/api/teacher/scores/3611 -b /tmp/test_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/scores/732 -b /tmp/test_cookie.txt" \
     "42_get_score.json" "teacher"
 
 run_test_case 43 "更新成绩" \
-    "curl -s -X PUT http://localhost:5000/api/teacher/scores/3611 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/teacher/scores/732 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/test_cookie.txt" \
     "43_update_score.json" "teacher"
 
 run_test_case 44 "删除成绩" \
-    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/3611 -b /tmp/test_cookie.txt" \
+    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/732 -b /tmp/test_cookie.txt" \
     "44_delete_score.json" "teacher"
 
 run_test_case 45 "获取考试结果" \
@@ -350,11 +365,34 @@ echo "带身份验证的API测试完成!"
 if [ -n "$TEST_CASE_NUMBER" ]; then
     echo ""
     echo "测试用例 $TEST_CASE_NUMBER 的结果:"
-    test_result_file="$RESULT_DIR/${TEST_CASE_NUMBER}_*"
-    if ls $test_result_file 1> /dev/null 2>&1; then
-        cat $test_result_file
+    # 修复测试用例范围参数的处理
+    if [[ "$TEST_CASE_NUMBER" =~ ^[0-9]+-[0-9]+$ ]]; then
+        # 处理范围参数，例如 40-44
+        start_range=$(echo "$TEST_CASE_NUMBER" | cut -d'-' -f1)
+        end_range=$(echo "$TEST_CASE_NUMBER" | cut -d'-' -f2)
+        
+        found_results=false
+        for ((i=start_range; i<=end_range; i++)); do
+            test_result_file="$RESULT_DIR/${i}_*"
+            if ls $test_result_file 1> /dev/null 2>&1; then
+                echo ""
+                echo "测试用例 $i:"
+                cat $test_result_file
+                found_results=true
+            fi
+        done
+        
+        if [ "$found_results" = false ]; then
+            echo "未找到测试用例 $TEST_CASE_NUMBER 的结果文件"
+        fi
     else
-        echo "未找到测试用例 $TEST_CASE_NUMBER 的结果文件"
+        # 处理单个测试用例
+        test_result_file="$RESULT_DIR/${TEST_CASE_NUMBER}_*"
+        if ls $test_result_file 1> /dev/null 2>&1; then
+            cat $test_result_file
+        else
+            echo "未找到测试用例 $TEST_CASE_NUMBER 的结果文件"
+        fi
     fi
 # 如果指定了蓝图类型，显示该蓝图下所有测试的结果
 elif [ -n "$TEST_BLUEPRINT" ]; then
