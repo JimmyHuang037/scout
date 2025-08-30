@@ -325,6 +325,51 @@ class ScoreService:
         finally:
             self.db_service.close()
     
+    def get_student_exam_results(self, student_id, exam_type_id=None):
+        """
+        获取学生的考试结果
+        
+        Args:
+            student_id (str): 学生ID
+            exam_type_id (int, optional): 考试类型ID
+            
+        Returns:
+            list: 学生的考试结果数据
+        """
+        try:
+            # 首先获取学生姓名
+            student_query = "SELECT student_name FROM Students WHERE student_id = %s"
+            student_params = (student_id,)
+            student_result = self.db_service.execute_query(student_query, student_params, fetch_one=True)
+            
+            if not student_result:
+                return []
+                
+            student_name = student_result['student_name']
+            
+            # 查询exam_results视图
+            query = """
+                SELECT *
+                FROM exam_results
+                WHERE student_name = %s
+            """
+            params = (student_name,)
+            
+            # 添加筛选条件
+            if exam_type_id:
+                query += " AND exam_type = %s"
+                params += (exam_type_id,)
+            
+            query += " ORDER BY exam_type"
+            
+            exam_results = self.db_service.execute_query(query, params)
+            return exam_results
+            
+        except Exception as e:
+            raise e
+        finally:
+            self.db_service.close()
+    
     def get_teacher_performance(self, teacher_id, exam_type_id=None, class_id=None):
         """
         获取教师教学表现统计

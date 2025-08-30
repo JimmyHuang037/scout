@@ -258,61 +258,69 @@ run_test_case 31 "获取学生成绩" \
     "curl -s http://localhost:5000/api/student/scores -b /tmp/test_cookie.txt" \
     "31_get_student_scores.json" "student"
 
-run_test_case 32 "获取教师管理的学生列表" \
+run_test_case 32 "获取学生考试结果" \
+    "curl -s http://localhost:5000/api/student/exam/results -b /tmp/test_cookie.txt" \
+    "32_get_student_exam_results.json" "student"
+
+run_test_case 33 "获取学生个人信息" \
+    "curl -s http://localhost:5000/api/student/profile -b /tmp/test_cookie.txt" \
+    "33_get_student_profile.json" "student"
+
+run_test_case 34 "获取教师管理的学生列表" \
     "curl -s http://localhost:5000/api/teacher/students -b /tmp/teacher_cookie.txt" \
-    "32_get_teacher_students.json" "teacher"
+    "34_get_teacher_students.json" "teacher"
 
-run_test_case 33 "获取考试列表" \
+run_test_case 35 "获取考试列表" \
     "curl -s http://localhost:5000/api/teacher/exams -b /tmp/teacher_cookie.txt" \
-    "33_get_exams.json" "teacher"
+    "35_get_exams.json" "teacher"
 
-run_test_case 34 "创建考试" \
+run_test_case 36 "创建考试" \
     "curl -s -X POST http://localhost:5000/api/teacher/exams -H \"Content-Type: application/json\" -d '{\"exam_name\": \"Test Exam\", \"subject_id\": 1, \"class_id\": 1, \"exam_type_id\": 1, \"exam_date\": \"2023-01-01\"}' -b /tmp/test_cookie.txt" \
-    "34_create_exam.json" "teacher"
+    "36_create_exam.json" "teacher"
 
-run_test_case 35 "获取特定考试" \
+run_test_case 37 "获取特定考试" \
     "curl -s http://localhost:5000/api/teacher/exams/1 -b /tmp/test_cookie.txt" \
-    "35_get_exam.json" "teacher"
+    "37_get_exam.json" "teacher"
 
-run_test_case 36 "更新考试信息" \
+run_test_case 38 "更新考试信息" \
     "curl -s -X PUT http://localhost:5000/api/teacher/exams/1 -H \"Content-Type: application/json\" -d '{\"exam_name\": \"Updated Exam\"}' -b /tmp/test_cookie.txt" \
-    "36_update_exam.json" "teacher"
+    "38_update_exam.json" "teacher"
 
-run_test_case 37 "删除考试" \
+run_test_case 39 "删除考试" \
     "curl -s -X DELETE http://localhost:5000/api/teacher/exams/1 -b /tmp/test_cookie.txt" \
-    "37_delete_exam.json" "teacher"
+    "39_delete_exam.json" "teacher"
 
-run_test_case 38 "获取成绩列表" \
+run_test_case 40 "获取成绩列表" \
     "curl -s http://localhost:5000/api/teacher/scores -b /tmp/teacher_cookie.txt" \
-    "38_get_scores.json" "teacher"
+    "40_get_scores.json" "teacher"
 
-run_test_case 39 "创建成绩" \
+run_test_case 41 "创建成绩" \
     "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0101\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/teacher_cookie.txt" \
-    "39_create_score.json" "teacher"
+    "41_create_score.json" "teacher"
 
-run_test_case 40 "获取特定成绩" \
+run_test_case 42 "获取特定成绩" \
     "curl -s http://localhost:5000/api/teacher/scores/1 -b /tmp/teacher_cookie.txt" \
-    "40_get_score.json" "teacher"
+    "42_get_score.json" "teacher"
 
-run_test_case 41 "更新成绩" \
+run_test_case 43 "更新成绩" \
     "curl -s -X PUT http://localhost:5000/api/teacher/scores/1 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/teacher_cookie.txt" \
-    "41_update_score.json" "teacher"
+    "43_update_score.json" "teacher"
 
-run_test_case 42 "删除成绩" \
+run_test_case 44 "删除成绩" \
     "curl -s -X DELETE http://localhost:5000/api/teacher/scores/1 -b /tmp/teacher_cookie.txt" \
-    "42_delete_score.json" "teacher"
+    "44_delete_score.json" "teacher"
 
-run_test_case 43 "获取考试结果" \
+run_test_case 45 "获取考试结果" \
     "curl -s http://localhost:5000/api/teacher/exam/results -b /tmp/test_cookie.txt" \
-    "43_get_exam_results.json" "teacher"
+    "45_get_exam_results.json" "teacher"
 
-run_test_case 44 "获取教学表现" \
+run_test_case 46 "获取教学表现" \
     "curl -s http://localhost:5000/api/teacher/exam/performance -b /tmp/test_cookie.txt" \
-    "44_get_teacher_performance.json" "teacher"
+    "46_get_teacher_performance.json" "teacher"
 
-run_test_case 45 "获取考试班级" \
+run_test_case 47 "获取考试班级" \
     "curl -s http://localhost:5000/api/teacher/exam/classes -b /tmp/test_cookie.txt" \
-    "45_get_exam_classes.json" "teacher"
+    "47_get_exam_classes.json" "teacher"
 
 # 关闭API服务器
 echo "" | tee -a "$RESULT_DIR/test_results.log"
@@ -351,10 +359,10 @@ elif [ -n "$TEST_BLUEPRINT" ]; then
                 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30)
                     case_blueprint="admin"
                     ;;
-                31)
+                31|32|33)
                     case_blueprint="student"
                     ;;
-                32|33|34|35|36|37|38|39|40|41|42|43|44|45)
+                34|35|36|37|38|39|40|41|42|43|44|45|46|47)
                     case_blueprint="teacher"
                     ;;
             esac
