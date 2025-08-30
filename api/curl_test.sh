@@ -92,7 +92,7 @@ login_admin() {
 
 login_teacher() {
     echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
-    # 先尝试使用默认教师账户
+    # 使用默认教师账户
     CMD="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"1\", \"password\": \"test123\"}' -c /tmp/test_cookie.txt"
     echo "执行命令: $CMD" | tee -a "$RESULT_DIR/test_results.log"
     RESPONSE=$(eval $CMD)
@@ -270,23 +270,6 @@ run_test_case 30 "删除教师班级关系" \
     "curl -s -X DELETE http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"class_id\": 2}' -b /tmp/test_cookie.txt" \
     "30_delete_teacher_class.json" "admin"
 
-# 登录教师账户
-echo "" | tee -a "$RESULT_DIR/test_results.log"
-echo "登录教师账户..." | tee -a "$RESULT_DIR/test_results.log"
-CMD31="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"T0101\", \"password\": \"teacher_password\"}' -c /tmp/teacher_cookie.txt"
-echo "执行命令: $CMD31" | tee -a "$RESULT_DIR/test_results.log"
-RESPONSE31=$(eval $CMD31)
-echo "$RESPONSE31" | tee -a "$RESULT_DIR/test_results.log"
-
-# 如果登录失败，尝试使用数据库中的教师账户
-if echo "$RESPONSE31" | grep -q "Invalid user_id or password"; then
-    echo "使用数据库中的教师账户登录..." | tee -a "$RESULT_DIR/test_results.log"
-    CMD31="curl -s -X POST http://localhost:5000/api/auth/login -H \"Content-Type: application/json\" -d '{\"user_id\": \"2\", \"password\": \"123456\"}' -c /tmp/teacher_cookie.txt"
-    echo "执行命令: $CMD31" | tee -a "$RESULT_DIR/test_results.log"
-    RESPONSE31=$(eval $CMD31)
-    echo "$RESPONSE31" | tee -a "$RESULT_DIR/test_results.log"
-fi
-
 run_test_case 31 "获取学生成绩" \
     "curl -s http://localhost:5000/api/student/scores -b /tmp/test_cookie.txt" \
     "31_get_student_scores.json" "student"
@@ -324,23 +307,23 @@ run_test_case 39 "删除考试" \
     "39_delete_exam.json" "teacher"
 
 run_test_case 40 "获取成绩列表" \
-    "curl -s http://localhost:5000/api/teacher/scores -b /tmp/teacher_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/scores -b /tmp/test_cookie.txt" \
     "40_get_scores.json" "teacher"
 
 run_test_case 41 "创建成绩" \
-    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0101\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/teacher_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/teacher/scores -H \"Content-Type: application/json\" -d '{\"student_id\": \"S0101\", \"subject_id\": 1, \"exam_type_id\": 1, \"score\": 95.5}' -b /tmp/test_cookie.txt" \
     "41_create_score.json" "teacher"
 
 run_test_case 42 "获取特定成绩" \
-    "curl -s http://localhost:5000/api/teacher/scores/1 -b /tmp/teacher_cookie.txt" \
+    "curl -s http://localhost:5000/api/teacher/scores/1 -b /tmp/test_cookie.txt" \
     "42_get_score.json" "teacher"
 
 run_test_case 43 "更新成绩" \
-    "curl -s -X PUT http://localhost:5000/api/teacher/scores/1 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/teacher_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/teacher/scores/1 -H \"Content-Type: application/json\" -d '{\"score\": 90.0}' -b /tmp/test_cookie.txt" \
     "43_update_score.json" "teacher"
 
 run_test_case 44 "删除成绩" \
-    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/1 -b /tmp/teacher_cookie.txt" \
+    "curl -s -X DELETE http://localhost:5000/api/teacher/scores/1 -b /tmp/test_cookie.txt" \
     "44_delete_score.json" "teacher"
 
 run_test_case 45 "获取考试结果" \
