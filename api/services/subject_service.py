@@ -1,17 +1,23 @@
-"""科目服务模块，处理与科目相关的业务逻辑"""
-from utils import database_service
+"""科目服务模块"""
+import logging
+from utils.database_service import DatabaseService
+# 移除不存在的模块导入
+
+# 初始化日志器
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class SubjectService:
     """科目服务类"""
-    
+
     def __init__(self):
         """初始化科目服务"""
-        self.db_service = database_service.DatabaseService()
-    
+        self.db_service = DatabaseService()
+
     def get_all_subjects(self, page=1, per_page=10):
         """
-        获取所有科目（带分页）
+        获取所有科目列表（分页）
         
         Args:
             page (int): 页码
@@ -21,20 +27,25 @@ class SubjectService:
             dict: 科目列表和分页信息
         """
         try:
+            # 计算偏移量
             offset = (page - 1) * per_page
             
             # 获取总数
-            count_query = "SELECT COUNT(*) as count FROM Subjects"
-            total = self.db_service.get_count(count_query)
+            count_query = "SELECT COUNT(*) as total FROM Subjects"
+            total_result = self.db_service.execute_query(count_query, fetch_one=True)
+            total = total_result['total'] if total_result else 0
             
             # 获取科目列表
             query = """
-                SELECT subject_id, subject_name
-                FROM Subjects
-                ORDER BY subject_id
+                SELECT subject_id, subject_name 
+                FROM Subjects 
+                ORDER BY subject_id 
                 LIMIT %s OFFSET %s
             """
             subjects = self.db_service.execute_query(query, (per_page, offset))
+            
+            # 计算总页数
+            pages = (total + per_page - 1) // per_page
             
             return {
                 'subjects': subjects,
@@ -42,15 +53,14 @@ class SubjectService:
                     'page': page,
                     'per_page': per_page,
                     'total': total,
-                    'pages': (total + per_page - 1) // per_page
+                    'pages': pages
                 }
             }
-            
         except Exception as e:
             raise e
         finally:
             self.db_service.close()
-    
+
     def get_subject_by_id(self, subject_id):
         """
         根据ID获取科目详情

@@ -1,10 +1,15 @@
-"""教师服务模块，处理与教师相关的业务逻辑"""
+"""教师服务模块"""
+import logging
 from utils import database_service
+
+# 初始化日志器
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class TeacherService:
     """教师服务类"""
-    
+
     def __init__(self):
         """初始化教师服务"""
         self.db_service = database_service.DatabaseService()
@@ -74,9 +79,8 @@ class TeacherService:
         except Exception as e:
             raise e
         finally:
-            # 注意：不要在这里关闭数据库连接，因为这会导致后续查询失败
-            pass
-    
+            self.db_service.close()
+
     def create_teacher(self, teacher_data):
         """
         创建教师
@@ -85,11 +89,9 @@ class TeacherService:
             teacher_data (dict): 教师信息
             
         Returns:
-            dict: 创建的教师信息
+            bool: 是否创建成功
         """
-        db_service = None
         try:
-            db_service = database_service.DatabaseService()
             query = """
                 INSERT INTO Teachers (teacher_name, subject_id, password)
                 VALUES (%s, %s, %s)
@@ -99,23 +101,12 @@ class TeacherService:
                 teacher_data.get('subject_id'),
                 teacher_data.get('password')
             )
-            db_service.execute_update(query, params)
-            
-            # 获取新创建的教师信息
-            teacher_id = db_service.cursor.lastrowid
-            get_query = """
-                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
-                FROM Teachers t
-                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
-                WHERE t.teacher_id = %s
-            """
-            teacher = db_service.execute_query(get_query, (teacher_id,), fetch_one=True)
-            return teacher
+            self.db_service.execute_update(query, params)
+            return True
         except Exception as e:
             raise e
         finally:
-            if db_service:
-                db_service.close()
+            self.db_service.close()
     
     def update_teacher(self, teacher_id, teacher_data):
         """
@@ -147,28 +138,17 @@ class TeacherService:
                 update_fields.append("password = %s")
                 params.append(teacher_data['password'])
             
-            if not update_fields:
-                raise ValueError("没有提供要更新的字段")
+            if not fields:
+                return False
             
             params.append(teacher_id)
-            
-            query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
-            db_service.execute_update(query, params)
-            
-            # 获取更新后的教师信息
-            get_query = """
-                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
-                FROM Teachers t
-                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
-                WHERE t.teacher_id = %s
-            """
-            teacher = db_service.execute_query(get_query, (teacher_id,), fetch_one=True)
-            return teacher
+            query = f"UPDATE Teachers SET {', '.join(fields)} WHERE teacher_id = %s"
+            self.db_service.execute_update(query, params)
+            return True
         except Exception as e:
             raise e
         finally:
-            if db_service:
-                db_service.close()
+            self.db_service.close()
     
     def delete_teacher(self, teacher_id):
         """
@@ -178,19 +158,26 @@ class TeacherService:
             teacher_id (int): 教师ID
             
         Returns:
-            bool: 删除是否成功
+            bool: 是否删除成功
         """
-        db_service = None
         try:
-            db_service = database_service.DatabaseService()
-            query = "DELETE FROM Teachers WHERE teacher_id = %s"
-            result = db_service.execute_update(query, (teacher_id,))
-            return result > 0
+            self.db_service.start_transaction()
+            
+            # 删除教师班级关联记录
+            delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
+            self.db_service.execute_update(delete_teacher_classes_query, (teacher_id,))
+            
+            # 删除教师记录
+            delete_teacher_query = "DELETE FROM Teachers WHERE teacher_id = %s"
+            self.db_service.execute_update(delete_teacher_query, (teacher_id,))
+            
+            self.db_service.commit()
+            return True
         except Exception as e:
+            self.db_service.rollback()
             raise e
         finally:
-            if db_service:
-                db_service.close()
+            self.db_service.close()
     
     def get_teachers_by_subject(self, subject_id):
         """

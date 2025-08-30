@@ -24,7 +24,7 @@ echo "正在恢复数据库..."
 cd "$DB_DIR"
 
 # 使用最新的备份文件
-BACKUP_FILENAME="school_management_backup_20250827_205825.sql"
+BACKUP_FILENAME="school_management_backup_20250828_230726.sql"
 echo "使用备份文件: $BACKUP_FILENAME"
 
 # 检查备份文件是否存在

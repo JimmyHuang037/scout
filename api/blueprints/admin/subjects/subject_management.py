@@ -109,7 +109,8 @@ def delete_subject(subject_id):
         result = subject_service.delete_subject(subject_id)
         
         if result:
-            return success_response(None, 'Subject deleted successfully'), 204
+            # 修复返回值问题，确保返回正确的响应格式
+            return success_response({'message': 'Subject deleted successfully'}), 200
         else:
             return error_response('Failed to delete subject', 400)
             

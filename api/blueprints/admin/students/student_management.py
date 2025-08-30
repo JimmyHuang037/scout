@@ -111,7 +111,8 @@ def delete_student(student_id):
         result = student_service.delete_student(student_id)
         
         if result:
-            return success_response(None, 'Student deleted successfully')
+            # 修复返回值问题，确保返回正确的响应格式
+            return success_response({'message': 'Student deleted successfully'}), 200
         else:
             return error_response('Failed to delete student', 400)
             
