@@ -255,7 +255,7 @@ run_test_case 26 "获取教师班级关系列表" \
     "26_get_teacher_classes.json" "admin"
 
 run_test_case 27 "创建教师班级关系" \
-    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 1, \"class_id\": 1}' -b /tmp/test_cookie.txt" \
+    "curl -s -X POST http://localhost:5000/api/admin/teacher-classes -H \"Content-Type: application/json\" -d '{\"teacher_id\": 1, \"class_id\": 2}' -b /tmp/test_cookie.txt" \
     "27_create_teacher_class.json" "admin"
 
 run_test_case 28 "获取特定教师班级关系" \
@@ -263,7 +263,7 @@ run_test_case 28 "获取特定教师班级关系" \
     "28_get_teacher_class.json" "admin"
 
 run_test_case 29 "更新教师班级关系" \
-    "curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"teacher_id\": 2, \"class_id\": 2}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/admin/teacher-classes/1 -H \"Content-Type: application/json\" -d '{\"teacher_id\": 3, \"class_id\": 3}' -b /tmp/test_cookie.txt" \
     "29_update_teacher_class.json" "admin"
 
 run_test_case 30 "删除教师班级关系" \
@@ -370,7 +370,6 @@ elif [ -n "$TEST_BLUEPRINT" ]; then
             case_description=${BASH_REMATCH[2]}
             
             # 检查该测试用例是否属于指定的蓝图
-            case_blueprint=""
             case "$case_number" in
                 1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30)
                     case_blueprint="admin"

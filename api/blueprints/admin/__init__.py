@@ -53,9 +53,9 @@ admin_bp.add_url_rule('/subjects/<int:subject_id>', view_func=delete_subject, me
 # 注册考试类型管理路由
 admin_bp.add_url_rule('/exam-types', view_func=get_exam_types, methods=['GET'])
 admin_bp.add_url_rule('/exam-types', view_func=create_exam_type, methods=['POST'])
-admin_bp.add_url_rule('/exam-types/<int:type_id>', view_func=get_exam_type, methods=['GET'])
-admin_bp.add_url_rule('/exam-types/<int:type_id>', view_func=update_exam_type, methods=['PUT'])
-admin_bp.add_url_rule('/exam-types/<int:type_id>', view_func=delete_exam_type, methods=['DELETE'])
+admin_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=get_exam_type, methods=['GET'])
+admin_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=update_exam_type, methods=['PUT'])
+admin_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=delete_exam_type, methods=['DELETE'])
 
 # 注册教师班级关联管理路由
 admin_bp.add_url_rule('/teacher-classes', view_func=get_teacher_classes, methods=['GET'])

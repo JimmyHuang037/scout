@@ -50,7 +50,7 @@ def create_teacher_class():
         
         if result:
             app_logger.info(f"Admin created teacher-class association: teacher_id={teacher_id}, class_id={class_id}")
-            return success_response(result, 'Teacher-class association created successfully', 201)
+            return success_response({'message': 'Teacher-class association created successfully'}, 'Teacher-class association created successfully', 201)
         else:
             app_logger.error("Failed to create teacher-class association")
             return error_response('Failed to create teacher-class association', 400)
@@ -83,13 +83,12 @@ def update_teacher_class(teacher_id):
     """更新教师班级关联"""
     try:
         data = request.get_json()
+        new_teacher_id = data.get('teacher_id')
         class_id = data.get('class_id')
-        new_teacher_id = data.get('new_teacher_id')
-        new_class_id = data.get('new_class_id')
         
-        if not all([class_id, new_teacher_id, new_class_id]):
+        if not all([new_teacher_id, class_id]):
             app_logger.warning("Update teacher-class association attempt with missing fields")
-            return error_response('Missing required fields', 400)
+            return error_response('Missing required fields: teacher_id, class_id', 400)
         
         # 使用教师班级服务更新教师班级关联
         teacher_class_service = TeacherClassService()
@@ -100,12 +99,12 @@ def update_teacher_class(teacher_id):
             # 创建新的关联
             teacher_class_data = {
                 'teacher_id': new_teacher_id,
-                'class_id': new_class_id
+                'class_id': class_id
             }
             create_result = teacher_class_service.create_teacher_class(teacher_class_data)
             
             if create_result:
-                app_logger.info(f"Admin updated teacher-class association: {teacher_id}:{class_id} -> {new_teacher_id}:{new_class_id}")
+                app_logger.info(f"Admin updated teacher-class association: {teacher_id}:{class_id} -> {new_teacher_id}:{class_id}")
                 return success_response(create_result, 'Teacher-class association updated successfully')
             else:
                 # 如果创建新关联失败，尝试恢复旧关联
