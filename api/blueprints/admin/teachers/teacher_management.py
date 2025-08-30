@@ -97,7 +97,7 @@ def delete_teacher(teacher_id):
         
         if result:
             # 修复返回值问题，确保返回正确的响应格式
-            return success_response({'message': 'Teacher deleted successfully'}), 200
+            return success_response({'message': 'Teacher deleted successfully'}, 200)
         else:
             return error_response('Failed to delete teacher', 400)
             
