@@ -1,28 +1,25 @@
-"""学生个人信息管理模块"""
-from flask import jsonify, session
-from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from flask import Blueprint, request, jsonify, current_app
+from utils.auth import role_required
+from utils.helpers import success_response, error_response
+from services.student_service import StudentService
 
+student_profile_bp = Blueprint('student_profile_bp', __name__)
 
-def get_my_profile():
-    """获取当前学生个人信息"""
+@student_profile_bp.route('/profile', methods=['GET'])
+@role_required('student')
+def get_student_profile():
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        # 从session中获取当前学生ID
-        current_student_id = session.get('user_id')
-        if not current_student_id:
-            return error_response('User not authenticated'), 401
+        # 获取当前学生ID
+        student_id = request.user['user_id']
         
-        # 返回学生ID作为示例（实际应用中应从数据库获取完整信息）
-        app_logger.info(f"Student {current_student_id} retrieved their profile")
-        return success_response({
-            'student_id': current_student_id
-        })
-        
+        # 获取学生信息
+        student = StudentService.get_student_by_id(student_id)
+        if student:
+            current_app.logger.info(f"Student {student_id} retrieved profile")
+            return success_response(student)
+        else:
+            current_app.logger.warning(f"Student profile not found for {student_id}")
+            return error_response('Student not found', 404)
     except Exception as e:
-        app_logger.error(f"Failed to fetch profile: {str(e)}")
-        return error_response(f'Failed to fetch profile: {str(e)}'), 500
+        current_app.logger.error(f'Failed to fetch student profile: {str(e)}')
+        return error_response('Failed to fetch profile', 500)

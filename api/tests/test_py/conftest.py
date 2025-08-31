@@ -27,13 +27,17 @@ def app():
     app = create_app('testing')
     # 确保应用配置了SECRET_KEY
     app.config['SECRET_KEY'] = 'test-secret-key'
+    # 确保启用了cookies
+    app.config['SESSION_TYPE'] = 'cachelib'
+    app.config['SESSION_PERMANENT'] = False
+    app.config['PERMANENT_SESSION_LIFETIME'] = 3600
     return app
 
 
 @pytest.fixture(scope="function")
 def client(app):
     """创建测试客户端"""
-    return app.test_client()
+    return app.test_client(use_cookies=True)
 
 
 @pytest.fixture(scope="function")

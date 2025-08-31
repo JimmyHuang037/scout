@@ -1,8 +1,7 @@
 """科目管理模块，处理科目相关的所有操作"""
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from services import SubjectService
 from utils.helpers import success_response, error_response, auth_required, role_required
-from utils.logger import app_logger
 
 
 @auth_required
@@ -18,11 +17,11 @@ def get_subjects():
         subject_service = SubjectService()
         result = subject_service.get_all_subjects(page, per_page)
         
-        app_logger.info("Admin retrieved subject list")
+        current_app.logger.info("Admin retrieved subject list")
         return success_response(result)
         
     except Exception as e:
-        app_logger.error(f'Failed to fetch subjects: {str(e)}')
+        current_app.logger.error(f'Failed to fetch subjects: {str(e)}')
         return error_response(f'Failed to fetch subjects: {str(e)}', 500)
 
 
@@ -35,7 +34,7 @@ def create_subject():
         subject_name = data.get('subject_name')
         
         if not subject_name:
-            app_logger.warning("Create subject attempt with missing subject_name")
+            current_app.logger.warning("Create subject attempt with missing subject_name")
             return error_response('Missing required field: subject_name', 400)
         
         # 使用科目服务创建科目
@@ -46,10 +45,10 @@ def create_subject():
         result = subject_service.create_subject(subject_data)
         
         if result:
-            app_logger.info("Admin created subject")
+            current_app.logger.info("Admin created subject")
             return success_response({'message': 'Subject created successfully'}, status_code=201)
         else:
-            app_logger.error("Failed to create subject")
+            current_app.logger.error("Failed to create subject")
             return error_response('Failed to create subject', 400)
             
     except Exception as e:

@@ -7,3 +7,4 @@
 6. test时，logs都记录到 项目目录/logs_testing/ 目录下
 7. test_curl要记录每个curl的命令，同时将每个curl的结果输出到项目目录/logs_testing/下
 8. 代码注释要简洁有效，不要太多。
+9. 每个方法不应该超过15行代码

@@ -1,8 +1,7 @@
 """考试类型管理模块，处理考试类型的增删改查操作"""
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from services.exam_type_service import ExamTypeService
 from utils.helpers import success_response, error_response, auth_required, role_required
-from utils.logger import app_logger
 
 
 @auth_required
@@ -19,11 +18,11 @@ def get_exam_types():
         result = exam_type_service.get_all_exam_types(page, per_page)  # 修复方法名
         exam_type_service.db_service.close()  # 手动关闭数据库连接
         
-        app_logger.info("Admin retrieved exam types")
+        current_app.logger.info("Admin retrieved exam types")
         return success_response(result)
         
     except Exception as e:
-        app_logger.error(f'Failed to fetch exam types: {str(e)}')
+        current_app.logger.error(f'Failed to fetch exam types: {str(e)}')
         return error_response(f'Failed to fetch exam types: {str(e)}', 500)
 
 
@@ -45,10 +44,10 @@ def create_exam_type():
         exam_type_service.db_service.close()  # 手动关闭数据库连接
         
         if result:
-            app_logger.info("Admin created exam type")
+            current_app.logger.info("Admin created exam type")
             return success_response(result, 'Exam type created successfully', 201)
         else:
-            app_logger.error("Failed to create exam type")
+            current_app.logger.error("Failed to create exam type")
             return error_response('Failed to create exam type', 400)
             
     except Exception as e:
@@ -57,7 +56,7 @@ def create_exam_type():
             exam_type_service.db_service.close()
         except:
             pass
-        app_logger.error(f'Failed to create exam type: {str(e)}')
+        current_app.logger.error(f'Failed to create exam type: {str(e)}')
         return error_response(f'Failed to create exam type: {str(e)}', 500)
 
 
@@ -72,14 +71,14 @@ def get_exam_type(exam_type_id):
         exam_type_service.db_service.close()  # 手动关闭数据库连接
         
         if result:
-            app_logger.info(f"Admin retrieved exam type {exam_type_id}")
+            current_app.logger.info(f"Admin retrieved exam type {exam_type_id}")
             return success_response(result)
         else:
-            app_logger.warning(f"Exam type {exam_type_id} not found")
+            current_app.logger.warning(f"Exam type {exam_type_id} not found")
             return error_response('Exam type not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to fetch exam type: {str(e)}')
+        current_app.logger.error(f'Failed to fetch exam type: {str(e)}')
         return error_response(f'Failed to fetch exam type: {str(e)}', 500)
 
 

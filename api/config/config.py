@@ -1,17 +1,7 @@
 import os
-from dotenv import load_dotenv
-from cachelib import FileSystemCache
 
-# 项目路径配置
-basedir = os.path.abspath(os.path.dirname(__file__))
-api_dir = os.path.abspath(os.path.join(basedir, '..'))
-project_dir = os.path.abspath(os.path.join(api_dir, '..'))
-
-# 加载 .env 文件
-load_dotenv(os.path.join(basedir, '.env'))
-
-# 默认环境配置
-DEFAULT_ENV = 'development'
+# 获取项目根目录
+project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 
 
 def get_config_name():
@@ -22,6 +12,26 @@ def get_config_name():
         str: 配置名称
     """
     return os.getenv('FLASK_ENV', DEFAULT_ENV)
+
+
+def _get_database_uri(user, password, host, database):
+    """生成数据库连接URI"""
+    return f"mysql+pymysql://{user}:{password}@{host}/{database}?charset=utf8mb4"
+
+
+def _get_logs_config(env):
+    """获取日志配置"""
+    if env == 'production':
+        logs_dir = os.path.abspath(os.path.join(project_dir, 'logs_production'))
+    elif env == 'testing':
+        logs_dir = os.path.abspath(os.path.join(project_dir, 'logs_testing'))
+    else:
+        logs_dir = os.path.join(project_dir, 'logs')
+    
+    log_file_path = os.path.join(logs_dir, 'app.log')
+    session_dir = os.path.join(logs_dir, 'flask_session')
+    
+    return logs_dir, log_file_path, session_dir
 
 
 class Config:
@@ -39,38 +49,45 @@ class Config:
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
     
     # 数据库连接URI
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
+    SQLALCHEMY_DATABASE_URI = _get_database_uri(
+        MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DB
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # 应用配置
     PORT = 5000
     
     # 日志和会话配置
-    LOGS_DIR = os.path.join(project_dir, 'logs')
-    LOG_FILE_PATH = os.path.join(LOGS_DIR, 'app.log')
+    LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('development')
     LOG_LEVEL = 'INFO'
-    SESSION_TYPE = 'cachelib'
+    LOG_FILE_MAX_BYTES = 1024 * 1024 * 10  # 10MB
+    LOG_FILE_BACKUP_COUNT = 5
+    SESSION_TYPE = 'filesystem'
     SESSION_PERMANENT = False
     PERMANENT_SESSION_LIFETIME = 3600
-
-
 
 
 class ProductionConfig(Config):
     """生产环境配置"""
     
     DEBUG = False
-    PORT = 8000
+    TESTING = False
+    SECRET_KEY = os.getenv('SECRET_KEY', 'prod-secret-key')
     LOG_LEVEL = 'WARNING'
     
-    # 日志和会话配置
-    LOGS_DIR = os.path.abspath(os.path.join(project_dir, 'logs_production'))
-    SESSION_TYPE = 'cachelib'
-    SESSION_CACHELIB = FileSystemCache(
-        os.path.join(project_dir, 'logs_production', 'flask_session'),
-        threshold=500,
-        mode=0o600
+    # 生产数据库
+    MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
+    
+    # 数据库连接URI
+    SQLALCHEMY_DATABASE_URI = _get_database_uri(
+        Config.MYSQL_USER, Config.MYSQL_PASSWORD, Config.MYSQL_HOST, MYSQL_DB
     )
+    
+    # 生产配置
+    PORT = 8000
+    
+    # 日志和会话配置
+    LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('production')
 
 
 class TestingConfig(Config):
@@ -78,24 +95,22 @@ class TestingConfig(Config):
     
     DEBUG = True
     TESTING = True
-    SECRET_KEY = 'test-secret-key'
+    SECRET_KEY = os.getenv('SECRET_KEY', 'test-secret-key')
     LOG_LEVEL = 'INFO'
     
     # 测试数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{Config.MYSQL_USER}:{Config.MYSQL_PASSWORD}@{Config.MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
+    
+    # 数据库连接URI
+    SQLALCHEMY_DATABASE_URI = _get_database_uri(
+        Config.MYSQL_USER, Config.MYSQL_PASSWORD, Config.MYSQL_HOST, MYSQL_DB
+    )
     
     # 测试配置
     PORT = 5010
-    LOGS_DIR = os.path.abspath(os.path.join(project_dir, 'logs_testing'))
     
-    # 会话配置
-    SESSION_TYPE = 'cachelib'
-    SESSION_CACHELIB = FileSystemCache(
-        os.path.join(project_dir, 'logs_testing', 'flask_session'),
-        threshold=500,
-        mode=0o600
-    )
+    # 日志和会话配置
+    LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('testing')
 
 
 # 配置映射

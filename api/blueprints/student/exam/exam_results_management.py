@@ -1,36 +1,34 @@
-"""学生考试结果管理模块"""
-from flask import jsonify, request, session
-from services import ScoreService
-from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from flask import Blueprint, request, jsonify, current_app
+from utils.auth import role_required
+from utils.helpers import success_response, error_response
+from services.exam_service import ExamService
 
+student_exam_results_bp = Blueprint('student_exam_results_bp', __name__)
 
-def get_my_exam_results():
-    """获取当前学生考试结果"""
+@student_exam_results_bp.route('/exam/results', methods=['GET'])
+@role_required('student')
+def get_student_exam_results():
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        # 从session中获取当前学生ID
-        current_student_id = session.get('user_id')
-        if not current_student_id:
-            return error_response('User not authenticated'), 401
+        # 获取当前学生ID
+        student_id = request.user['user_id']
         
-        # 获取筛选参数
-        exam_type_id = request.args.get('exam_type_id')
+        # 获取查询参数
+        exam_id = request.args.get('exam_id')
         
-        # 使用成绩服务获取考试结果
-        score_service = ScoreService()
-        exam_results = score_service.get_student_exam_results(
-            student_id=current_student_id,
-            exam_type_id=exam_type_id
-        )
-        
-        app_logger.info(f"Student {current_student_id} retrieved their exam results")
-        return success_response(exam_results)
-        
+        if exam_id:
+            # 获取特定考试的成绩
+            results = ExamService.get_student_exam_result(student_id, exam_id)
+            if results:
+                current_app.logger.info(f"Student {student_id} retrieved results for exam {exam_id}")
+                return success_response(results)
+            else:
+                current_app.logger.warning(f"Student {student_id} has no results for exam {exam_id}")
+                return error_response('No results found', 404)
+        else:
+            # 获取所有考试成绩
+            results = ExamService.get_student_all_exam_results(student_id)
+            current_app.logger.info(f"Student {student_id} retrieved all exam results")
+            return success_response(results)
     except Exception as e:
-        app_logger.error(f"Failed to fetch exam results: {str(e)}")
-        return error_response(f'Failed to fetch exam results: {str(e)}'), 500
+        current_app.logger.error(f'Failed to fetch student exam results: {str(e)}')
+        return error_response('Failed to fetch exam results', 500)

@@ -1,45 +1,22 @@
 """考试班级管理模块，处理考试班级相关操作"""
-from flask import jsonify, request, session
+from flask import Blueprint, request, jsonify, current_app
+from utils.auth import role_required
 from utils.helpers import success_response, error_response
-from utils.logger import app_logger
-from utils.auth import require_auth, require_role
-from utils import database_service
-from services.score_service import ScoreService
+from services.exam_service import ExamService
 
+teacher_exam_classes_bp = Blueprint('teacher_exam_classes_bp', __name__)
 
-def get_exam_classes():
-    """获取教师相关的考试班级列表"""
+@teacher_exam_classes_bp.route('/exam/classes', methods=['GET'])
+@role_required('teacher')
+def get_teacher_classes():
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        # 从session中获取当前教师ID
-        current_teacher_id = session.get('user_id')
-        if not current_teacher_id:
-            return error_response('User not authenticated'), 401
+        # 获取当前教师ID
+        teacher_id = request.user['user_id']
         
-        # 使用成绩服务获取考试班级列表
-        score_service = ScoreService()
-        # 这里我们直接使用数据库服务来获取教师相关的班级信息
-        from utils.database_service import DatabaseService
-        db_service = DatabaseService()
-        
-        try:
-            query = """
-                SELECT DISTINCT c.class_id, c.class_name
-                FROM Classes c
-                JOIN TeacherClasses tc ON c.class_id = tc.class_id
-                WHERE tc.teacher_id = %s
-                ORDER BY c.class_id
-            """
-            classes = db_service.execute_query(query, (current_teacher_id,))
-            app_logger.info(f"Teacher {current_teacher_id} retrieved exam classes")
-            return success_response(classes)
-        finally:
-            db_service.close()
-        
+        # 获取教师的班级列表
+        classes = ExamService.get_teacher_classes(teacher_id)
+        current_app.logger.info(f"Teacher {teacher_id} retrieved class list")
+        return success_response(classes)
     except Exception as e:
-        app_logger.error(f"Failed to fetch exam classes: {str(e)}")
-        return error_response(f'Failed to fetch exam classes: {str(e)}'), 500
+        current_app.logger.error(f'Failed to fetch teacher classes: {str(e)}')
+        return error_response('Failed to fetch classes', 500)

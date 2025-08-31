@@ -1,38 +1,26 @@
 """教师考试结果管理模块"""
-from flask import jsonify, request, session
-from services import ScoreService
-from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from flask import Blueprint, request, jsonify, current_app
+from utils.auth import role_required
+from utils.helpers import success_response, error_response
+from services.exam_service import ExamService
 
+teacher_exam_results_bp = Blueprint('teacher_exam_results_bp', __name__)
 
-def get_exam_results():
-    """获取考试结果"""
+@teacher_exam_results_bp.route('/exam/results/<int:exam_id>', methods=['GET'])
+@role_required('teacher')
+def get_exam_results(exam_id):
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        # 从session中获取当前教师ID
-        current_teacher_id = session.get('user_id')
-        if not current_teacher_id:
-            return error_response('User not authenticated'), 401
+        # 获取当前教师ID
+        teacher_id = request.user['user_id']
         
-        # 获取筛选参数
-        exam_type_id = request.args.get('exam_type_id')
-        class_id = request.args.get('class_id')
-        
-        # 使用成绩服务获取考试结果
-        score_service = ScoreService()
-        exam_results = score_service.get_exam_results(
-            teacher_id=current_teacher_id,
-            exam_type_id=exam_type_id,
-            class_id=class_id
-        )
-        
-        app_logger.info(f"Teacher {current_teacher_id} retrieved exam results")
-        return success_response(exam_results)
-        
+        # 获取考试结果
+        results = ExamService.get_exam_results(exam_id, teacher_id)
+        if results is not None:
+            current_app.logger.info(f"Teacher {teacher_id} retrieved results for exam {exam_id}")
+            return success_response(results)
+        else:
+            current_app.logger.warning(f"Teacher {teacher_id} attempted to access results for exam {exam_id} (not found or unauthorized)")
+            return error_response('Exam results not found or access denied', 404)
     except Exception as e:
-        app_logger.error(f"Failed to fetch exam results: {str(e)}")
-        return error_response(f'Failed to fetch exam results: {str(e)}'), 500
+        current_app.logger.error(f'Failed to fetch exam results for exam {exam_id}: {str(e)}')
+        return error_response('Failed to fetch exam results', 500)

@@ -1,12 +1,91 @@
 #!/usr/bin/env python3
 """
-数据库服务模块，提供数据库连接和操作功能
-"""
+数据库服务模块"""
 import pymysql
-import os
-from utils.logger import app_logger as logger
 from flask import current_app
+from config.config import Config
+import os
 
+# 数据库连接配置
+db_config = {
+    'host': Config.MYSQL_HOST,
+    'user': Config.MYSQL_USER,
+    'password': Config.MYSQL_PASSWORD,
+    'database': Config.MYSQL_DB,
+    'charset': 'utf8mb4',
+    'cursorclass': pymysql.cursors.DictCursor
+}
+
+def get_db_connection():
+    """
+    获取数据库连接
+    
+    Returns:
+        pymysql.Connection: 数据库连接对象
+    """
+    try:
+        connection = pymysql.connect(**db_config)
+        current_app.logger.info("Database connection established")
+        return connection
+    except Exception as e:
+        current_app.logger.error(f"Failed to establish database connection: {str(e)}")
+        raise
+
+def execute_query(query, params=None):
+    """
+    执行SELECT查询
+    
+    Args:
+        query (str): SQL查询语句
+        params (tuple): 查询参数
+        
+    Returns:
+        list: 查询结果
+    """
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute(query, params)
+            result = cursor.fetchall()
+            current_app.logger.info(f"Query executed successfully: {query[:100]}...")
+            return result
+    except Exception as e:
+        current_app.logger.error(f"Query execution failed: {str(e)}")
+        raise
+    finally:
+        if connection:
+            connection.close()
+            current_app.logger.info("Database connection closed")
+
+def execute_update(query, params=None):
+    """
+    执行INSERT/UPDATE/DELETE操作
+    
+    Args:
+        query (str): SQL更新语句
+        params (tuple): 更新参数
+        
+    Returns:
+        int: 受影响的行数
+    """
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            result = cursor.execute(query, params)
+            connection.commit()
+            current_app.logger.info(f"Update executed successfully: {query[:100]}...")
+            return result
+    except Exception as e:
+        if connection:
+            connection.rollback()
+        current_app.logger.error(f"Update execution failed: {str(e)}")
+        raise
+    finally:
+        if connection:
+            connection.close()
+            current_app.logger.info("Database connection closed")
 
 class DatabaseService:
     """
@@ -37,10 +116,10 @@ class DatabaseService:
                 autocommit=True
             )
             # 只在初始化时记录一次日志
-            logger.info("DatabaseService initialized")
-            logger.info(f"Connected to database: {config['MYSQL_DB']}")
+            current_app.logger.info("DatabaseService initialized")
+            current_app.logger.info(f"Connected to database: {config['MYSQL_DB']}")
         except Exception as e:
-            logger.error(f"Database connection failed: {e}")
+            current_app.logger.error(f"Database connection failed: {e}")
             raise
     
     def get_connection(self):
@@ -79,10 +158,10 @@ class DatabaseService:
                     result = cursor.fetchone()
                 else:
                     result = cursor.fetchall()
-                logger.info(f"Query result: {result}")
+                current_app.logger.info(f"Query result: {result}")
                 return result
         except Exception as e:
-            logger.error(f"Database query failed: {e}")
+            current_app.logger.error(f"Database query failed: {e}")
             raise
     
     def execute_update(self, query, params=None):
@@ -103,7 +182,7 @@ class DatabaseService:
                 return row_count
         except Exception as e:
             self.get_connection().rollback()
-            logger.error(f"Database update failed: {e}")
+            current_app.logger.error(f"Database update failed: {e}")
             raise
     
     def get_count(self, query, params=None):

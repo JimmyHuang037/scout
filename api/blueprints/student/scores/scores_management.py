@@ -1,32 +1,22 @@
 """学生成绩管理模块"""
-from flask import jsonify, request, session
-from services import ScoreService
-from utils.logger import app_logger
-from utils.helpers import success_response, error_response, require_auth
+from flask import Blueprint, request, jsonify, current_app
+from utils.auth import role_required
+from utils.helpers import success_response, error_response
+from services.score_service import ScoreService
 
+student_scores_bp = Blueprint('student_scores_bp', __name__)
 
-def get_my_scores():
-    """获取当前学生成绩"""
+@student_scores_bp.route('/scores', methods=['GET'])
+@role_required('student')
+def get_student_scores():
     try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
+        # 获取当前学生ID
+        student_id = request.user['user_id']
         
-        # 从session中获取当前学生ID
-        current_student_id = session.get('user_id')
-        
-        # 获取筛选参数
-        subject_id = request.args.get('subject_id')
-        exam_type_id = request.args.get('exam_type_id')
-        
-        # 使用成绩服务获取成绩列表
-        score_service = ScoreService()
-        scores = score_service.get_scores(student_id=current_student_id, subject_id=subject_id, exam_type_id=exam_type_id)
-        
-        app_logger.info(f"Student {current_student_id} retrieved their scores")
+        # 获取学生成绩
+        scores = ScoreService.get_student_scores(student_id)
+        current_app.logger.info(f"Student {student_id} retrieved scores")
         return success_response(scores)
-        
     except Exception as e:
-        app_logger.error(f"Failed to fetch scores: {str(e)}")
-        return error_response(f'Failed to fetch scores: {str(e)}'), 500
+        current_app.logger.error(f'Failed to fetch student scores: {str(e)}')
+        return error_response('Failed to fetch scores', 500)

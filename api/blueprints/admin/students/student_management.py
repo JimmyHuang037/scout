@@ -1,8 +1,7 @@
 """学生管理模块，处理学生相关的所有操作"""
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from services import StudentService
 from utils.helpers import success_response, error_response, auth_required, role_required
-from utils.logger import app_logger
 
 
 @auth_required
@@ -18,11 +17,11 @@ def get_students():
         student_service = StudentService()
         result = student_service.get_all_students(page, per_page)
         
-        app_logger.info("Admin retrieved student list")
+        current_app.logger.info("Admin retrieved student list")
         return success_response(result)
         
     except Exception as e:
-        app_logger.error(f'Failed to fetch students: {str(e)}')
+        current_app.logger.error(f'Failed to fetch students: {str(e)}')
         return error_response(f'Failed to fetch students: {str(e)}', 500)
 
 
@@ -38,7 +37,7 @@ def create_student():
         password = data.get('password')
         
         if not all([student_id, student_name, class_id, password]):
-            app_logger.warning("Create student attempt with missing fields")
+            current_app.logger.warning("Create student attempt with missing fields")
             return error_response('Missing required fields: student_id, student_name, class_id, password', 400)
         
         # 使用学生服务创建学生
@@ -46,13 +45,13 @@ def create_student():
         result = student_service.create_student(data)
         
         if result:
-            app_logger.info(f"Admin created student {student_id}")
+            current_app.logger.info(f"Admin created student {student_id}")
             # 修复返回数据格式，确保返回创建的学生信息
             student_service = StudentService()
             student_info = student_service.get_student_by_id(student_id)
             return success_response(student_info, 'Student created successfully', 201)
         else:
-            app_logger.error("Failed to create student")
+            current_app.logger.error("Failed to create student")
             return error_response('Failed to create student', 400)
             
     except Exception as e:

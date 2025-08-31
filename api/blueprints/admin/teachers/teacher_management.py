@@ -1,8 +1,7 @@
 """教师管理模块，处理教师相关的所有操作"""
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from services import TeacherService
 from utils.helpers import success_response, error_response, auth_required, role_required
-from utils.logger import app_logger
 
 
 @auth_required
@@ -18,11 +17,11 @@ def get_teachers():
         teacher_service = TeacherService()
         result = teacher_service.get_all_teachers(page, per_page)
         
-        app_logger.info("Admin retrieved teacher list")
+        current_app.logger.info("Admin retrieved teacher list")
         return success_response(result)
         
     except Exception as e:
-        app_logger.error(f'Failed to fetch teachers: {str(e)}')
+        current_app.logger.error(f'Failed to fetch teachers: {str(e)}')
         return error_response(f'Failed to fetch teachers: {str(e)}', 500)
 
 
@@ -38,10 +37,10 @@ def create_teacher():
         
         if result:
             # 修复：create_teacher服务方法返回的是布尔值，不是包含teacher_id的对象
-            app_logger.info("Admin created teacher")
+            current_app.logger.info("Admin created teacher")
             return success_response(None, 'Teacher created successfully', 201)
         else:
-            app_logger.error("Failed to create teacher")
+            current_app.logger.error("Failed to create teacher")
             return error_response('Failed to create teacher', 400)
             
     except Exception as e:
