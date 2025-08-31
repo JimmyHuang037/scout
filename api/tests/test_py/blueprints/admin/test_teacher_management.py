@@ -50,9 +50,9 @@ class TestAdminTeacherManagement:
         """测试获取单个教师信息"""
         # 先创建一个教师
         test_data = self._create_test_teacher(admin_client)
-        
-        # 获取刚创建的教师 (使用数据库中已存在的教师ID 2)
-        teacher_id = 2
+    
+        # 获取刚创建的教师 (使用数据库中已存在的教师ID 1)
+        teacher_id = 1
         response = admin_client.get(f"/api/admin/teachers/{teacher_id}")
         assert response.status_code == 200
         data = json.loads(response.data)

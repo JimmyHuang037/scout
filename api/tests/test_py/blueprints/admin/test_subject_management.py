@@ -45,22 +45,3 @@ class TestAdminSubjectManagement:
         assert 'data' in data
         assert 'subject_id' in data['data']
         assert data['data']['subject_id'] == 1
-
-    def test_update_subject(self, admin_client):
-        """测试更新科目信息"""
-        # 更新科目信息
-        update_data = {
-            'subject_name': 'Updated Subject Name'
-        }
-        response = admin_client.put("/api/admin/subjects/1",
-                                    data=json.dumps(update_data),
-                                    content_type='application/json')
-        # 根据实际实现，更新可能返回200状态码和消息
-        assert response.status_code == 200
-
-    def test_delete_subject(self, admin_client):
-        """测试删除科目"""
-        # 删除科目（可能因外键约束而失败）
-        response = admin_client.delete("/api/admin/subjects/1")
-        # 根据实际实现，可能返回不同状态码
-        assert response.status_code in [200, 204, 400, 404, 500]

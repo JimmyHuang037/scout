@@ -65,9 +65,14 @@ class TestingConfig(Config):
     SECRET_KEY = 'test-secret-key'
     # 使用专门的测试数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
+    # 重新定义数据库连接URI以使用测试数据库
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{Config.MYSQL_USER}:{Config.MYSQL_PASSWORD}@{Config.MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
+    
     PORT = 5010
     LOGS_DIR = os.path.join(project_dir, 'logs_testing')
-    SESSION_FILE_DIR = os.path.join(project_dir, 'logs_testing', 'flask_session')
+    
+    # 使用LOGS_DIR构建会话目录路径
+    SESSION_FILE_DIR = os.path.join(LOGS_DIR, 'flask_session')
     SESSION_TYPE = 'filesystem'
 
 

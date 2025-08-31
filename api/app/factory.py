@@ -30,12 +30,13 @@ def create_app(config_name='default'):
     # 加载配置
     app.config.from_object(config[config_name])
     
-    # 确保日志目录存在（会话目录也在此目录下）
+    # 确保日志目录存在
     log_dir = app.config['LOGS_DIR']
+    os.makedirs(log_dir, exist_ok=True)
+    
+    # 创建会话目录
     session_dir = os.path.join(log_dir, 'flask_session')
     os.makedirs(session_dir, exist_ok=True)
-    
-    os.makedirs(log_dir, exist_ok=True)
     
     # 设置日志文件，使用统一的文件名app.log
     log_file_path = os.path.join(log_dir, 'app.log')

@@ -23,8 +23,11 @@ def login():
             FROM users 
             WHERE user_id = %s AND password = %s
         """
+        app_logger.info(f"Attempting login with user_id: {user_id}, password: {password}")
         user = db_service.execute_query(query, (user_id, password), fetch_one=True)
         db_service.close()
+        
+        app_logger.info(f"Database query result: {user}")
         
         if user:
             # 存储用户信息到session
@@ -65,21 +68,15 @@ def logout():
 def get_current_user():
     """获取当前登录用户信息"""
     try:
-        # 从session中获取用户信息
-        user_id = session.get('user_id')
-        user_name = session.get('user_name')
-        role = session.get('role')
-        
-        if user_id and user_name and role:
+        if 'user_id' in session:
             return success_response({
-                'user_id': user_id,
-                'user_name': user_name,
-                'role': role
+                'user_id': session['user_id'],
+                'user_name': session['user_name'],
+                'role': session['role']
             })
         else:
             app_logger.warning("Attempt to get current user when not authenticated")
             return error_response('User not authenticated', 401)
-            
     except Exception as e:
-        app_logger.error(f"Failed to get user info: {str(e)}")
-        return error_response(f'Failed to get user info: {str(e)}', 500)
+        app_logger.error(f"Failed to get current user: {str(e)}")
+        return error_response(f'Failed to get current user: {str(e)}', 500)

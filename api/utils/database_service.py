@@ -5,7 +5,7 @@
 import pymysql
 import os
 from utils.logger import app_logger as logger
-from config.config import Config
+from flask import current_app
 
 
 class DatabaseService:
@@ -22,18 +22,23 @@ class DatabaseService:
     def connect(self):
         """建立数据库连接"""
         try:
+            # 获取当前应用的配置
+            from flask import current_app
+            config = current_app.config
+            
             # 建立数据库连接
             self.connection = pymysql.connect(
-                host=Config.MYSQL_HOST,
-                user=Config.MYSQL_USER,
-                password=Config.MYSQL_PASSWORD,
-                database=Config.MYSQL_DB,
+                host=config['MYSQL_HOST'],
+                user=config['MYSQL_USER'],
+                password=config['MYSQL_PASSWORD'],
+                database=config['MYSQL_DB'],
                 charset='utf8mb4',
                 cursorclass=pymysql.cursors.DictCursor,
                 autocommit=True
             )
             # 只在初始化时记录一次日志
             logger.info("DatabaseService initialized")
+            logger.info(f"Connected to database: {config['MYSQL_DB']}")
         except Exception as e:
             logger.error(f"Database connection failed: {e}")
             raise
@@ -67,12 +72,15 @@ class DatabaseService:
             查询结果
         """
         try:
+            logger.info(f"Executing query: {query} with params: {params}")
             with self.get_connection().cursor() as cursor:
                 cursor.execute(query, params or ())
                 if fetch_one:
-                    return cursor.fetchone()
+                    result = cursor.fetchone()
                 else:
-                    return cursor.fetchall()
+                    result = cursor.fetchall()
+                logger.info(f"Query result: {result}")
+                return result
         except Exception as e:
             logger.error(f"Database query failed: {e}")
             raise

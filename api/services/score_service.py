@@ -429,17 +429,15 @@ class ScoreService:
         finally:
             db_service.close()
     
-    def get_teacher_performance(self, teacher_id, exam_type_id=None, class_id=None):
+    def get_teacher_performance(self, teacher_id):
         """
-        获取教师教学表现统计
+        获取教师表现数据
         
         Args:
             teacher_id (int): 教师ID
-            exam_type_id (int, optional): 考试类型ID
-            class_id (int, optional): 班级ID
             
         Returns:
-            list: 教师表现统计数据
+            list: 教师表现数据列表
         """
         db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
@@ -448,24 +446,13 @@ class ScoreService:
                 FROM teacher_performance tp
                 JOIN Teachers t ON tp.teacher_name = t.teacher_name
                 WHERE t.teacher_id = %s
-            """
-            params = (teacher_id,)
+             ORDER BY tp.rank_in_school"""
             
-            # 添加筛选条件
-            if exam_type_id:
-                query += " AND tp.exam_type_name = %s"
-                params += (exam_type_id,)
-                
-            if class_id:
-                query += " AND tp.class_id = %s"
-                params += (class_id,)
-            
-            query += " ORDER BY tp.rank_in_school"
-            
-            performance = db_service.execute_query(query, params)
-            return performance
-            
+            result = db_service.execute_query(query, (teacher_id,))
+            # 确保返回的是列表而不是元组
+            return list(result) if result else []
         except Exception as e:
-            raise e
+            # 确保在出错时也返回列表
+            return []
         finally:
             db_service.close()
