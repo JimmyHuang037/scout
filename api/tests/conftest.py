@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 """
-测试配置文件，包含所有测试所需的fixtures
+测试配置文件
+包含测试夹具和配置
 """
 
 import pytest
-import sys
 import os
+import sys
 import subprocess
 import warnings
-import glob
 
 # 忽略flask_session的所有弃用警告
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="flask_session")
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="cachelib")
 
-# 将api目录添加到Python路径中
-api_dir = os.path.join(os.path.dirname(__file__), '..')
-sys.path.insert(0, os.path.abspath(api_dir))
+# 将项目根目录添加到Python路径中
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app.factory import create_app
 
@@ -52,17 +51,20 @@ def pytest_configure(config):
         print(f"数据库恢复脚本不存在: {db_restore_script}")
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def app():
-    """创建测试应用实例"""
+    """创建Flask应用实例用于测试"""
+    # 创建测试应用实例
     app = create_app('testing')
-    return app
+    
+    # 推送应用上下文
+    with app.app_context():
+        yield app
 
 
-@pytest.fixture
+@pytest.fixture(scope='function')
 def client(app):
     """创建测试客户端"""
-    # 处理Werkzeug版本兼容性问题
     return app.test_client()
 
 
@@ -90,48 +92,36 @@ def admin_client(client):
     return client
 
 
-@pytest.fixture
-def teacher_client(client):
-    """创建教师身份验证的客户端"""
-    # 模拟教师登录 (使用教师ID 8，密码在数据库中存在)
-    login_data = {
-        'user_id': '8',
-        'password': '123456'
-    }
-    
-    # 发送登录请求
-    response = client.post('/api/auth/login',
-                          json=login_data,
-                          content_type='application/json')
-    
-    # 返回客户端，此时应该已认证
-    return client
+@pytest.fixture(scope='function')
+def teacher_client(app):
+    """创建已认证的教师测试客户端"""
+    with app.test_client() as client:
+        # 模拟教师登录
+        with client.session_transaction() as session:
+            session['user_id'] = 8  # 使用有效的教师ID
+            session['role'] = 'teacher'
+        yield client
 
 
-@pytest.fixture
-def student_client(client):
-    """创建学生身份验证的客户端"""
-    # 模拟学生登录 (使用学生ID S1001，密码在数据库中应该存在)
-    login_data = {
-        'user_id': 'S1001',
-        'password': 'pass123'
-    }
-    
-    # 发送登录请求
-    response = client.post('/api/auth/login',
-                          json=login_data,
-                          content_type='application/json')
-    
-    # 返回客户端，此时应该已认证
-    return client
+@pytest.fixture(scope='function')
+def student_client(app):
+    """创建已认证的学生测试客户端"""
+    with app.test_client() as client:
+        # 模拟学生登录
+        with client.session_transaction() as session:
+            session['user_id'] = 'S0101'  # 使用有效的学生ID
+            session['role'] = 'student'
+        yield client
 
 
-@pytest.fixture
-def auth_client(client):
-    """创建已认证的客户端"""
-    # 这里应该实现登录逻辑
-    # 由于当前系统可能使用session或token验证，暂时返回普通客户端
-    return client
+@pytest.fixture(scope='function')
+def auth_client(app):
+    """创建已认证的测试客户端（管理员）"""
+    with app.test_client() as client:
+        # 模拟管理员登录
+        with client.session_transaction() as session:
+            session['user_id'] = 'admin'
+            session['role'] = 'admin'
+        yield client
 
 
-# 删除旧文件
