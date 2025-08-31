@@ -9,42 +9,38 @@ import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_session import Session
-from cachelib import FileSystemCache
-from config.config import config
+from config.config import config, get_config_name
 from utils.logger import setup_logger
 
 
-def create_app(config_name='default'):
+def create_app(config_name=None):
     """
     创建Flask应用实例
     
     Args:
-        config_name (str): 配置名称
+        config_name (str): 配置名称，如果未提供则从环境变量FLASK_ENV获取，默认为'default'
         
     Returns:
         Flask: 配置好的Flask应用实例
     """
+    # 如果未提供配置名称，则从配置模块获取
+    if config_name is None:
+        config_name = get_config_name()
+    
     # 初始化应用
     app = Flask(__name__)
     
     # 加载配置
     app.config.from_object(config[config_name])
     
-    # 确保日志目录存在
-    log_dir = app.config['LOGS_DIR']
-    os.makedirs(log_dir, exist_ok=True)
-    
-    # 创建会话目录
-    session_dir = os.path.join(log_dir, 'flask_session')
-    os.makedirs(session_dir, exist_ok=True)
-    
-    # 设置日志文件，使用统一的文件名app.log
-    log_file_path = os.path.join(log_dir, 'app.log')
-    
     # 创建应用日志记录器
-    app_logger = setup_logger('app', log_file_path, level=logging.INFO)
-    app.logger.setLevel(logging.INFO)
+    app_logger = setup_logger('app', app.config['LOG_FILE_PATH'], level=logging.INFO)
+    app.logger.setLevel(getattr(logging, app.config['LOG_LEVEL']))
     app.logger.info(f'Flask application initialized with config: {config_name}')
+    
+    # 初始化扩展
+    CORS(app)
+    Session(app)
     
     # 添加全局错误处理
     @app.errorhandler(Exception)
@@ -59,10 +55,6 @@ def create_app(config_name='default'):
             'error': 'Internal server error',
             'message': str(e) if app.config.get('DEBUG') else 'An internal error occurred'
         }), 500
-    
-    # 初始化扩展
-    CORS(app)
-    Session(app)
     
     # 注册蓝图
     try:
