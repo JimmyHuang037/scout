@@ -35,6 +35,9 @@ class Config:
     # 数据库连接URI
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # 应用端口
+    PORT = 5000
 
 
 class DevelopmentConfig(Config):
@@ -45,13 +48,15 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """生产环境配置"""
     DEBUG = False
+    PORT = 8000
 
 
 class TestingConfig(Config):
     """测试环境配置"""
     TESTING = True
     # 使用专门的测试数据库
-    MYSQL_DB = os.getenv('MYSQL_TEST_DB', 'school_management_test')
+    MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
+    PORT = 5010
 
 
 # 配置字典

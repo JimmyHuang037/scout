@@ -13,8 +13,8 @@ logging.basicConfig(
 logger = logging.getLogger('app')
 
 # 在测试环境中降低数据库相关日志级别
-import os
-if os.environ.get('FLASK_ENV') == 'testing':
+from flask import has_app_context
+if has_app_context() and current_app.config.get('TESTING'):
     logger.setLevel(logging.CRITICAL)
     logging.getLogger('mysql.connector').setLevel(logging.CRITICAL)
 
