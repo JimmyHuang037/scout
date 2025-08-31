@@ -47,7 +47,10 @@ def create_student():
         
         if result:
             app_logger.info(f"Admin created student {student_id}")
-            return success_response(result, 'Student created successfully', 201)
+            # 修复返回数据格式，确保返回创建的学生信息
+            student_service = StudentService()
+            student_info = student_service.get_student_by_id(student_id)
+            return success_response(student_info, 'Student created successfully', 201)
         else:
             app_logger.error("Failed to create student")
             return error_response('Failed to create student', 400)

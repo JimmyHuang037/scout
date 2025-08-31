@@ -83,11 +83,10 @@ def update_class(class_id):
     try:
         data = request.get_json()
         class_name = data.get('class_name')
-        grade = data.get('grade')
         
-        if not all([class_name, grade]):
+        if not class_name:
             app_logger.warning(f"Update class attempt with missing required fields for {class_id}")
-            return error_response('Missing required fields: class_name, grade', 400)
+            return error_response('Missing required field: class_name', 400)
         
         # 使用班级服务更新班级信息
         class_service = ClassService()

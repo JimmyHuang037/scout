@@ -28,7 +28,7 @@ def pytest_configure(config):
     db_restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
     
     # 使用最新的备份文件
-    backup_filename = 'school_management_backup_20250827_205825.sql'
+    backup_filename = 'school_management_backup_20250831_103236.sql'
     
     # 检查恢复脚本是否存在
     if os.path.exists(db_restore_script):

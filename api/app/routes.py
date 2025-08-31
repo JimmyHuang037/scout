@@ -11,6 +11,14 @@ def index():
     })
 
 
+@main.route('/api/health')
+def health_check():
+    return jsonify({
+        'status': 'healthy',
+        'message': 'API server is running'
+    })
+
+
 def register_blueprints(app):
     """注册所有蓝图"""
     from blueprints.admin import admin_bp

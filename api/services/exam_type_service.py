@@ -85,16 +85,22 @@ class ExamTypeService:
             self.db_service.execute_update(query, params)
             
             # 获取新创建的考试类型信息
+            # 获取新创建的考试类型信息
             select_query = """
                 SELECT exam_type_id, exam_type_name
                 FROM ExamTypes
-                WHERE exam_type_name = %s
-                ORDER BY exam_type_id DESC
-                LIMIT 1
+                WHERE exam_type_id = LAST_INSERT_ID()
             """
-            select_params = (exam_type_data.get('exam_type_name'),)
+            select_params = ()
             exam_type_info = self.db_service.execute_query(select_query, select_params, fetch_one=True)
-            return exam_type_info
+            
+            # 确保返回的字典包含正确的字段
+            if exam_type_info:
+                return {
+                    'exam_type_id': exam_type_info['exam_type_id'],
+                    'exam_type_name': exam_type_info['exam_type_name']
+                }
+            return None
         except Exception as e:
             raise e
         finally:

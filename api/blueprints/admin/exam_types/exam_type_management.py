@@ -86,7 +86,7 @@ def update_exam_type(exam_type_id):
         result = exam_type_service.update_exam_type(exam_type_id, {'exam_type_name': exam_type_name})
         
         if result:
-            return success_response(True, 'Exam type updated successfully')  # 修复返回数据结构
+            return success_response({'message': 'Exam type updated successfully'}, 'Exam type updated successfully')
         else:
             return error_response('Failed to update exam type', 400)
             
@@ -104,7 +104,7 @@ def delete_exam_type(exam_type_id):
         result = exam_type_service.delete_exam_type(exam_type_id)
         
         if result:
-            return success_response({'message': 'Exam type deleted successfully'}, 'Exam type deleted successfully', 204)
+            return success_response({'message': 'Exam type deleted successfully'}, 'Exam type deleted successfully')
         else:
             return error_response('Failed to delete exam type', 400)
             

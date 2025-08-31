@@ -49,7 +49,7 @@ class TestAdminExamTypeManagement:
         """测试更新考试类型"""
         # 更新一个已存在的考试类型
         update_data = {
-            'type_name': 'Mid-term Exam Updated'  # API要求的字段名是type_name
+            'exam_type_name': 'Mid-term Exam Updated'  # 修复字段名
         }
         response = admin_client.put("/api/admin/exam-types/1",
                                     data=json.dumps(update_data),
@@ -73,16 +73,16 @@ class TestAdminExamTypeManagement:
         
         # 解析创建的考试类型ID
         created_data = json.loads(create_response.data)
-        if 'data' in created_data and 'type_id' in created_data['data']:
-            type_id = created_data['data']['type_id']
+        if 'data' in created_data and 'exam_type_id' in created_data['data']:  # 修复字段名
+            type_id = created_data['data']['exam_type_id']
         else:
-            # 如果响应中没有type_id，则尝试通过名称查找
+            # 如果响应中没有exam_type_id，则尝试通过名称查找
             get_response = admin_client.get('/api/admin/exam-types')
             exam_types = json.loads(get_response.data)['data']['exam_types']
             type_id = None
             for et in exam_types:
                 if et['exam_type_name'] == f'Test Exam Type {timestamp}_{random_num}':
-                    type_id = et['type_id']
+                    type_id = et['exam_type_id']  # 修复字段名
                     break
         
         # 删除考试类型

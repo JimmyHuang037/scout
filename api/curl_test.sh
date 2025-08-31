@@ -26,6 +26,9 @@ if [ "$#" -eq 1 ]; then
     fi
 fi
 
+# 设置环境变量，确保使用测试配置
+export FLASK_ENV=testing
+
 # 设置变量
 API_BASE_URL="http://localhost:5000"
 TEST_COOKIE="/tmp/test_cookie.txt"
@@ -47,7 +50,7 @@ echo "正在恢复数据库..."
 cd "$DB_DIR"
 
 # 使用最新的备份文件
-BACKUP_FILENAME="school_management_backup_20250828_230726.sql"
+BACKUP_FILENAME=$(ls -t backup/school_management_backup_*.sql | head -n 1 | xargs basename)
 echo "使用备份文件: $BACKUP_FILENAME"
 
 # 检查备份文件是否存在
@@ -57,7 +60,7 @@ if [ ! -f "backup/$BACKUP_FILENAME" ]; then
 fi
 
 # 运行数据库恢复脚本，恢复测试数据库
-echo "y" | ./restore_db.sh "$BACKUP_FILENAME" school_management > /dev/null 2>&1
+echo "y" | ./restore_db.sh "$BACKUP_FILENAME" school_management_test > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "数据库恢复失败"
     exit 1
@@ -258,11 +261,11 @@ run_test_case 23 "获取特定考试类型" \
     "23_get_exam_type.json" "admin"
 
 run_test_case 24 "更新考试类型" \
-    "curl -s -X PUT http://localhost:5000/api/admin/exam-types/5 -H \"Content-Type: application/json\" -d '{\"exam_type_name\": \"Updated Exam Type\"}' -b /tmp/test_cookie.txt" \
+    "curl -s -X PUT http://localhost:5000/api/admin/exam-types/$(cat $RESULT_DIR/22_create_exam_type.json | jq -r '.data.exam_type_id') -H \"Content-Type: application/json\" -d '{\"exam_type_name\": \"Updated Exam Type\"}' -b /tmp/test_cookie.txt" \
     "24_update_exam_type.json" "admin"
 
 run_test_case 25 "删除考试类型" \
-    "curl -s -X DELETE http://localhost:5000/api/admin/exam-types/5 -b /tmp/test_cookie.txt" \
+    "curl -s -X DELETE http://localhost:5000/api/admin/exam-types/$(cat $RESULT_DIR/22_create_exam_type.json | jq -r '.data.exam_type_id') -b /tmp/test_cookie.txt" \
     "25_delete_exam_type.json" "admin"
 
 run_test_case 26 "获取教师班级关系列表" \

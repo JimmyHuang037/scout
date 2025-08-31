@@ -62,7 +62,7 @@ class TeacherService:
         根据教师ID获取教师详情
         
         Args:
-            teacher_id (int): 教师ID
+            teacher_id (int or str): 教师ID
             
         Returns:
             dict: 教师信息

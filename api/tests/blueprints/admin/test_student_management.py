@@ -29,7 +29,7 @@ class TestAdminStudentManagement:
         student_data = {
             'student_id': f'S{timestamp}{random_num}',
             'student_name': 'Test Student',
-            'class_id': 1,
+            'class_id': 1,  # 使用数据库中存在的有效class_id
             'password': 'password123'
         }
         response = admin_client.post('/api/admin/students',
@@ -41,7 +41,7 @@ class TestAdminStudentManagement:
     def test_get_student(self, admin_client):
         """测试获取单个学生信息"""
         # 获取一个已存在的学生
-        response = admin_client.get("/api/admin/students/S0101")
+        response = admin_client.get("/api/admin/students/S1001")
         # 验证响应
         assert response.status_code == 200
         data = json.loads(response.data)
