@@ -5,6 +5,7 @@
 import os
 import logging
 import traceback
+import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_session import Session
@@ -29,16 +30,20 @@ def create_app(config_name='default'):
     # 加载配置
     app.config.from_object(config[config_name])
     
-    # 确保会话目录存在，路径相对于app目录
-    session_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'flask_session')
+    # 确保日志目录存在（会话目录也在此目录下）
+    log_dir = app.config['LOGS_DIR']
+    session_dir = os.path.join(log_dir, 'flask_session')
     os.makedirs(session_dir, exist_ok=True)
     
-    # 设置日志
-    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'runtime', 'logs')
     os.makedirs(log_dir, exist_ok=True)
-    setup_logger('app', os.path.join(log_dir, 'app.log'), level=logging.INFO)
+    
+    # 设置日志文件，使用统一的文件名app.log
+    log_file_path = os.path.join(log_dir, 'app.log')
+    
+    # 创建应用日志记录器
+    app_logger = setup_logger('app', log_file_path, level=logging.INFO)
     app.logger.setLevel(logging.INFO)
-    app.logger.info('Flask application created successfully')
+    app.logger.info(f'Flask application initialized with config: {config_name}')
     
     # 添加全局错误处理
     @app.errorhandler(Exception)
@@ -79,7 +84,5 @@ def create_app(config_name='default'):
     # 注册数据库关闭函数
     from utils import database_service
     app.teardown_appcontext(database_service.close_db)
-    
-    app.logger.info("Flask application created successfully")
     
     return app

@@ -2,6 +2,7 @@
 import logging
 import os
 from logging.handlers import RotatingFileHandler
+from flask import current_app
 
 
 def setup_logger(name, log_file, level=logging.INFO):
@@ -53,5 +54,19 @@ def setup_logger(name, log_file, level=logging.INFO):
     return logger
 
 
-# 创建应用日志记录器
-app_logger = setup_logger('app', 'runtime/logs/app.log')
+# 兼容层 - 当在Flask应用上下文中时，使用current_app.logger，否则使用默认的日志记录器
+class AppLogger:
+    @property
+    def logger(self):
+        try:
+            return current_app.logger
+        except RuntimeError:
+            # 不在Flask应用上下文中，返回默认日志记录器
+            return setup_logger('app', '../logs/app.log')
+    
+    def __getattr__(self, name):
+        return getattr(self.logger, name)
+
+
+# 创建全局app_logger实例
+app_logger = AppLogger()

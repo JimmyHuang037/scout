@@ -57,6 +57,10 @@ def app():
     # 创建测试应用实例
     app = create_app('testing')
     
+    # 确保会话目录存在
+    session_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), '..', 'logs_testing', 'flask_session')
+    os.makedirs(session_dir, exist_ok=True)
+    
     # 推送应用上下文
     with app.app_context():
         yield app
@@ -80,49 +84,55 @@ def admin_client(client):
     # 模拟管理员登录
     login_data = {
         'user_id': 'admin',
-        'password': 'admin'  # 修复管理员密码为正确值
+        'password': 'admin'
     }
     
     # 发送登录请求
-    response = client.post('/api/auth/login',
-                          json=login_data,
-                          content_type='application/json')
+    response = client.post('/api/auth/login', json=login_data)
     
-    # 返回客户端，此时应该已认证
-    return client
+    # 检查登录是否成功
+    if response.status_code == 200:
+        # 返回已认证的客户端
+        return client
+    else:
+        raise Exception(f"Failed to login as admin: {response.get_json()}")
 
 
-@pytest.fixture(scope='function')
-def teacher_client(app):
-    """创建已认证的教师测试客户端"""
-    with app.test_client() as client:
-        # 模拟教师登录
-        with client.session_transaction() as session:
-            session['user_id'] = '8'  # 使用字符串类型的教师ID
-            session['user_name'] = 'Test Teacher'  # 添加教师姓名
-            session['role'] = 'teacher'
-        yield client
+@pytest.fixture
+def teacher_client(client):
+    """创建教师身份验证的客户端"""
+    # 模拟教师登录 (user_id为1的教师密码是test123)
+    login_data = {
+        'user_id': '1',
+        'password': 'test123'
+    }
+    
+    # 发送登录请求
+    response = client.post('/api/auth/login', json=login_data)
+    
+    # 检查登录是否成功
+    if response.status_code == 200:
+        # 返回已认证的客户端
+        return client
+    else:
+        raise Exception(f"Failed to login as teacher: {response.get_json()}")
 
 
-@pytest.fixture(scope='function')
-def student_client(app):
-    """创建已认证的学生测试客户端"""
-    with app.test_client() as client:
-        # 模拟学生登录
-        with client.session_transaction() as session:
-            session['user_id'] = 'S0101'  # 使用有效的学生ID
-            session['user_name'] = 'Test Student'  # 添加学生姓名
-            session['role'] = 'student'
-        yield client
-
-
-@pytest.fixture(scope='function')
-def auth_client(app):
-    """创建已认证的测试客户端（管理员）"""
-    with app.test_client() as client:
-        # 模拟管理员登录
-        with client.session_transaction() as session:
-            session['user_id'] = 'admin'
-            session['user_name'] = 'Administrator'  # 添加管理员姓名
-            session['role'] = 'admin'
-        yield client
+@pytest.fixture
+def student_client(client):
+    """创建学生身份验证的客户端"""
+    # 模拟学生登录
+    login_data = {
+        'user_id': 'S0101',
+        'password': 'pass123'
+    }
+    
+    # 发送登录请求
+    response = client.post('/api/auth/login', json=login_data)
+    
+    # 检查登录是否成功
+    if response.status_code == 200:
+        # 返回已认证的客户端
+        return client
+    else:
+        raise Exception(f"Failed to login as student: {response.get_json()}")

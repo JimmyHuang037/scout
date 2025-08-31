@@ -44,7 +44,7 @@ def login():
             
     except Exception as e:
         app_logger.error(f"Login failed: {str(e)}")
-        return error_response(f'Login failed: {str(e)}'), 500
+        return error_response(f'Login failed: {str(e)}', 500)
 
 
 def logout():
@@ -59,7 +59,7 @@ def logout():
         
     except Exception as e:
         app_logger.error(f"Logout failed: {str(e)}")
-        return error_response(f'Logout failed: {str(e)}'), 500
+        return error_response(f'Logout failed: {str(e)}', 500)
 
 
 def get_current_user():
@@ -71,7 +71,6 @@ def get_current_user():
         role = session.get('role')
         
         if user_id and user_name and role:
-            app_logger.debug(f"Retrieved current user info for {user_id}")
             return success_response({
                 'user_id': user_id,
                 'user_name': user_name,
@@ -83,4 +82,4 @@ def get_current_user():
             
     except Exception as e:
         app_logger.error(f"Failed to get user info: {str(e)}")
-        return error_response(f'Failed to get user info: {str(e)}'), 500
+        return error_response(f'Failed to get user info: {str(e)}', 500)

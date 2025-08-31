@@ -6,6 +6,8 @@ from cachelib import FileSystemCache
 basedir = os.path.abspath(os.path.dirname(__file__))
 # API根目录（向上两级目录）
 api_dir = os.path.abspath(os.path.join(basedir, '..'))
+# 项目根目录（scout目录）
+project_dir = os.path.abspath(os.path.join(api_dir, '..'))
 
 # 加载 .env 文件
 load_dotenv(os.path.join(basedir, '.env'))
@@ -16,10 +18,10 @@ class Config:
     # Flask配置
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     
-    # Session配置 - 使用新的方式避免弃用警告，并确_session会话数据存储在api/runtime目录中
+    # Session配置 - 使用新的方式避免弃用警告
     SESSION_TYPE = 'cachelib'
     SESSION_CACHELIB = FileSystemCache(
-        os.path.join(api_dir, 'runtime', 'flask_session'),
+        os.path.join(project_dir, 'logs', 'flask_session'),
         threshold=500,
         mode=0o600
     )
@@ -38,6 +40,9 @@ class Config:
     
     # 应用端口
     PORT = 5000
+    
+    # 日志目录
+    LOGS_DIR = os.path.join(project_dir, 'logs')
 
 
 class DevelopmentConfig(Config):
@@ -49,14 +54,21 @@ class ProductionConfig(Config):
     """生产环境配置"""
     DEBUG = False
     PORT = 8000
+    LOGS_DIR = os.path.join(project_dir, 'logs_production')
+    SESSION_FILE_DIR = os.path.join(project_dir, 'logs_production', 'flask_session')
+    SESSION_TYPE = 'filesystem'
 
 
 class TestingConfig(Config):
     """测试环境配置"""
     TESTING = True
+    SECRET_KEY = 'test-secret-key'
     # 使用专门的测试数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
     PORT = 5010
+    LOGS_DIR = os.path.join(project_dir, 'logs_testing')
+    SESSION_FILE_DIR = os.path.join(project_dir, 'logs_testing', 'flask_session')
+    SESSION_TYPE = 'filesystem'
 
 
 # 配置字典

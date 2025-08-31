@@ -49,7 +49,6 @@ def create_class():
         else:
             app_logger.error("Failed to create class")
             return error_response('Failed to create class', 400)
-            
     except Exception as e:
         app_logger.error(f'Failed to create class: {str(e)}')
         return error_response(f'Failed to create class: {str(e)}', 500)
@@ -58,21 +57,21 @@ def create_class():
 @auth_required
 @role_required('admin')
 def get_class(class_id):
-    """获取单个班级信息"""
+    """根据ID获取班级信息"""
     try:
         # 使用班级服务获取班级信息
         class_service = ClassService()
-        class_info = class_service.get_class_by_id(class_id)
+        result = class_service.get_class_by_id(class_id)
         
-        if class_info:
-            app_logger.info(f"Admin retrieved class details for {class_id}")
-            return success_response(class_info)
+        if result:
+            app_logger.info(f"Admin retrieved class {class_id}")
+            return success_response(result)
         else:
-            app_logger.warning(f"Class not found: {class_id}")
+            app_logger.warning(f"Class {class_id} not found")
             return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to fetch class: {str(e)}')
+        app_logger.error(f'Failed to fetch class {class_id}: {str(e)}')
         return error_response(f'Failed to fetch class: {str(e)}', 500)
 
 
@@ -82,25 +81,20 @@ def update_class(class_id):
     """更新班级信息"""
     try:
         data = request.get_json()
-        class_name = data.get('class_name')
         
-        if not class_name:
-            app_logger.warning(f"Update class attempt with missing required fields for {class_id}")
-            return error_response('Missing required field: class_name', 400)
-        
-        # 使用班级服务更新班级信息
+        # 使用班级服务更新班级
         class_service = ClassService()
         result = class_service.update_class(class_id, data)
         
         if result:
             app_logger.info(f"Admin updated class {class_id}")
-            return success_response(True, 'Class updated successfully')  # 修复返回数据结构
+            return success_response(result, 'Class updated successfully')
         else:
-            app_logger.error(f"Failed to update class {class_id}")
-            return error_response('Failed to update class', 400)
+            app_logger.warning(f"Class {class_id} not found for update")
+            return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to update class: {str(e)}')
+        app_logger.error(f'Failed to update class {class_id}: {str(e)}')
         return error_response(f'Failed to update class: {str(e)}', 500)
 
 
@@ -109,25 +103,17 @@ def update_class(class_id):
 def delete_class(class_id):
     """删除班级"""
     try:
-        # 使用班级服务检查班级是否存在
+        # 使用班级服务删除班级
         class_service = ClassService()
-        class_info = class_service.get_class_by_id(class_id)
-        
-        if not class_info:
-            app_logger.warning(f"Class not found: {class_id}")
-            return error_response('Class not found', 404)
-        
-        # 使用新的班级服务实例执行删除操作，避免连接问题
-        delete_class_service = ClassService()
-        result = delete_class_service.delete_class(class_id)
+        result = class_service.delete_class(class_id)
         
         if result:
             app_logger.info(f"Admin deleted class {class_id}")
             return success_response(None, 'Class deleted successfully')
         else:
-            app_logger.error(f"Failed to delete class {class_id}")
-            return error_response('Failed to delete class', 400)
+            app_logger.warning(f"Class {class_id} not found for deletion")
+            return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to delete class: {str(e)}')
+        app_logger.error(f'Failed to delete class {class_id}: {str(e)}')
         return error_response(f'Failed to delete class: {str(e)}', 500)

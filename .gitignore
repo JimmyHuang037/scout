@@ -17,6 +17,7 @@ __pycache__/
 
 # 日志
 logs/
+logs_testing/
 
 # runtime
 api/runtime/
