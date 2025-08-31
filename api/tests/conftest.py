@@ -93,10 +93,10 @@ def admin_client(client):
 @pytest.fixture
 def teacher_client(client):
     """创建教师身份验证的客户端"""
-    # 模拟教师登录 (使用教师ID T1001，密码在数据库中应该存在)
+    # 模拟教师登录 (使用教师ID 1，密码在数据库中存在)
     login_data = {
-        'user_id': 'T1001',
-        'password': 'pass123'
+        'user_id': '1',
+        'password': 'test123'
     }
     
     # 发送登录请求
