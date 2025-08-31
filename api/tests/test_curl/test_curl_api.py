@@ -10,10 +10,8 @@ import json
 import os
 import tempfile
 import time
+import signal
 from pathlib import Path
-
-# 为整个测试类添加标记
-pytestmark = pytest.mark.curl_test
 
 
 class TestCurlAPI:
@@ -26,29 +24,97 @@ class TestCurlAPI:
         result_dir = Path("/tmp/curl_test_results")
         result_dir.mkdir(exist_ok=True)
         
-        # 设置环境变量
+        # 设置环境变量确保使用测试数据库
         os.environ['FLASK_ENV'] = 'testing'
+        os.environ['MYSQL_DB'] = 'school_management_test'
         
-        # 返回测试配置
+        # 恢复测试数据库
+        self.restore_test_database()
+        
+        # 启动API服务器
+        server_process = self.start_api_server()
+        
+        # 等待服务器启动
+        time.sleep(2)
+        
+        # 返回测试配置，使用5010端口
         yield {
-            'api_base_url': 'http://localhost:5000',
+            'api_base_url': 'http://localhost:5010',
             'result_dir': result_dir,
-            'cookie_file': '/tmp/test_cookie.txt'
+            'cookie_file': '/tmp/test_cookie.txt',
+            'server_process': server_process
         }
+        
+        # 清理：终止API服务器进程
+        if server_process:
+            try:
+                os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
+                server_process.wait(timeout=5)
+            except:
+                try:
+                    os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
+                except:
+                    pass
         
         # 清理临时文件
         if os.path.exists('/tmp/test_cookie.txt'):
             os.remove('/tmp/test_cookie.txt')
     
+    def restore_test_database(self):
+        """恢复测试数据库"""
+        try:
+            # 获取项目根目录
+            project_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+            db_restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
+            backup_filename = 'school_management_backup_20250831_103236.sql'
+            
+            # 运行数据库恢复脚本，恢复测试数据库
+            result = subprocess.run(
+                [db_restore_script, backup_filename, 'school_management_test'],
+                cwd=os.path.join(project_root, 'db'),
+                input='y\n',  # 自动确认
+                text=True,
+                capture_output=True
+            )
+            
+            if result.returncode == 0:
+                print("测试数据库恢复成功")
+            else:
+                print(f"测试数据库恢复失败: {result.stderr}")
+        except Exception as e:
+            print(f"恢复测试数据库时出错: {e}")
+    
+    def start_api_server(self):
+        """启动API服务器"""
+        try:
+            # 获取API目录
+            api_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+            
+            # 启动API服务器进程，使用5010端口和测试模式
+            process = subprocess.Popen(
+                ['python', 'app.py', '--port', '5010', '--test'],
+                cwd=api_dir,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=os.setsid
+            )
+            
+            print(f"API服务器已启动，PID: {process.pid}")
+            return process
+        except Exception as e:
+            print(f"启动API服务器失败: {e}")
+            return None
+    
     @pytest.fixture(scope="class")
     def api_server(self, test_setup):
         """API服务器配置"""
-        # 注意：在实际使用中，您可能需要根据环境启动服务器
-        # 这里我们假设服务器已经在运行或者通过其他方式启动
         yield test_setup['api_base_url']
     
     def run_curl_command(self, command, test_setup):
         """执行curl命令并返回结果"""
+        # 打印执行的curl命令
+        print(f"执行curl命令: {command}")
+        
         try:
             result = subprocess.run(
                 command, 

@@ -21,11 +21,13 @@ class ExamTypeService:
             dict: 考试类型列表和分页信息
         """
         try:
-            offset = (page - 1) * per_page
-            
             # 获取总数
             count_query = "SELECT COUNT(*) as count FROM ExamTypes"
-            total = self.db_service.get_count(count_query)
+            total_result = self.db_service.execute_query(count_query, (), fetch_one=True)
+            total = total_result['count'] if total_result else 0
+            
+            # 计算偏移量
+            offset = (page - 1) * per_page
             
             # 获取考试类型列表
             query = """
@@ -48,8 +50,6 @@ class ExamTypeService:
             
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def get_exam_type_by_id(self, exam_type_id):
         """
@@ -66,8 +66,7 @@ class ExamTypeService:
             return self.db_service.execute_query(query, (exam_type_id,), fetch_one=True)
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
+        # 不在这里关闭数据库连接，由调用者负责关闭
     
     def create_exam_type(self, exam_type_data):
         """
@@ -85,14 +84,12 @@ class ExamTypeService:
             self.db_service.execute_update(query, params)
             
             # 获取新创建的考试类型信息
-            # 获取新创建的考试类型信息
             select_query = """
                 SELECT exam_type_id, exam_type_name
                 FROM ExamTypes
                 WHERE exam_type_id = LAST_INSERT_ID()
             """
-            select_params = ()
-            exam_type_info = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            exam_type_info = self.db_service.execute_query(select_query, (), fetch_one=True)
             
             # 确保返回的字典包含正确的字段
             if exam_type_info:
@@ -103,8 +100,6 @@ class ExamTypeService:
             return None
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def update_exam_type(self, exam_type_id, exam_type_data):
         """
@@ -124,8 +119,7 @@ class ExamTypeService:
             return True
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
+        # 不在这里关闭数据库连接，由调用者负责关闭
     
     def delete_exam_type(self, exam_type_id):
         """
@@ -138,8 +132,11 @@ class ExamTypeService:
             bool: 是否删除成功
         """
         try:
-            # 开始事务
-            self.db_service.start_transaction()
+            # 检查是否已经在事务中，如果不是则开始事务
+            transaction_started_here = False
+            if not self.db_service.transaction_active:
+                self.db_service.start_transaction()
+                transaction_started_here = True
             
             # 删除与该考试类型相关的成绩
             delete_scores_query = "DELETE FROM Scores WHERE exam_type_id = %s"
@@ -149,12 +146,13 @@ class ExamTypeService:
             delete_exam_type_query = "DELETE FROM ExamTypes WHERE exam_type_id = %s"
             self.db_service.execute_update(delete_exam_type_query, (exam_type_id,))
             
-            # 提交事务
-            self.db_service.commit()
+            # 如果我们启动了事务，则提交它
+            if transaction_started_here and self.db_service.transaction_active:
+                self.db_service.commit()
             return True
         except Exception as e:
-            # 回滚事务
-            self.db_service.rollback()
+            # 如果我们启动了事务，则回滚它
+            if transaction_started_here and self.db_service.transaction_active:
+                self.db_service.rollback()
             raise e
-        finally:
-            self.db_service.close()
+        # 不在这里关闭数据库连接，由调用者负责关闭

@@ -52,9 +52,45 @@ class DatabaseService:
         try:
             self.db = get_db()
             self.cursor = self.db.cursor(dictionary=True)
+            self._in_transaction = False  # 添加事务状态跟踪
             logger.info("DatabaseService initialized")
         except Exception as e:
             logger.error(f"Failed to initialize DatabaseService: {str(e)}")
+            raise e
+    
+    @property
+    def transaction_active(self):
+        """检查是否有活动的事务"""
+        try:
+            # 首先检查我们自己的事务状态跟踪
+            if self._in_transaction:
+                logger.debug(f"Transaction active: self tracked = {self._in_transaction}")
+                return True
+            # 然后检查连接的事务状态
+            if (self.db is not None and 
+                hasattr(self.db, 'in_transaction') and 
+                self.db.in_transaction):
+                logger.debug(f"Transaction active: connection tracked = {self.db.in_transaction}")
+                return True
+            logger.debug(f"Transaction not active. Self tracked: {self._in_transaction}")
+            return False
+        except Exception as e:
+            logger.error(f"Error checking transaction status: {str(e)}")
+            # 如果无法检查事务状态，返回False
+            return False
+    
+    def start_transaction(self):
+        """开始事务"""
+        try:
+            if self.transaction_active:
+                app_logger.warning("Transaction already in progress")
+                logger.debug("Transaction already in progress, not starting new one")
+                return  # 如果事务已经在进行中，则不重复启动
+            self.db.start_transaction()
+            self._in_transaction = True  # 更新事务状态跟踪
+            logger.debug("Transaction started")
+        except Exception as e:
+            logger.error(f"Failed to start transaction: {str(e)}")
             raise e
     
     def execute_query(self, query, params=None, fetch_one=False):
@@ -93,13 +129,17 @@ class DatabaseService:
         try:
             logger.debug(f"Executing update: {query} with params: {params}")
             self.cursor.execute(query, params or ())
-            self.db.commit()  # 确保每次都提交事务
+            # 只有在不在事务中时才自动提交
+            if not self.transaction_active:
+                self.db.commit()
+                self._in_transaction = False  # 确保事务状态正确
             affected_rows = self.cursor.rowcount
             logger.debug(f"Update executed successfully, affected {affected_rows} rows")
             return affected_rows
         except Exception as e:
             logger.error(f"Failed to execute update: {str(e)}")
             self.db.rollback()
+            self._in_transaction = False  # 确保事务状态正确
             raise e
     
     def get_count(self, query, params=None):
@@ -116,19 +156,11 @@ class DatabaseService:
         result = self.execute_query(query, params, fetch_one=True)
         return result['count'] if result else 0
     
-    def start_transaction(self):
-        """开始事务"""
-        try:
-            self.db.start_transaction()
-            logger.debug("Transaction started")
-        except Exception as e:
-            logger.error(f"Failed to start transaction: {str(e)}")
-            raise e
-    
     def commit(self):
         """提交事务"""
         try:
             self.db.commit()
+            self._in_transaction = False  # 更新事务状态跟踪
             logger.debug("Transaction committed")
         except Exception as e:
             logger.error(f"Failed to commit transaction: {str(e)}")
@@ -139,6 +171,7 @@ class DatabaseService:
         """回滚事务"""
         try:
             self.db.rollback()
+            self._in_transaction = False  # 更新事务状态跟踪
             logger.debug("Transaction rolled back")
         except Exception as e:
             logger.error(f"Failed to rollback transaction: {str(e)}")

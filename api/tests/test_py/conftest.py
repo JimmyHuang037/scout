@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试配置文件
+test_py模块的pytest配置文件
 包含测试夹具和配置
 """
 
@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning, module="flask_ses
 warnings.filterwarnings("ignore", category=DeprecationWarning, module="cachelib")
 
 # 将项目根目录添加到Python路径中
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 from app.factory import create_app
 
@@ -23,7 +23,7 @@ from app.factory import create_app
 def pytest_configure(config):
     """Pytest配置初始化，恢复测试数据库"""
     # 获取项目根目录
-    project_root = os.path.join(os.path.dirname(__file__), '..', '..')
+    project_root = os.path.join(os.path.dirname(__file__), '..', '..', '..')
     db_restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
     
     # 使用最新的备份文件
@@ -98,7 +98,8 @@ def teacher_client(app):
     with app.test_client() as client:
         # 模拟教师登录
         with client.session_transaction() as session:
-            session['user_id'] = 8  # 使用有效的教师ID
+            session['user_id'] = '8'  # 使用字符串类型的教师ID
+            session['user_name'] = 'Test Teacher'  # 添加教师姓名
             session['role'] = 'teacher'
         yield client
 
@@ -110,6 +111,7 @@ def student_client(app):
         # 模拟学生登录
         with client.session_transaction() as session:
             session['user_id'] = 'S0101'  # 使用有效的学生ID
+            session['user_name'] = 'Test Student'  # 添加学生姓名
             session['role'] = 'student'
         yield client
 
@@ -121,7 +123,6 @@ def auth_client(app):
         # 模拟管理员登录
         with client.session_transaction() as session:
             session['user_id'] = 'admin'
+            session['user_name'] = 'Administrator'  # 添加管理员姓名
             session['role'] = 'admin'
         yield client
-
-
