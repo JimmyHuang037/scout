@@ -1,7 +1,7 @@
 import os
 
 # 获取项目根目录
-project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
 def get_config_name():
@@ -11,7 +11,7 @@ def get_config_name():
     Returns:
         str: 配置名称
     """
-    return os.getenv('FLASK_ENV', DEFAULT_ENV)
+    return os.getenv('FLASK_ENV', 'default')
 
 
 def _get_database_uri(user, password, host, database):
@@ -29,7 +29,7 @@ def _get_logs_config(env):
         logs_dir = os.path.join(project_dir, 'logs')
     
     log_file_path = os.path.join(logs_dir, 'app.log')
-    session_dir = os.path.join(logs_dir, 'flask_session')
+    session_dir = os.path.join(logs_dir, 'flask_session')  # 会话目录应该在logs_testing下
     
     return logs_dir, log_file_path, session_dir
 

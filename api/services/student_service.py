@@ -1,7 +1,7 @@
 """学生服务模块"""
 import logging
 from utils.database_service import DatabaseService
-# 移除不存在的模块导入
+from flask import current_app
 
 # 初始化日志器
 logging.basicConfig(level=logging.INFO)
@@ -14,6 +14,43 @@ class StudentService:
     def __init__(self):
         """初始化学生服务"""
         self.db_service = DatabaseService()
+
+    def get_teacher_students(self, teacher_id, class_id=None):
+        """
+        获取教师所教班级的学生列表
+        
+        Args:
+            teacher_id (str): 教师ID
+            class_id (str, optional): 班级ID
+            
+        Returns:
+            list: 学生列表
+        """
+        try:
+            # 构建查询语句
+            base_query = """
+                SELECT s.student_id, s.student_name, s.class_id, c.class_name
+                FROM students s
+                JOIN classes c ON s.class_id = c.class_id
+                JOIN teacher_classes tc ON s.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+            """
+            params = [teacher_id]
+            
+            # 如果指定了班级ID，则添加到查询条件中
+            if class_id:
+                base_query += " AND s.class_id = %s"
+                params.append(class_id)
+            
+            base_query += " ORDER BY s.student_id"
+            
+            # 执行查询
+            students = self.db_service.execute_query(base_query, params)
+            current_app.logger.info(f"Retrieved {len(students)} students for teacher {teacher_id}")
+            return students
+        except Exception as e:
+            current_app.logger.error(f"Failed to get teacher students: {str(e)}")
+            raise
 
     def get_all_students(self, page=1, per_page=10):
         """

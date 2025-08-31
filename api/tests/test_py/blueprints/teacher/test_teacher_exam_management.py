@@ -22,50 +22,40 @@ class TestTeacherExamManagement:
     def test_create_exam(self, teacher_client):
         """测试创建考试"""
         exam_data = {
-            'exam_name': 'Test Exam',
+            'name': 'Test Exam',
             'subject_id': 1,
-            'class_id': 1,
+            'class_ids': [1],
             'exam_type_id': 1,
-            'exam_date': '2025-09-01'
+            'date': '2025-09-01',
+            'total_score': 100
         }
         response = teacher_client.post('/api/teacher/exams',
-                                     data=json.dumps(exam_data),
-                                     content_type='application/json')
-        # 根据实际实现，创建可能返回不同状态码
-        assert response.status_code in [200, 201, 400, 500]
+                                      data=json.dumps(exam_data),
+                                      content_type='application/json')
+        assert response.status_code == 200
 
     def test_get_exam(self, teacher_client):
-        """测试获取特定考试信息"""
-        # 先创建一个考试
-        exam_data = {
-            'exam_name': 'Test Exam',
-            'subject_id': 1,
-            'class_id': 1,
-            'exam_type_id': 1,
-            'exam_date': '2025-09-01'
-        }
-        create_response = teacher_client.post('/api/teacher/exams',
-                                            data=json.dumps(exam_data),
-                                            content_type='application/json')
-        
-        # 获取考试 (使用ID 1作为示例)
+        """测试获取考试详情"""
+        # 使用ID为1的考试进行测试
         response = teacher_client.get('/api/teacher/exams/1')
-        # 根据实际实现，可能返回不同状态码
-        assert response.status_code in [200, 404, 500]
+        assert response.status_code == 200
 
     def test_update_exam(self, teacher_client):
-        """测试更新考试信息"""
-        update_data = {
-            'exam_name': 'Updated Test Exam'
+        """测试更新考试"""
+        exam_data = {
+            'name': 'Updated Test Exam',
+            'subject_id': 1,
+            'class_ids': [1],
+            'exam_type_id': 1,
+            'date': '2025-09-02',
+            'total_score': 100
         }
         response = teacher_client.put('/api/teacher/exams/1',
-                                    data=json.dumps(update_data),
-                                    content_type='application/json')
-        # 根据实际实现，可能返回不同状态码
-        assert response.status_code in [200, 400, 404, 500]
+                                     data=json.dumps(exam_data),
+                                     content_type='application/json')
+        assert response.status_code == 200
 
     def test_delete_exam(self, teacher_client):
         """测试删除考试"""
         response = teacher_client.delete('/api/teacher/exams/1')
-        # 根据实际实现，可能返回不同状态码
-        assert response.status_code in [200, 400, 404, 500]
+        assert response.status_code == 200
