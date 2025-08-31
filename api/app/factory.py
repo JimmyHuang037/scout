@@ -95,31 +95,17 @@ def create_app(config_name=None):
     from blueprints.admin.teacher_classes import teacher_class_bp
     from blueprints.admin.teachers import teacher_bp
     from blueprints.auth import auth_bp
-    from blueprints.student.exam import student_exam_bp
-    from blueprints.student.profile import profile_bp
-    from blueprints.student.scores import scores_bp
-    from blueprints.teacher.exam import exam_bp
-    from blueprints.teacher.exam import exam_class_bp
-    from blueprints.teacher.exam import exam_results_bp
-    from blueprints.teacher.exam import performance_bp
-    from blueprints.teacher.scores import score_bp
-    from blueprints.teacher.students import student_bp as teacher_student_bp
+    from blueprints.student import student_bp as student_main_bp
+    from blueprints.teacher import teacher_bp as teacher_main_bp
     
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(exam_type_bp, url_prefix='/api/admin/exam-types')
-    app.register_blueprint(student_bp, url_prefix='/api/admin/students')
-    app.register_blueprint(subject_bp, url_prefix='/api/admin/subjects')
-    app.register_blueprint(teacher_class_bp, url_prefix='/api/admin/teacher-classes')
-    app.register_blueprint(teacher_bp, url_prefix='/api/admin/teachers')
-    app.register_blueprint(student_exam_bp, url_prefix='/api/student/exam')
-    app.register_blueprint(profile_bp, url_prefix='/api/student/profile')
-    app.register_blueprint(scores_bp, url_prefix='/api/student/scores')
-    app.register_blueprint(exam_bp, url_prefix='/api/teacher/exam')
-    app.register_blueprint(exam_class_bp, url_prefix='/api/teacher/exam-class')
-    app.register_blueprint(exam_results_bp, url_prefix='/api/teacher/exam-results')
-    app.register_blueprint(performance_bp, url_prefix='/api/teacher/performance')
-    app.register_blueprint(score_bp, url_prefix='/api/teacher/scores')
-    app.register_blueprint(teacher_student_bp, url_prefix='/api/teacher/students')
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(exam_type_bp)
+    app.register_blueprint(student_bp)
+    app.register_blueprint(subject_bp)
+    app.register_blueprint(teacher_class_bp)
+    app.register_blueprint(teacher_bp)
+    app.register_blueprint(student_main_bp)
+    app.register_blueprint(teacher_main_bp)
     
     # 设置错误处理器
     _setup_error_handlers(app)

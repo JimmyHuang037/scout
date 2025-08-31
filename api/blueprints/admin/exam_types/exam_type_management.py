@@ -1,131 +1,148 @@
-"""考试类型管理模块，处理考试类型的增删改查操作"""
+"""考试类型管理模块，处理考试类型相关的所有操作"""
 from flask import jsonify, request, session, current_app
-from services.exam_type_service import ExamTypeService
+from services import ExamTypeService
 from utils.helpers import success_response, error_response, auth_required, role_required
 
 
 @auth_required
 @role_required('admin')
-def get_exam_types():
-    """获取考试类型列表"""
+def create_exam_type():
+    """
+    创建考试类型
+    
+    Returns:
+        JSON: 创建结果
+    """
     try:
-        # 获取查询参数
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
+        # 获取请求数据
+        data = request.get_json()
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        # 使用考试类型服务获取考试类型列表
-        exam_type_service = ExamTypeService()
-        result = exam_type_service.get_all_exam_types(page, per_page)  # 修复方法名
-        exam_type_service.db_service.close()  # 手动关闭数据库连接
+        # 提取必要字段
+        name = data.get('name')
         
-        current_app.logger.info("Admin retrieved exam types")
-        return success_response(result)
+        # 验证必填字段
+        if not name:
+            return error_response("缺少必要字段", 400)
         
+        # 创建考试类型
+        exam_type = ExamTypeService.create_exam_type(name=name)
+        
+        current_app.logger.info(f'Admin created exam type: {exam_type.id}')
+        return success_response("考试类型创建成功", {"exam_type_id": exam_type.id})
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to fetch exam types: {str(e)}')
-        return error_response(f'Failed to fetch exam types: {str(e)}', 500)
+        current_app.logger.error(f'Failed to create exam type: {str(e)}')
+        return error_response("创建考试类型失败", 500)
 
 
 @auth_required
 @role_required('admin')
-def create_exam_type():
-    """创建考试类型"""
+def get_exam_types():
+    """
+    获取所有考试类型列表
+    
+    Returns:
+        JSON: 考试类型列表
+    """
     try:
-        data = request.get_json()
-        exam_type_name = data.get('exam_type_name')
+        # 获取考试类型列表
+        exam_types = ExamTypeService.get_all_exam_types()
         
-        if not exam_type_name:
-            return error_response('Missing required field: exam_type_name', 400)
-        
-        # 使用考试类型服务创建考试类型
-        exam_type_service = ExamTypeService()
-        exam_type_data = {'exam_type_name': exam_type_name}
-        result = exam_type_service.create_exam_type(exam_type_data)
-        exam_type_service.db_service.close()  # 手动关闭数据库连接
-        
-        if result:
-            current_app.logger.info("Admin created exam type")
-            return success_response(result, 'Exam type created successfully', 201)
-        else:
-            current_app.logger.error("Failed to create exam type")
-            return error_response('Failed to create exam type', 400)
-            
+        current_app.logger.info('Admin retrieved all exam types')
+        return success_response("获取考试类型列表成功", exam_types)
+    
     except Exception as e:
-        # 确保即使出现异常也关闭数据库连接
-        try:
-            exam_type_service.db_service.close()
-        except:
-            pass
-        current_app.logger.error(f'Failed to create exam type: {str(e)}')
-        return error_response(f'Failed to create exam type: {str(e)}', 500)
+        current_app.logger.error(f'Failed to retrieve exam types: {str(e)}')
+        return error_response("获取考试类型列表失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def get_exam_type(exam_type_id):
-    """获取考试类型详情"""
-    try:
-        # 使用考试类型服务获取考试类型信息
-        exam_type_service = ExamTypeService()
-        result = exam_type_service.get_exam_type_by_id(exam_type_id)
-        exam_type_service.db_service.close()  # 手动关闭数据库连接
+    """
+    获取考试类型详情
+    
+    Args:
+        exam_type_id (int): 考试类型ID
         
-        if result:
-            current_app.logger.info(f"Admin retrieved exam type {exam_type_id}")
-            return success_response(result)
-        else:
-            current_app.logger.warning(f"Exam type {exam_type_id} not found")
-            return error_response('Exam type not found', 404)
-            
+    Returns:
+        JSON: 考试类型详情
+    """
+    try:
+        # 获取考试类型详情
+        exam_type = ExamTypeService.get_exam_type_by_id(exam_type_id)
+        if not exam_type:
+            return error_response("考试类型不存在", 404)
+        
+        current_app.logger.info(f'Admin retrieved exam type: {exam_type_id}')
+        return success_response("获取考试类型详情成功", exam_type)
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to fetch exam type: {str(e)}')
-        return error_response(f'Failed to fetch exam type: {str(e)}', 500)
+        current_app.logger.error(f'Failed to retrieve exam type {exam_type_id}: {str(e)}')
+        return error_response("获取考试类型详情失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def update_exam_type(exam_type_id):
-    """更新考试类型"""
+    """
+    更新考试类型信息
+    
+    Args:
+        exam_type_id (int): 考试类型ID
+        
+    Returns:
+        JSON: 更新结果
+    """
     try:
+        # 获取请求数据
         data = request.get_json()
-        exam_type_name = data.get('exam_type_name')  # 使用正确的字段名
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        if not exam_type_name:
-            return error_response('Missing required field: exam_type_name', 400)
+        # 提取必要字段
+        name = data.get('name')
         
-        # 使用考试类型服务更新考试类型信息
-        exam_type_service = ExamTypeService()
-        result = exam_type_service.update_exam_type(exam_type_id, {'exam_type_name': exam_type_name})
-        exam_type_service.db_service.close()  # 手动关闭数据库连接
+        # 验证必填字段
+        if not name:
+            return error_response("缺少必要字段", 400)
         
-        if result:
-            return success_response({'message': 'Exam type updated successfully'}, 'Exam type updated successfully')
-        else:
-            return error_response('Failed to update exam type', 400)
-            
+        # 更新考试类型
+        updated_exam_type = ExamTypeService.update_exam_type(exam_type_id=exam_type_id, name=name)
+        if not updated_exam_type:
+            return error_response("考试类型不存在", 404)
+        
+        current_app.logger.info(f'Admin updated exam type: {exam_type_id}')
+        return success_response("考试类型更新成功", {"exam_type_id": updated_exam_type.id})
+    
     except Exception as e:
-        return error_response(f'Failed to update exam type: {str(e)}', 500)
+        current_app.logger.error(f'Failed to update exam type {exam_type_id}: {str(e)}')
+        return error_response("更新考试类型失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def delete_exam_type(exam_type_id):
-    """删除考试类型"""
-    try:
-        # 使用考试类型服务删除考试类型
-        exam_type_service = ExamTypeService()
-        result = exam_type_service.delete_exam_type(exam_type_id)
-        exam_type_service.db_service.close()  # 手动关闭数据库连接
+    """
+    删除考试类型
+    
+    Args:
+        exam_type_id (int): 考试类型ID
         
-        if result:
-            return success_response({'message': 'Exam type deleted successfully'}, 'Exam type deleted successfully')
-        else:
-            return error_response('Failed to delete exam type', 400)
-            
+    Returns:
+        JSON: 删除结果
+    """
+    try:
+        # 删除考试类型
+        result = ExamTypeService.delete_exam_type(exam_type_id)
+        if not result:
+            return error_response("考试类型不存在", 404)
+        
+        current_app.logger.info(f'Admin deleted exam type: {exam_type_id}')
+        return success_response("考试类型删除成功", {"exam_type_id": exam_type_id})
+    
     except Exception as e:
-        # 确保即使出现异常也关闭数据库连接
-        try:
-            exam_type_service.db_service.close()
-        except:
-            pass
-        return error_response(f'Failed to delete exam type: {str(e)}', 500)
+        current_app.logger.error(f'Failed to delete exam type {exam_type_id}: {str(e)}')
+        return error_response("删除考试类型失败", 500)

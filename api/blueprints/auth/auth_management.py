@@ -29,53 +29,55 @@ def login():
         current_app.logger.info(f"Database query result: {user}")
         
         if user:
-            # 存储用户信息到session
+            # 登录成功，设置session
             session['user_id'] = user['user_id']
             session['user_name'] = user['user_name']
             session['role'] = user['role']
             
-            current_app.logger.info(f"User {user_id} logged in successfully")
+            current_app.logger.info(f"User {user['user_id']} logged in successfully")
             return success_response({
                 'user_id': user['user_id'],
                 'user_name': user['user_name'],
                 'role': user['role']
-            }, 'Login successful')
+            })
         else:
-            current_app.logger.warning(f"Failed login attempt for user {user_id}")
-            return error_response('Invalid user_id or password', 401)
-            
+            current_app.logger.warning(f"Login failed for user_id: {user_id}")
+            return error_response('Invalid credentials', 401)
     except Exception as e:
-        current_app.logger.error(f"Login failed: {str(e)}")
-        return error_response(f'Login failed: {str(e)}', 500)
+        current_app.logger.error(f'Login error: {str(e)}')
+        return error_response('Internal server error', 500)
 
 
 def logout():
     """用户登出"""
     try:
-        # 清除session中的用户信息
-        user_id = session.get('user_id')
+        # 清除session
         session.clear()
-        
-        current_app.logger.info(f"User {user_id} logged out")
-        return success_response(message='Logout successful')
-        
+        current_app.logger.info("User logged out successfully")
+        return success_response({'message': 'Logged out successfully'})
     except Exception as e:
-        current_app.logger.error(f"Logout failed: {str(e)}")
-        return error_response(f'Logout failed: {str(e)}', 500)
+        current_app.logger.error(f'Logout error: {str(e)}')
+        return error_response('Internal server error', 500)
 
 
 def get_current_user():
     """获取当前登录用户信息"""
     try:
-        if 'user_id' in session:
+        # 检查session中的用户信息
+        user_id = session.get('user_id')
+        user_name = session.get('user_name')
+        role = session.get('role')
+        
+        if user_id and user_name and role:
+            current_app.logger.info(f"Retrieved current user: {user_id}")
             return success_response({
-                'user_id': session['user_id'],
-                'user_name': session['user_name'],
-                'role': session['role']
+                'user_id': user_id,
+                'user_name': user_name,
+                'role': role
             })
         else:
-            current_app.logger.warning("Attempt to get current user when not authenticated")
-            return error_response('User not authenticated', 401)
+            current_app.logger.info("No user currently logged in")
+            return error_response('Not authenticated', 401)
     except Exception as e:
-        current_app.logger.error(f"Failed to get current user: {str(e)}")
-        return error_response(f'Failed to get current user: {str(e)}', 500)
+        current_app.logger.error(f'Get current user error: {str(e)}')
+        return error_response('Internal server error', 500)

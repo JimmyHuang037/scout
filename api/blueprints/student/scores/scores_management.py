@@ -8,7 +8,7 @@ student_scores_bp = Blueprint('student_scores_bp', __name__)
 
 @student_scores_bp.route('/scores', methods=['GET'])
 @role_required('student')
-def get_student_scores():
+def get_my_scores():
     try:
         # 获取当前学生ID
         student_id = request.user['user_id']

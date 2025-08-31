@@ -151,7 +151,7 @@ class DatabaseService:
             查询结果
         """
         try:
-            logger.info(f"Executing query: {query} with params: {params}")
+            current_app.logger.info(f"Executing query: {query} with params: {params}")
             with self.get_connection().cursor() as cursor:
                 cursor.execute(query, params or ())
                 if fetch_one:

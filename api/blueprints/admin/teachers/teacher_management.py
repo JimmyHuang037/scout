@@ -6,99 +6,148 @@ from utils.helpers import success_response, error_response, auth_required, role_
 
 @auth_required
 @role_required('admin')
-def get_teachers():
-    """获取教师列表"""
-    try:
-        # 获取查询参数
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
-        
-        # 使用教师服务获取教师列表
-        teacher_service = TeacherService()
-        result = teacher_service.get_all_teachers(page, per_page)
-        
-        current_app.logger.info("Admin retrieved teacher list")
-        return success_response(result)
-        
-    except Exception as e:
-        current_app.logger.error(f'Failed to fetch teachers: {str(e)}')
-        return error_response(f'Failed to fetch teachers: {str(e)}', 500)
-
-
-@auth_required
-@role_required('admin')
 def create_teacher():
-    """创建教师"""
+    """
+    创建教师账户
+    
+    Returns:
+        JSON: 创建结果
+    """
     try:
+        # 获取请求数据
         data = request.get_json()
-        # 使用教师服务创建教师
-        teacher_service = TeacherService()
-        result = teacher_service.create_teacher(data)
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        if result:
-            # 修复：create_teacher服务方法返回的是布尔值，不是包含teacher_id的对象
-            current_app.logger.info("Admin created teacher")
-            return success_response(None, 'Teacher created successfully', 201)
-        else:
-            current_app.logger.error("Failed to create teacher")
-            return error_response('Failed to create teacher', 400)
-            
+        # 提取必要字段
+        name = data.get('name')
+        email = data.get('email')
+        subject_id = data.get('subject_id')
+        
+        # 验证必填字段
+        if not all([name, email, subject_id]):
+            return error_response("缺少必要字段", 400)
+        
+        # 创建教师
+        teacher = TeacherService.create_teacher(name=name, email=email, subject_id=subject_id)
+        
+        current_app.logger.info(f'Admin created teacher: {teacher.id}')
+        return success_response("教师创建成功", {"teacher_id": teacher.id})
+    
     except Exception as e:
-        app_logger.error(f'Failed to create teacher: {str(e)}')
-        return error_response(f'Failed to create teacher: {str(e)}', 500)
+        current_app.logger.error(f'Failed to create teacher: {str(e)}')
+        return error_response("创建教师失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def get_teacher(teacher_id):
-    """获取单个教师信息"""
-    try:
-        # 使用教师服务获取教师信息
-        teacher_service = TeacherService()
-        teacher = teacher_service.get_teacher_by_id(teacher_id)
+    """
+    获取教师详情
+    
+    Args:
+        teacher_id (int): 教师ID
         
-        if teacher:
-            return success_response(teacher)
-        else:
-            return error_response('Teacher not found', 404)
-            
+    Returns:
+        JSON: 教师详情
+    """
+    try:
+        # 获取教师详情
+        teacher = TeacherService.get_teacher_by_id(teacher_id)
+        if not teacher:
+            return error_response("教师不存在", 404)
+        
+        current_app.logger.info(f'Admin retrieved teacher: {teacher_id}')
+        return success_response("获取教师详情成功", teacher)
+    
     except Exception as e:
-        return error_response(f'Failed to fetch teacher: {str(e)}', 500)
+        current_app.logger.error(f'Failed to retrieve teacher {teacher_id}: {str(e)}')
+        return error_response("获取教师详情失败", 500)
+
+
+@auth_required
+@role_required('admin')
+def get_teachers():
+    """
+    获取所有教师列表
+    
+    Returns:
+        JSON: 教师列表
+    """
+    try:
+        # 获取查询参数
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        # 获取教师列表
+        teachers_data = TeacherService.get_all_teachers(page, per_page)
+        
+        current_app.logger.info('Admin retrieved all teachers')
+        return success_response("获取教师列表成功", teachers_data)
+    
+    except Exception as e:
+        current_app.logger.error(f'Failed to retrieve teachers: {str(e)}')
+        return error_response("获取教师列表失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def update_teacher(teacher_id):
-    """更新教师信息"""
-    try:
-        data = request.get_json()
-        # 使用教师服务更新教师信息
-        teacher_service = TeacherService()
-        result = teacher_service.update_teacher(teacher_id, data)
+    """
+    更新教师信息
+    
+    Args:
+        teacher_id (int): 教师ID
         
-        if result:
-            return success_response(True, 'Teacher updated successfully')  # 修复返回数据结构
-        else:
-            return error_response('Failed to update teacher', 400)
-            
+    Returns:
+        JSON: 更新结果
+    """
+    try:
+        # 获取请求数据
+        data = request.get_json()
+        if not data:
+            return error_response("无效的请求数据", 400)
+        
+        # 更新教师
+        updated_teacher = TeacherService.update_teacher(
+            teacher_id=teacher_id,
+            name=data.get('name'),
+            email=data.get('email'),
+            subject_id=data.get('subject_id')
+        )
+        
+        if not updated_teacher:
+            return error_response("教师不存在", 404)
+        
+        current_app.logger.info(f'Admin updated teacher: {teacher_id}')
+        return success_response("教师更新成功", {"teacher_id": updated_teacher.id})
+    
     except Exception as e:
-        return error_response(f'Failed to update teacher: {str(e)}', 500)
+        current_app.logger.error(f'Failed to update teacher {teacher_id}: {str(e)}')
+        return error_response("更新教师失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def delete_teacher(teacher_id):
-    """删除教师"""
-    try:
-        # 使用教师服务删除教师
-        teacher_service = TeacherService()
-        result = teacher_service.delete_teacher(teacher_id)
+    """
+    删除教师
+    
+    Args:
+        teacher_id (int): 教师ID
         
-        if result:
-            # 修复返回值问题，确保返回正确的响应格式
-            return success_response({'message': 'Teacher deleted successfully'}, 200)
-        else:
-            return error_response('Failed to delete teacher', 400)
-            
+    Returns:
+        JSON: 删除结果
+    """
+    try:
+        # 删除教师
+        result = TeacherService.delete_teacher(teacher_id)
+        if not result:
+            return error_response("教师不存在", 404)
+        
+        current_app.logger.info(f'Admin deleted teacher: {teacher_id}')
+        return success_response("教师删除成功", {"teacher_id": teacher_id})
+    
     except Exception as e:
-        return error_response(f'Failed to delete teacher: {str(e)}', 500)
+        current_app.logger.error(f'Failed to delete teacher {teacher_id}: {str(e)}')
+        return error_response("删除教师失败", 500)

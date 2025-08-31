@@ -1,9 +1,8 @@
 """班级管理模块，处理班级相关的所有操作"""
-from flask import jsonify, request, session
+from flask import jsonify, request, session, current_app
 from services import ClassService
 from services.class_service import ClassNotFoundError
 from utils.helpers import success_response, error_response, auth_required, role_required
-from utils.logger import app_logger
 
 
 @auth_required
@@ -19,11 +18,11 @@ def get_classes():
         class_service = ClassService()
         result = class_service.get_all_classes(page, per_page)
         
-        app_logger.info("Admin retrieved class list")
+        current_app.logger.info("Admin retrieved class list")
         return success_response(result)
         
     except Exception as e:
-        app_logger.error(f'Failed to fetch classes: {str(e)}')
+        current_app.logger.error(f'Failed to fetch classes: {str(e)}')
         return error_response(f'Failed to fetch classes: {str(e)}', 500)
 
 
@@ -36,7 +35,7 @@ def create_class():
         class_name = data.get('class_name')
         
         if not class_name:
-            app_logger.warning("Create class attempt with missing required fields")
+            current_app.logger.warning("Create class attempt with missing required fields")
             return error_response('Missing required field: class_name', 400)
         
         # 使用班级服务创建班级
@@ -44,10 +43,10 @@ def create_class():
         result = class_service.create_class(data)
         
         if result:
-            app_logger.info(f"Admin created class {result.get('class_id')}")
+            current_app.logger.info(f"Admin created class {result.get('class_id')}")
             return success_response(result, 'Class created successfully', 201)
         else:
-            app_logger.error("Failed to create class")
+            current_app.logger.error("Failed to create class")
             return error_response('Failed to create class', 400)
     except Exception as e:
         app_logger.error(f'Failed to create class: {str(e)}')
@@ -64,14 +63,14 @@ def get_class(class_id):
         result = class_service.get_class_by_id(class_id)
         
         if result:
-            app_logger.info(f"Admin retrieved class {class_id}")
+            current_app.logger.info(f"Admin retrieved class {class_id}")
             return success_response(result)
         else:
-            app_logger.warning(f"Class {class_id} not found")
+            current_app.logger.warning(f"Class {class_id} not found")
             return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to fetch class {class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to fetch class {class_id}: {str(e)}')
         return error_response(f'Failed to fetch class: {str(e)}', 500)
 
 
@@ -87,14 +86,14 @@ def update_class(class_id):
         result = class_service.update_class(class_id, data)
         
         if result:
-            app_logger.info(f"Admin updated class {class_id}")
+            current_app.logger.info(f"Admin updated class {class_id}")
             return success_response(result, 'Class updated successfully')
         else:
-            app_logger.warning(f"Class {class_id} not found for update")
+            current_app.logger.warning(f"Class {class_id} not found for update")
             return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to update class {class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to update class {class_id}: {str(e)}')
         return error_response(f'Failed to update class: {str(e)}', 500)
 
 
@@ -108,12 +107,12 @@ def delete_class(class_id):
         result = class_service.delete_class(class_id)
         
         if result:
-            app_logger.info(f"Admin deleted class {class_id}")
+            current_app.logger.info(f"Admin deleted class {class_id}")
             return success_response(None, 'Class deleted successfully')
         else:
-            app_logger.warning(f"Class {class_id} not found for deletion")
+            current_app.logger.warning(f"Class {class_id} not found for deletion")
             return error_response('Class not found', 404)
             
     except Exception as e:
-        app_logger.error(f'Failed to delete class {class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to delete class {class_id}: {str(e)}')
         return error_response(f'Failed to delete class: {str(e)}', 500)

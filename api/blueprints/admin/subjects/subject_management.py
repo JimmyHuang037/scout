@@ -6,112 +6,143 @@ from utils.helpers import success_response, error_response, auth_required, role_
 
 @auth_required
 @role_required('admin')
-def get_subjects():
-    """获取科目列表"""
+def create_subject():
+    """
+    创建科目
+    
+    Returns:
+        JSON: 创建结果
+    """
     try:
-        # 获取查询参数
-        page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 10, type=int)
+        # 获取请求数据
+        data = request.get_json()
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        # 使用科目服务获取科目列表
-        subject_service = SubjectService()
-        result = subject_service.get_all_subjects(page, per_page)
+        # 提取必要字段
+        name = data.get('name')
         
-        current_app.logger.info("Admin retrieved subject list")
-        return success_response(result)
+        # 验证必填字段
+        if not name:
+            return error_response("缺少必要字段", 400)
         
+        # 创建科目
+        subject = SubjectService.create_subject(name=name)
+        
+        current_app.logger.info(f'Admin created subject: {subject.id}')
+        return success_response("科目创建成功", {"subject_id": subject.id})
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to fetch subjects: {str(e)}')
-        return error_response(f'Failed to fetch subjects: {str(e)}', 500)
+        current_app.logger.error(f'Failed to create subject: {str(e)}')
+        return error_response("创建科目失败", 500)
 
 
 @auth_required
 @role_required('admin')
-def create_subject():
-    """创建科目"""
+def get_subjects():
+    """
+    获取所有科目列表
+    
+    Returns:
+        JSON: 科目列表
+    """
     try:
-        data = request.get_json()
-        subject_name = data.get('subject_name')
+        # 获取科目列表
+        subjects = SubjectService.get_all_subjects()
         
-        if not subject_name:
-            current_app.logger.warning("Create subject attempt with missing subject_name")
-            return error_response('Missing required field: subject_name', 400)
-        
-        # 使用科目服务创建科目
-        subject_service = SubjectService()
-        subject_data = {
-            'subject_name': subject_name
-        }
-        result = subject_service.create_subject(subject_data)
-        
-        if result:
-            current_app.logger.info("Admin created subject")
-            return success_response({'message': 'Subject created successfully'}, status_code=201)
-        else:
-            current_app.logger.error("Failed to create subject")
-            return error_response('Failed to create subject', 400)
-            
+        current_app.logger.info('Admin retrieved all subjects')
+        return success_response("获取科目列表成功", subjects)
+    
     except Exception as e:
-        app_logger.error(f'Failed to create subject: {str(e)}')
-        return error_response(f'Failed to create subject: {str(e)}', 500)
+        current_app.logger.error(f'Failed to retrieve subjects: {str(e)}')
+        return error_response("获取科目列表失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def get_subject(subject_id):
-    """获取单个科目信息"""
-    try:
-        # 使用科目服务获取科目信息
-        subject_service = SubjectService()
-        subject = subject_service.get_subject_by_id(subject_id)
+    """
+    获取科目详情
+    
+    Args:
+        subject_id (int): 科目ID
         
-        if subject:
-            return success_response(subject)
-        else:
-            return error_response('Subject not found', 404)
-            
+    Returns:
+        JSON: 科目详情
+    """
+    try:
+        # 获取科目详情
+        subject = SubjectService.get_subject_by_id(subject_id)
+        if not subject:
+            return error_response("科目不存在", 404)
+        
+        current_app.logger.info(f'Admin retrieved subject: {subject_id}')
+        return success_response("获取科目详情成功", subject)
+    
     except Exception as e:
-        return error_response(f'Failed to fetch subject: {str(e)}', 500)
+        current_app.logger.error(f'Failed to retrieve subject {subject_id}: {str(e)}')
+        return error_response("获取科目详情失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def update_subject(subject_id):
-    """更新科目信息"""
+    """
+    更新科目信息
+    
+    Args:
+        subject_id (int): 科目ID
+        
+    Returns:
+        JSON: 更新结果
+    """
     try:
+        # 获取请求数据
         data = request.get_json()
-        subject_name = data.get('subject_name')
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        if not subject_name:
-            return error_response('Missing required field: subject_name', 400)
+        # 提取必要字段
+        name = data.get('name')
         
-        # 使用科目服务更新科目信息
-        subject_service = SubjectService()
-        result = subject_service.update_subject(subject_id, {'subject_name': subject_name})
+        # 验证必填字段
+        if not name:
+            return error_response("缺少必要字段", 400)
         
-        if result:
-            return success_response(None, 'Subject updated successfully')
-        else:
-            return error_response('Failed to update subject', 400)
-            
+        # 更新科目
+        updated_subject = SubjectService.update_subject(subject_id=subject_id, name=name)
+        if not updated_subject:
+            return error_response("科目不存在", 404)
+        
+        current_app.logger.info(f'Admin updated subject: {subject_id}')
+        return success_response("科目更新成功", {"subject_id": updated_subject.id})
+    
     except Exception as e:
-        return error_response(f'Failed to update subject: {str(e)}', 500)
+        current_app.logger.error(f'Failed to update subject {subject_id}: {str(e)}')
+        return error_response("更新科目失败", 500)
 
 
 @auth_required
 @role_required('admin')
 def delete_subject(subject_id):
-    """删除科目"""
-    try:
-        # 使用科目服务删除科目
-        subject_service = SubjectService()
-        result = subject_service.delete_subject(subject_id)
+    """
+    删除科目
+    
+    Args:
+        subject_id (int): 科目ID
         
-        if result:
-            # 修复返回值问题，确保返回正确的响应格式
-            return success_response({'message': 'Subject deleted successfully'}, 'Subject deleted successfully')
-        else:
-            return error_response('Failed to delete subject', 400)
-            
+    Returns:
+        JSON: 删除结果
+    """
+    try:
+        # 删除科目
+        result = SubjectService.delete_subject(subject_id)
+        if not result:
+            return error_response("科目不存在", 404)
+        
+        current_app.logger.info(f'Admin deleted subject: {subject_id}')
+        return success_response("科目删除成功", {"subject_id": subject_id})
+    
     except Exception as e:
-        return error_response(f'Failed to delete subject: {str(e)}', 500)
+        current_app.logger.error(f'Failed to delete subject {subject_id}: {str(e)}')
+        return error_response("删除科目失败", 500)

@@ -6,6 +6,77 @@ from services.score_service import ScoreService
 
 teacher_scores_bp = Blueprint('teacher_scores_bp', __name__)
 
+
+@teacher_scores_bp.route('/scores', methods=['POST'])
+@role_required('teacher')
+def create_score():
+    try:
+        # 获取当前教师ID
+        teacher_id = request.user['user_id']
+        
+        # 获取请求数据
+        data = request.get_json()
+        student_id = data.get('student_id')
+        exam_id = data.get('exam_id')
+        score = data.get('score')
+        
+        # 创建成绩
+        new_score = ScoreService.create_score(student_id, exam_id, score, teacher_id)
+        if new_score:
+            current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}, exam {exam_id}")
+            return success_response(new_score, 201)
+        else:
+            current_app.logger.warning(f"Teacher {teacher_id} failed to create score (unauthorized or invalid data)")
+            return error_response('Failed to create score', 400)
+    except Exception as e:
+        current_app.logger.error(f'Failed to create score: {str(e)}')
+        return error_response('Failed to create score', 500)
+
+
+@teacher_scores_bp.route('/scores/<int:score_id>', methods=['PUT'])
+@role_required('teacher')
+def update_score(score_id):
+    try:
+        # 获取当前教师ID
+        teacher_id = request.user['user_id']
+        
+        # 获取请求数据
+        data = request.get_json()
+        score = data.get('score')
+        
+        # 更新成绩
+        updated_score = ScoreService.update_score(score_id, score, teacher_id)
+        if updated_score:
+            current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
+            return success_response(updated_score)
+        else:
+            current_app.logger.warning(f"Teacher {teacher_id} failed to update score {score_id} (not found or unauthorized)")
+            return error_response('Failed to update score', 404)
+    except Exception as e:
+        current_app.logger.error(f'Failed to update score {score_id}: {str(e)}')
+        return error_response('Failed to update score', 500)
+
+
+@teacher_scores_bp.route('/scores/<int:score_id>', methods=['DELETE'])
+@role_required('teacher')
+def delete_score(score_id):
+    try:
+        # 获取当前教师ID
+        teacher_id = request.user['user_id']
+        
+        # 删除成绩
+        result = ScoreService.delete_score(score_id, teacher_id)
+        if result:
+            current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
+            return success_response({'message': 'Score deleted successfully'})
+        else:
+            current_app.logger.warning(f"Teacher {teacher_id} failed to delete score {score_id} (not found or unauthorized)")
+            return error_response('Failed to delete score', 404)
+    except Exception as e:
+        current_app.logger.error(f'Failed to delete score {score_id}: {str(e)}')
+        return error_response('Failed to delete score', 500)
+
+
 @teacher_scores_bp.route('/scores/exam/<int:exam_id>', methods=['GET'])
 @role_required('teacher')
 def get_exam_scores(exam_id):
@@ -24,6 +95,7 @@ def get_exam_scores(exam_id):
     except Exception as e:
         current_app.logger.error(f'Failed to fetch exam scores for exam {exam_id}: {str(e)}')
         return error_response('Failed to fetch exam scores', 500)
+
 
 @teacher_scores_bp.route('/scores/exam/<int:exam_id>', methods=['PUT'])
 @role_required('teacher')
