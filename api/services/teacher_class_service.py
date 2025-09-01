@@ -55,10 +55,10 @@ class TeacherClassService:
             raise e
         finally:
             db_service.close()
-    
+
     def get_teacher_class_by_teacher(self, teacher_id):
         """
-        根据教师ID获取教师班级关联详情
+        根据教师ID获取教师班级关联列表
         
         Args:
             teacher_id (int): 教师ID
@@ -84,12 +84,13 @@ class TeacherClassService:
         finally:
             db_service.close()
     
-    def get_teacher_class_by_id(self, teacher_class_id):
+    def get_teacher_class_by_id(self, teacher_id, class_id):
         """
-        根据ID获取教师班级关联详情
+        根据教师ID和班级ID获取教师班级关联详情
         
         Args:
-            teacher_class_id (int): 教师班级关联ID
+            teacher_id (int): 教师ID
+            class_id (int): 班级ID
             
         Returns:
             dict: 教师班级关联信息
@@ -101,12 +102,12 @@ class TeacherClassService:
                 FROM TeacherClasses tc
                 JOIN Teachers t ON tc.teacher_id = t.teacher_id
                 JOIN Classes c ON tc.class_id = c.class_id
-                WHERE tc.teacher_class_id = %s
+                WHERE tc.teacher_id = %s AND tc.class_id = %s
             """
-            return db_service.execute_query(query, (teacher_class_id,), fetch_one=True)
+            return db_service.execute_query(query, (teacher_id, class_id), fetch_one=True)
         except Exception as e:
             if current_app:
-                current_app.logger.error(f"Failed to get teacher class by id {teacher_class_id}: {str(e)}")
+                current_app.logger.error(f"Failed to get teacher class by id (teacher_id={teacher_id}, class_id={class_id}): {str(e)}")
             raise e
         finally:
             db_service.close()
@@ -120,27 +121,19 @@ class TeacherClassService:
             class_id (int): 班级ID
             
         Returns:
-            int: 新创建的教师班级关联ID
+            bool: 是否创建成功
         """
         db_service = database_service.DatabaseService()
         try:
-            # 检查是否已存在相同的教师班级关联
-            check_query = "SELECT COUNT(*) as count FROM TeacherClasses WHERE teacher_id = %s AND class_id = %s"
-            existing = db_service.execute_query(check_query, (teacher_id, class_id), fetch_one=True)
-            if existing and existing['count'] > 0:
-                return None  # 已存在相同的关联
-            
-            # 插入新的教师班级关联
-            insert_query = "INSERT INTO TeacherClasses (teacher_id, class_id) VALUES (%s, %s)"
-            db_service.execute_update(insert_query, (teacher_id, class_id))
-            
-            # 获取新创建的关联ID
-            select_query = "SELECT LAST_INSERT_ID() as id"
-            result = db_service.execute_query(select_query, (), fetch_one=True)
-            return result['id'] if result else None
+            query = """
+                INSERT INTO TeacherClasses (teacher_id, class_id)
+                VALUES (%s, %s)
+            """
+            db_service.execute_update(query, (teacher_id, class_id))
+            return True
         except Exception as e:
             if current_app:
-                current_app.logger.error(f"Failed to create teacher class: {str(e)}")
+                current_app.logger.error(f"Failed to create teacher class (teacher_id={teacher_id}, class_id={class_id}): {str(e)}")
             raise e
         finally:
             db_service.close()
@@ -155,22 +148,14 @@ class TeacherClassService:
             new_teacher_id (int): 新教师ID
             
         Returns:
-            int: 更新后的教师班级关联ID
+            bool: 是否更新成功
         """
         db_service = database_service.DatabaseService()
         try:
             # 更新教师班级关联
             update_query = "UPDATE TeacherClasses SET teacher_id = %s WHERE teacher_id = %s AND class_id = %s"
             db_service.execute_update(update_query, (new_teacher_id, teacher_id, class_id))
-            
-            # 获取更新后的关联信息
-            select_query = """
-                SELECT tc.teacher_class_id
-                FROM TeacherClasses tc
-                WHERE tc.teacher_id = %s AND tc.class_id = %s
-            """
-            result = db_service.execute_query(select_query, (new_teacher_id, class_id), fetch_one=True)
-            return result['teacher_class_id'] if result else None
+            return True
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to update teacher class: {str(e)}")
@@ -178,31 +163,9 @@ class TeacherClassService:
         finally:
             db_service.close()
     
-    def delete_teacher_class(self, teacher_class_id):
+    def delete_teacher_class(self, teacher_id, class_id):
         """
         删除教师班级关联
-        
-        Args:
-            teacher_class_id (int): 教师班级关联ID
-            
-        Returns:
-            bool: 是否删除成功
-        """
-        db_service = database_service.DatabaseService()
-        try:
-            query = "DELETE FROM TeacherClasses WHERE teacher_class_id = %s"
-            affected_rows = db_service.execute_update(query, (teacher_class_id,))
-            return affected_rows > 0
-        except Exception as e:
-            if current_app:
-                current_app.logger.error(f"Failed to delete teacher class {teacher_class_id}: {str(e)}")
-            raise e
-        finally:
-            db_service.close()
-    
-    def delete_teacher_class_by_teacher_and_class(self, teacher_id, class_id):
-        """
-        根据教师ID和班级ID删除教师班级关联
         
         Args:
             teacher_id (int): 教师ID
@@ -218,7 +181,20 @@ class TeacherClassService:
             return affected_rows > 0
         except Exception as e:
             if current_app:
-                current_app.logger.error(f"Failed to delete teacher class by teacher {teacher_id} and class {class_id}: {str(e)}")
+                current_app.logger.error(f"Failed to delete teacher class (teacher_id={teacher_id}, class_id={class_id}): {str(e)}")
             raise e
         finally:
             db_service.close()
+    
+    def delete_teacher_class_by_teacher_and_class(self, teacher_id, class_id):
+        """
+        根据教师ID和班级ID删除教师班级关联
+        
+        Args:
+            teacher_id (int): 教师ID
+            class_id (int): 班级ID
+            
+        Returns:
+            bool: 是否删除成功
+        """
+        return self.delete_teacher_class(teacher_id, class_id)

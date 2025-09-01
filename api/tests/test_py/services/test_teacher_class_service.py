@@ -31,7 +31,8 @@ class TestTeacherClassService:
         """测试根据ID获取教师班级关联"""
         with app.app_context():
             teacher_class_service = TeacherClassService()
-            result = teacher_class_service.get_teacher_class_by_id(1)
+            # 使用实际存在的teacher_id和class_id进行测试
+            result = teacher_class_service.get_teacher_class_by_id(1, 6)
             # 根据实际实现，可能返回字典或None
             assert isinstance(result, dict) or result is None
 
@@ -42,30 +43,32 @@ class TestTeacherClassService:
             # 先尝试删除可能已存在的相同记录
             db_service = DatabaseService()
             delete_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s AND class_id = %s"
-            db_service.execute_update(delete_query, (1, 1))
+            db_service.execute_update(delete_query, (3, 3))
             db_service.close()
             
-            result = teacher_class_service.create_teacher_class(1, 1)
-            assert isinstance(result, (int, type(None)))
+            result = teacher_class_service.create_teacher_class(3, 3)
+            assert isinstance(result, bool)
 
     def test_update_teacher_class(self, app):
         """测试更新教师班级关联"""
         with app.app_context():
             teacher_class_service = TeacherClassService()
-            result = teacher_class_service.update_teacher_class(1, 1, 2)
-            # 根据实际实现，可能返回整数或None
-            assert isinstance(result, (int, type(None)))
+            # 使用实际存在的teacher_id和class_id进行测试
+            result = teacher_class_service.update_teacher_class(1, 6, 3)
+            # 根据实际实现，应该返回True或False
+            assert isinstance(result, bool)
 
     def test_delete_teacher_class(self, app):
         """测试删除教师班级关联"""
         with app.app_context():
             teacher_class_service = TeacherClassService()
-            result = teacher_class_service.delete_teacher_class(1)
+            # 使用实际存在的teacher_id和class_id进行测试
+            result = teacher_class_service.delete_teacher_class(1, 6)
             assert isinstance(result, bool)
 
     def test_delete_teacher_class_by_teacher_and_class(self, app):
         """测试根据教师ID和班级ID删除教师班级关联"""
         with app.app_context():
             teacher_class_service = TeacherClassService()
-            result = teacher_class_service.delete_teacher_class_by_teacher_and_class(1, 1)
+            result = teacher_class_service.delete_teacher_class_by_teacher_and_class(1, 6)
             assert isinstance(result, bool)

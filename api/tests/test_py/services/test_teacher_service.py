@@ -32,19 +32,17 @@ class TestTeacherService:
         """测试创建教师"""
         with app.app_context():
             teacher_service = TeacherService()
-            teacher_data = {
-                'teacher_name': 'Test Teacher',
-                'password': 'test123',
-                'user_id': 'test_teacher'
-            }
             # 先删除可能存在的测试数据
             db_service = DatabaseService()
-            delete_query = "DELETE FROM Teachers WHERE user_id = %s"
-            db_service.execute_update(delete_query, ('test_teacher',))
-            delete_query = "DELETE FROM users WHERE user_id = %s"
-            db_service.execute_update(delete_query, ('test_teacher',))
+            delete_query = "DELETE FROM Teachers WHERE teacher_name = %s"
+            db_service.execute_update(delete_query, ('Test Teacher',))
             db_service.close()
             
+            teacher_data = {
+                'teacher_name': 'Test Teacher',
+                'subject_id': 1,
+                'password': 'test123'
+            }
             result = teacher_service.create_teacher(teacher_data)
             assert isinstance(result, (int, bool))
 
@@ -54,7 +52,7 @@ class TestTeacherService:
             teacher_service = TeacherService()
             teacher_data = {
                 'teacher_name': 'Updated Teacher',
-                'password': 'updated123'
+                'subject_id': 2
             }
             result = teacher_service.update_teacher(1, teacher_data)
             assert isinstance(result, bool)

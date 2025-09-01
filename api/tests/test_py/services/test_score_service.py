@@ -15,7 +15,8 @@ class TestScoreService:
         """测试根据学生ID获取成绩成功"""
         with app.app_context():
             score_service = ScoreService()
-            result = score_service.get_scores(student_id='S0102')
+            # 使用测试数据库中存在的学生ID
+            result = score_service.get_scores(student_id='S0101')
             assert isinstance(result, list)
 
     def test_create_score_success(self, app):
@@ -25,11 +26,11 @@ class TestScoreService:
             # 先尝试删除可能已存在的相同记录
             db_service = DatabaseService()
             delete_query = "DELETE FROM Scores WHERE student_id = %s AND subject_id = %s AND exam_type_id = %s"
-            db_service.execute_update(delete_query, ('S0102', 1, 1))
+            db_service.execute_update(delete_query, ('S0102', 2, 2))
             db_service.close()
             
-            # 创建新的成绩记录
-            result = score_service.create_score('S0102', 1, 1, 85)
+            # 创建新的成绩记录，使用测试数据库中存在的数据
+            result = score_service.create_score('S0102', 2, 2, 85)
             assert result is True or result is False  # 根据实际实现调整
 
     def test_get_teacher_scores(self, app):
@@ -71,7 +72,7 @@ class TestScoreService:
         with app.app_context():
             score_service = ScoreService()
             # 测试一个已知的学生和教师组合
-            result = score_service.validate_student_for_teacher('S0102', 1)
+            result = score_service.validate_student_for_teacher('S0101', 1)
             # 根据实际实现，应该返回True或False
             assert isinstance(result, bool)
 
@@ -102,7 +103,7 @@ class TestScoreService:
         """测试获取学生考试结果"""
         with app.app_context():
             score_service = ScoreService()
-            result = score_service.get_student_exam_results('S0102')
+            result = score_service.get_student_exam_results('S0101')
             assert isinstance(result, list)
 
     def test_get_exam_types(self, app):
