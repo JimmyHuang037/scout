@@ -1,10 +1,9 @@
 """教师服务模块"""
-import logging
-from utils import database_service
-
-# 初始化日志器
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from utils.database_service import DatabaseService
+try:
+    from flask import current_app
+except ImportError:
+    current_app = None
 
 
 class TeacherService:
@@ -12,11 +11,11 @@ class TeacherService:
 
     def __init__(self):
         """初始化教师服务"""
-        self.db_service = database_service.DatabaseService()
-    
+        self.db_service = DatabaseService()
+
     def get_all_teachers(self, page=1, per_page=10):
         """
-        获取所有教师（带分页）
+        获取所有教师列表（分页）
         
         Args:
             page (int): 页码
@@ -53,16 +52,18 @@ class TeacherService:
             }
             
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get all teachers: {str(e)}")
             raise e
         finally:
             self.db_service.close()
     
     def get_teacher_by_id(self, teacher_id):
         """
-        根据教师ID获取教师详情
+        根据ID获取教师详情
         
         Args:
-            teacher_id (int or str): 教师ID
+            teacher_id (int): 教师ID
             
         Returns:
             dict: 教师信息
@@ -77,6 +78,8 @@ class TeacherService:
             result = self.db_service.execute_query(query, (teacher_id,), fetch_one=True)
             return result
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get teacher by id {teacher_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -104,6 +107,8 @@ class TeacherService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to create teacher: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -117,11 +122,9 @@ class TeacherService:
             teacher_data (dict): 教师信息
             
         Returns:
-            dict: 更新后的教师信息
+            bool: 是否更新成功
         """
-        db_service = None
         try:
-            db_service = database_service.DatabaseService()
             # 构建动态更新语句
             update_fields = []
             params = []
@@ -129,23 +132,26 @@ class TeacherService:
             if 'teacher_name' in teacher_data:
                 update_fields.append("teacher_name = %s")
                 params.append(teacher_data['teacher_name'])
-            
+                
             if 'subject_id' in teacher_data:
                 update_fields.append("subject_id = %s")
                 params.append(teacher_data['subject_id'])
-            
+                
             if 'password' in teacher_data:
                 update_fields.append("password = %s")
                 params.append(teacher_data['password'])
             
             if not update_fields:
                 return False
-            
-            params.append(teacher_id)
+                
             query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
+            params.append(teacher_id)
+            
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to update teacher {teacher_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -161,48 +167,12 @@ class TeacherService:
             bool: 是否删除成功
         """
         try:
-            self.db_service.start_transaction()
-            
-            # 删除教师班级关联记录
-            delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
-            self.db_service.execute_update(delete_teacher_classes_query, (teacher_id,))
-            
-            # 删除教师记录
-            delete_teacher_query = "DELETE FROM Teachers WHERE teacher_id = %s"
-            self.db_service.execute_update(delete_teacher_query, (teacher_id,))
-            
-            self.db_service.commit()
-            return True
+            query = "DELETE FROM Teachers WHERE teacher_id = %s"
+            affected_rows = self.db_service.execute_update(query, (teacher_id,))
+            return affected_rows > 0
         except Exception as e:
-            self.db_service.rollback()
+            if current_app:
+                current_app.logger.error(f"Failed to delete teacher {teacher_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
-    
-    def get_teachers_by_subject(self, subject_id):
-        """
-        根据科目ID获取教师列表
-        
-        Args:
-            subject_id (int): 科目ID
-            
-        Returns:
-            list: 教师列表
-        """
-        db_service = None
-        try:
-            db_service = database_service.DatabaseService()
-            query = """
-                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
-                FROM Teachers t
-                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
-                WHERE t.subject_id = %s
-                ORDER BY t.teacher_id
-            """
-            teachers = db_service.execute_query(query, (subject_id,))
-            return teachers
-        except Exception as e:
-            raise e
-        finally:
-            if db_service:
-                db_service.close()

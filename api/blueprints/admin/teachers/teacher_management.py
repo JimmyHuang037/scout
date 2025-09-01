@@ -3,6 +3,7 @@ from flask import jsonify, request, session, current_app
 from services import TeacherService
 from utils.helpers import success_response, error_response, auth_required, role_required
 
+
 @auth_required
 @role_required('admin')
 def get_teachers():
@@ -53,17 +54,27 @@ def create_teacher():
             return error_response("缺少必要字段", 400)
         
         # 创建教师
+        teacher_service = TeacherService()
         teacher_data = {
             'teacher_name': teacher_name,
             'subject_id': subject_id,
             'password': password
         }
-        new_teacher = TeacherService().create_teacher(teacher_data)
+        result = teacher_service.create_teacher(teacher_data)
         
-        if not new_teacher:
+        if not result:
             return error_response("创建教师失败", 400)
         
-        current_app.logger.info(f'Admin created teacher: {new_teacher["teacher_id"]}')
+        # 获取新创建的教师信息
+        # 由于create_teacher只返回布尔值，我们需要重新查询获取新创建的教师信息
+        # 先获取新创建教师的ID
+        query = "SELECT LAST_INSERT_ID() as teacher_id"
+        new_teacher_id = teacher_service.db_service.execute_query(query, (), fetch_one=True)['teacher_id']
+        
+        # 获取新创建的教师信息
+        new_teacher = teacher_service.get_teacher_by_id(new_teacher_id)
+        
+        current_app.logger.info(f'Admin created teacher: {new_teacher_id}')
         return success_response(new_teacher, "教师创建成功", 201)
     
     except Exception as e:

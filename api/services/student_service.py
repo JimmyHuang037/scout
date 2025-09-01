@@ -1,11 +1,11 @@
 """学生服务模块"""
-import logging
 from utils.database_service import DatabaseService
-from flask import current_app
+try:
+    from flask import current_app
+except ImportError:
+    current_app = None
 
-# 初始化日志器
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import logging
 
 
 class StudentService:
@@ -81,7 +81,8 @@ class StudentService:
                 }
             }
         except Exception as e:
-            current_app.logger.error(f"Failed to get teacher students: {str(e)}")
+            if current_app:
+                current_app.logger.error(f"Failed to get teacher students: {str(e)}")
             raise
 
     def get_all_students(self, page=1, per_page=10):
@@ -127,6 +128,8 @@ class StudentService:
                 }
             }
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get all students: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -151,6 +154,8 @@ class StudentService:
             result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
             return result
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get student by id {student_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -179,6 +184,8 @@ class StudentService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to create student: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -209,6 +216,8 @@ class StudentService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to update student {student_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -239,6 +248,8 @@ class StudentService:
             self.db_service.commit()
             return True
         except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to delete student {student_id}: {str(e)}")
             # 回滚事务
             self.db_service.rollback()
             raise e

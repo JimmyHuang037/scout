@@ -61,6 +61,8 @@ admin_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=delete_exam_ty
 admin_bp.add_url_rule('/teacher-classes', view_func=get_teacher_classes, methods=['GET'])
 admin_bp.add_url_rule('/teacher-classes', view_func=create_teacher_class, methods=['POST'])
 # 修复函数引用错误，使用正确的函数名
-admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=get_teacher_class, methods=['GET'])
-admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=update_teacher_class, methods=['PUT'])
-admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>', view_func=delete_teacher_class, methods=['DELETE'])
+admin_bp.add_url_rule('/teacher-classes/teacher/<int:teacher_id>', view_func=get_teacher_class, methods=['GET'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=get_teacher_class, methods=['GET'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_id>/<int:class_id>', view_func=delete_teacher_class, methods=['DELETE'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=update_teacher_class, methods=['PUT'])
+admin_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=delete_teacher_class, methods=['DELETE'])

@@ -1,11 +1,14 @@
 """科目服务模块"""
-import logging
 from utils.database_service import DatabaseService
+try:
+    from flask import current_app
+except ImportError:
+    current_app = None
 # 移除不存在的模块导入
 
 # 初始化日志器
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# logging.basicConfig(level=logging.INFO)
+# logger = logging.getLogger(__name__)
 
 
 class SubjectService:
@@ -31,9 +34,8 @@ class SubjectService:
             offset = (page - 1) * per_page
             
             # 获取总数
-            count_query = "SELECT COUNT(*) as total FROM Subjects"
-            total_result = self.db_service.execute_query(count_query, fetch_one=True)
-            total = total_result['total'] if total_result else 0
+            count_query = "SELECT COUNT(*) as count FROM Subjects"
+            total = self.db_service.get_count(count_query)
             
             # 获取科目列表
             query = """
@@ -57,6 +59,7 @@ class SubjectService:
                 }
             }
         except Exception as e:
+            current_app.logger.error(f"Failed to get all subjects: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -75,6 +78,7 @@ class SubjectService:
             query = "SELECT subject_id, subject_name FROM Subjects WHERE subject_id = %s"
             return self.db_service.execute_query(query, (subject_id,), fetch_one=True)
         except Exception as e:
+            current_app.logger.error(f"Failed to get subject by id {subject_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -95,6 +99,7 @@ class SubjectService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            current_app.logger.error(f"Failed to create subject: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -116,6 +121,7 @@ class SubjectService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            current_app.logger.error(f"Failed to update subject {subject_id}: {str(e)}")
             raise e
         finally:
             self.db_service.close()
@@ -146,6 +152,7 @@ class SubjectService:
             self.db_service.commit()
             return True
         except Exception as e:
+            current_app.logger.error(f"Failed to delete subject {subject_id}: {str(e)}")
             # 回滚事务
             self.db_service.rollback()
             raise e
