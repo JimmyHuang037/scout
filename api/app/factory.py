@@ -89,6 +89,7 @@ def create_app(config_name=None):
     _initialize_extensions(app)
     
     # 注册蓝图
+    from blueprints.admin import admin_bp
     from blueprints.admin.exam_types import exam_type_bp
     from blueprints.admin.students import student_bp
     from blueprints.admin.subjects import subject_bp
@@ -98,6 +99,7 @@ def create_app(config_name=None):
     from blueprints.student import student_bp as student_main_bp
     from blueprints.teacher import teacher_bp as teacher_main_bp
     
+    app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(exam_type_bp)
     app.register_blueprint(student_bp)

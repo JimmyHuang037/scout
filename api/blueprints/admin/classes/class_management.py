@@ -49,7 +49,7 @@ def create_class():
             current_app.logger.error("Failed to create class")
             return error_response('Failed to create class', 400)
     except Exception as e:
-        app_logger.error(f'Failed to create class: {str(e)}')
+        current_app.logger.error(f'Failed to create class: {str(e)}')
         return error_response(f'Failed to create class: {str(e)}', 500)
 
 
