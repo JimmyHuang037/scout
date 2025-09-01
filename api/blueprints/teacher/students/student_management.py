@@ -15,12 +15,14 @@ def get_teacher_students():
         
         # 获取查询参数
         class_id = request.args.get('class_id')
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
         
         # 获取教师的学生列表
         student_service = StudentService()
-        students = student_service.get_teacher_students(teacher_id, class_id)
+        students_data = student_service.get_teacher_students(teacher_id, class_id, page, per_page)
         current_app.logger.info(f"Teacher {teacher_id} retrieved student list")
-        return success_response(students)
+        return success_response(students_data)
     except Exception as e:
         current_app.logger.error(f'Failed to fetch teacher students: {str(e)}')
         return error_response('Failed to fetch students', 500)

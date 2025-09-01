@@ -18,3 +18,9 @@
     - 手动恢复测试数据库命令：cd /home/jimmy/repo/scout/db && ./restore_db.sh school_management_backup_20250831_103236.sql school_management_test --auto
     - 恢复脚本会自动使用root用户和Newuser1密码连接数据库
     - 备份文件位于 /home/jimmy/repo/scout/db/backup/ 目录下
+13. 数据库表和视图设计规则：
+    - 基础表（如Students, Classes等）存储核心数据
+    - 为简化查询操作，创建视图（如students, classes等）关联基础表的外键信息
+    - 视图中包含关联表的常用字段，减少应用层的JOIN操作
+    - 应用代码应优先使用视图而非直接查询基础表进行关联操作
+    - 视图命名采用小写复数形式，基础表采用首字母大写的单数形式
