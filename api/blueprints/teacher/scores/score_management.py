@@ -17,11 +17,14 @@ def get_scores():
         # 获取查询参数
         exam_id = request.args.get('exam_id', type=int)
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 获取成绩列表
         if exam_id:
-            scores = ScoreService.get_exam_scores(exam_id, teacher_id)
+            scores = score_service.get_exam_scores(exam_id, teacher_id)
         else:
-            scores = ScoreService.get_teacher_scores(teacher_id)
+            scores = score_service.get_teacher_scores(teacher_id)
             
         if scores is not None:
             current_app.logger.info(f"Teacher {teacher_id} retrieved scores")
@@ -47,8 +50,11 @@ def create_score():
         exam_id = data.get('exam_id')
         score = data.get('score')
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 创建成绩
-        new_score = ScoreService.create_score(student_id, exam_id, score, teacher_id)
+        new_score = score_service.create_score(student_id, exam_id, score, teacher_id)
         if new_score:
             current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}, exam {exam_id}")
             return success_response(new_score, 201)
@@ -71,8 +77,11 @@ def update_score(score_id):
         data = request.get_json()
         score = data.get('score')
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 更新成绩
-        updated_score = ScoreService.update_score(score_id, score, teacher_id)
+        updated_score = score_service.update_score(score_id, score, teacher_id)
         if updated_score:
             current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
             return success_response(updated_score)
@@ -91,8 +100,11 @@ def delete_score(score_id):
         # 获取当前教师ID
         teacher_id = session.get('user_id')
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 删除成绩
-        result = ScoreService.delete_score(score_id, teacher_id)
+        result = score_service.delete_score(score_id, teacher_id)
         if result:
             current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
             return success_response({'message': 'Score deleted successfully'})
@@ -111,8 +123,11 @@ def get_exam_scores(exam_id):
         # 获取当前教师ID
         teacher_id = session.get('user_id')
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 获取考试成绩
-        scores = ScoreService.get_exam_scores(exam_id, teacher_id)
+        scores = score_service.get_exam_scores(exam_id, teacher_id)
         if scores is not None:
             current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
             return success_response(scores)
@@ -135,8 +150,11 @@ def update_exam_scores(exam_id):
         data = request.get_json()
         scores_data = data.get('scores', [])
         
+        # 创建成绩服务实例
+        score_service = ScoreService()
+        
         # 更新考试成绩
-        updated_scores = ScoreService.update_exam_scores(exam_id, scores_data, teacher_id)
+        updated_scores = score_service.update_exam_scores(exam_id, scores_data, teacher_id)
         if updated_scores is not None:
             current_app.logger.info(f"Teacher {teacher_id} updated scores for exam {exam_id}")
             return success_response(updated_scores)
