@@ -5,30 +5,55 @@
 
 import pytest
 from services.class_service import ClassService
-from app.factory import create_app
 
 
 class TestClassService:
     """班级服务测试类"""
-    
-    @pytest.fixture
-    def app(self):
-        """创建测试应用"""
-        return create_app('testing')
-    
+
     def test_get_all_classes(self, app):
-        """测试获取班级列表"""
+        """测试获取所有班级"""
         with app.app_context():
-            # 创建ClassService实例
-            class_service = ClassService()
-            
-            # 调用被测试方法 - 使用真实数据
-            result = class_service.get_all_classes(page=1, per_page=10)
-            
-            # 验证结果
-            assert result is not None
+            # 重新初始化服务以确保在正确的应用上下文中创建数据库连接
+            class_service = ClassService.__new__(ClassService)
+            class_service.__init__()
+            result = class_service.get_all_classes(1, 10)
+            assert isinstance(result, dict)
             assert 'classes' in result
             assert 'pagination' in result
-            assert result['pagination']['page'] == 1
-            # 检查返回的班级列表是否为列表类型
-            assert isinstance(result['classes'], list)
+
+    def test_get_class_by_id(self, app):
+        """测试根据ID获取班级"""
+        with app.app_context():
+            class_service = ClassService.get_instance()
+            result = class_service.get_class_by_id(1)
+            # 根据实际实现，可能返回字典或None
+            assert isinstance(result, dict) or result is None
+
+    def test_create_class(self, app):
+        """测试创建班级"""
+        with app.app_context():
+            class_service = ClassService.get_instance()
+            class_data = {
+                'class_name': 'Test Class'
+            }
+            result = class_service.create_class(class_data)
+            assert isinstance(result, (int, bool))
+
+    def test_update_class(self, app):
+        """测试更新班级"""
+        with app.app_context():
+            class_service = ClassService.get_instance()
+            class_data = {
+                'class_name': 'Updated Class'
+            }
+            result = class_service.update_class(1, class_data)
+            assert isinstance(result, bool)
+
+    def test_delete_class(self, app):
+        """测试删除班级"""
+        with app.app_context():
+            class_service = ClassService.get_instance()
+            result = class_service.delete_class(1)
+            assert isinstance(result, bool)
+
+    

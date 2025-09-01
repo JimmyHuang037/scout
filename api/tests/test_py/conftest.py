@@ -151,17 +151,3 @@ def teacher_client(client):
         raise Exception(f"Failed to login as teacher: {response.get_json()}")
     
     return client
-
-
-@pytest.fixture(scope="function")
-def student_client(client):
-    """创建已登录的学生测试客户端"""
-    response = client.post('/api/auth/login', json={
-        'user_id': 'S0201',
-        'password': 'pass123'
-    })
-    
-    if response.status_code != 200:
-        raise Exception(f"Failed to login as student: {response.get_json()}")
-    
-    return client

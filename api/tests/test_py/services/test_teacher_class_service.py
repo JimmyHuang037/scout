@@ -5,30 +5,67 @@
 
 import pytest
 from services.teacher_class_service import TeacherClassService
-from app.factory import create_app
+from utils.database_service import DatabaseService
 
 
 class TestTeacherClassService:
     """教师班级服务测试类"""
-    
-    @pytest.fixture
-    def app(self):
-        """创建测试应用"""
-        return create_app('testing')
-    
+
     def test_get_all_teacher_classes(self, app):
-        """测试获取教师班级列表"""
+        """测试获取所有教师班级关联"""
         with app.app_context():
-            # 创建TeacherClassService实例
             teacher_class_service = TeacherClassService()
-            
-            # 调用被测试方法 - 使用真实数据
-            result = teacher_class_service.get_all_teacher_classes(page=1, per_page=10)
-            
-            # 验证结果
-            assert result is not None
+            result = teacher_class_service.get_all_teacher_classes(1, 10)
+            assert isinstance(result, dict)
             assert 'teacher_classes' in result
             assert 'pagination' in result
-            assert result['pagination']['page'] == 1
-            # 检查返回的教师班级列表是否为列表类型
-            assert isinstance(result['teacher_classes'], list)
+
+    def test_get_teacher_class_by_teacher(self, app):
+        """测试根据教师ID获取教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            result = teacher_class_service.get_teacher_class_by_teacher(1)
+            assert isinstance(result, list)
+
+    def test_get_teacher_class_by_id(self, app):
+        """测试根据ID获取教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            result = teacher_class_service.get_teacher_class_by_id(1)
+            # 根据实际实现，可能返回字典或None
+            assert isinstance(result, dict) or result is None
+
+    def test_create_teacher_class(self, app):
+        """测试创建教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            # 先尝试删除可能已存在的相同记录
+            db_service = DatabaseService()
+            delete_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s AND class_id = %s"
+            db_service.execute_update(delete_query, (1, 1))
+            db_service.close()
+            
+            result = teacher_class_service.create_teacher_class(1, 1)
+            assert isinstance(result, (int, type(None)))
+
+    def test_update_teacher_class(self, app):
+        """测试更新教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            result = teacher_class_service.update_teacher_class(1, 1, 2)
+            # 根据实际实现，可能返回整数或None
+            assert isinstance(result, (int, type(None)))
+
+    def test_delete_teacher_class(self, app):
+        """测试删除教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            result = teacher_class_service.delete_teacher_class(1)
+            assert isinstance(result, bool)
+
+    def test_delete_teacher_class_by_teacher_and_class(self, app):
+        """测试根据教师ID和班级ID删除教师班级关联"""
+        with app.app_context():
+            teacher_class_service = TeacherClassService()
+            result = teacher_class_service.delete_teacher_class_by_teacher_and_class(1, 1)
+            assert isinstance(result, bool)

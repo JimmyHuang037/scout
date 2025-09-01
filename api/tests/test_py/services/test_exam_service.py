@@ -32,26 +32,87 @@ class TestExamService:
                 'exam_date': '2025-09-01',
                 'teacher_id': 1
             }
-            # 由于实际实现中可能涉及复杂的业务逻辑，这里仅测试方法是否存在
-            assert hasattr(exam_service, 'create_exam')
+            # 测试创建考试功能
+            result = exam_service.create_exam(exam_data)
+            assert isinstance(result, (bool, int))
 
     def test_get_exam_by_id_and_teacher(self, app):
         """测试根据考试ID和教师ID获取考试信息"""
         with app.app_context():
             exam_service = ExamService()
-            # 由于实际实现中可能涉及复杂的业务逻辑，这里仅测试方法是否存在
-            assert hasattr(exam_service, 'get_exam_by_id_and_teacher')
+            # 测试获取一个已知的考试
+            result = exam_service.get_exam_by_id_and_teacher("1_1", 1)
+            # 根据实际实现，可能返回字典或None
+            assert isinstance(result, dict) or result is None
 
     def test_update_exam(self, app):
         """测试更新考试信息"""
         with app.app_context():
             exam_service = ExamService()
-            # 由于实际实现中可能涉及复杂的业务逻辑，这里仅测试方法是否存在
-            assert hasattr(exam_service, 'update_exam')
+            # 测试更新一个已知的考试
+            exam_data = {
+                'exam_name': 'Updated Test Exam',
+                'subject_id': 1,
+                'class_id': 1,
+                'exam_type_id': 1,
+                'exam_date': '2025-09-02',
+                'teacher_id': 1
+            }
+            result = exam_service.update_exam("1_1", 1, exam_data)
+            # 根据实际实现，可能返回True/False或其他值
+            assert isinstance(result, bool) or result is None
 
     def test_delete_exam(self, app):
         """测试删除考试"""
         with app.app_context():
             exam_service = ExamService()
-            # 由于实际实现中可能涉及复杂的业务逻辑，这里仅测试方法是否存在
-            assert hasattr(exam_service, 'delete_exam')
+            # 测试删除一个已知的考试
+            result = exam_service.delete_exam("1_1", 1)
+            # 根据实际实现，可能返回True/False或其他值
+            assert isinstance(result, bool) or result is None
+
+    def test_get_exam_types(self, app):
+        """测试获取考试类型列表"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.get_exam_types(1, 10)
+            assert isinstance(result, dict)
+            assert 'exam_types' in result
+            assert 'pagination' in result
+
+    def test_get_exam_type_by_name(self, app):
+        """测试根据名称获取考试类型"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.get_exam_type_by_name("期中考试")
+            # 根据实际实现，可能返回字典或None
+            assert isinstance(result, dict) or result is None
+
+    def test_get_exam_type_by_id(self, app):
+        """测试根据ID获取考试类型"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.get_exam_type_by_id(1)
+            # 根据实际实现，可能返回字典或None
+            assert isinstance(result, dict) or result is None
+
+    def test_create_exam_type(self, app):
+        """测试创建考试类型"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.create_exam_type("Test Exam Type")
+            assert isinstance(result, bool)
+
+    def test_update_exam_type(self, app):
+        """测试更新考试类型"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.update_exam_type(1, "Updated Exam Type")
+            assert isinstance(result, bool)
+
+    def test_delete_exam_type(self, app):
+        """测试删除考试类型"""
+        with app.app_context():
+            exam_service = ExamService()
+            result = exam_service.delete_exam_type(1)
+            assert isinstance(result, bool)

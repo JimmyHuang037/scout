@@ -38,6 +38,23 @@ class TestAdminTeacherClassManagement:
         # 可能返回200（找到）或404（未找到）或其他状态码
         assert response.status_code in [200, 404, 500]
 
+    def test_update_teacher_class(self, admin_client):
+        """测试更新教师班级关联"""
+        # 准备更新数据
+        update_data = {
+            'teacher_id': 1,
+            'class_id': 1,
+            'new_teacher_id': 2
+        }
+        
+        # 发送更新请求
+        response = admin_client.put('/api/admin/teacher-classes/1',
+                                   data=json.dumps(update_data),
+                                   content_type='application/json')
+        
+        # 验证响应
+        assert response.status_code in [200, 400, 404, 500]
+
     def test_delete_teacher_class(self, admin_client):
         """测试删除教师班级关联"""
         # 删除教师班级关联（可能因外键约束而失败）

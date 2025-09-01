@@ -1,73 +1,74 @@
-#!/usr/bin/env python3
-"""
-认证管理API测试
-"""
-
-import pytest
+"""认证管理测试模块"""
 import json
+import pytest
+from app.factory import create_app
 
 
 class TestAuthManagement:
-    """认证管理API测试类"""
+    """认证管理测试类"""
 
     def test_login_success(self, client):
-        """测试登录成功"""
-        # 使用有效的用户凭据登录
+        """测试成功登录"""
+        # 准备测试数据 - 使用数据库中存在的学生用户
         login_data = {
-            'user_id': 'admin',
-            'password': 'admin123'
+            'user_id': 'S0201',
+            'password': 'pass123'
         }
+        
+        # 发送登录请求
         response = client.post('/api/auth/login',
-                               data=json.dumps(login_data),
-                               content_type='application/json')
+                              data=json.dumps(login_data),
+                              content_type='application/json')
         
         # 验证响应
-        assert response.status_code in [200, 401]  # 取决于测试数据库中的实际数据
-        
-        if response.status_code == 200:
-            data = json.loads(response.data)
-            assert 'data' in data
-            assert 'user_id' in data['data']
-            assert 'user_name' in data['data']
-            assert 'role' in data['data']
-
-    def test_login_missing_fields(self, client):
-        """测试登录缺少必要字段"""
-        # 缺少密码字段
-        login_data = {
-            'user_id': 'admin'
-        }
-        response = client.post('/api/auth/login',
-                               data=json.dumps(login_data),
-                               content_type='application/json')
-        
-        # 验证响应
-        assert response.status_code in [400, 401]
+        assert response.status_code == 200
+        data = json.loads(response.data)
+        assert 'data' in data
+        assert data['data']['user_id'] == 'S0201'
+        assert data['data']['role'] == 'student'
 
     def test_login_invalid_credentials(self, client):
-        """测试登录无效凭据"""
-        # 使用无效的用户凭据登录
+        """测试无效凭证登录"""
+        # 准备测试数据
         login_data = {
-            'user_id': 'invalid_user',
-            'password': 'invalid_password'
+            'user_id': 'invalid',
+            'password': 'invalid'
         }
+        
+        # 发送登录请求
         response = client.post('/api/auth/login',
-                               data=json.dumps(login_data),
-                               content_type='application/json')
+                              data=json.dumps(login_data),
+                              content_type='application/json')
         
         # 验证响应
-        assert response.status_code in [401, 500]
+        assert response.status_code == 401
+
+    def test_login_missing_fields(self, client):
+        """测试缺少必要字段的登录"""
+        # 准备测试数据
+        login_data = {
+            'user_id': 'S0201'
+            # 缺少password字段
+        }
+        
+        # 发送登录请求
+        response = client.post('/api/auth/login',
+                              data=json.dumps(login_data),
+                              content_type='application/json')
+        
+        # 验证响应
+        assert response.status_code == 400
 
     def test_logout(self, client):
         """测试登出"""
         # 先登录
         login_data = {
-            'user_id': 'admin',
-            'password': 'admin123'
+            'user_id': 'S0201',
+            'password': 'pass123'
         }
         client.post('/api/auth/login',
-                    data=json.dumps(login_data),
-                    content_type='application/json')
+                   data=json.dumps(login_data),
+                   content_type='application/json')
         
         # 然后登出
         response = client.post('/api/auth/logout')
@@ -77,7 +78,7 @@ class TestAuthManagement:
 
     def test_get_current_user_not_authenticated(self, client):
         """测试获取当前用户信息但未认证"""
-        response = client.get('/api/auth/user')
+        response = client.get('/api/auth/me')
         
         # 验证响应
         assert response.status_code in [401, 200]
