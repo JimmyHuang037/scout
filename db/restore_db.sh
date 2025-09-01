@@ -1,18 +1,30 @@
 #!/bin/bash
 
 # 数据库恢复脚本
-# 用法: ./restore_db.sh [备份文件名] [数据库名]
+# 用法: ./restore_db.sh [备份文件名] [数据库名] [--auto]
 # 如果不指定文件名，则列出备份目录中的所有备份文件供选择
 # 如果不指定数据库名，则使用默认数据库名
+# 如果添加 --auto 参数，则自动执行恢复操作，无需用户确认
 
 # 设置变量
 DB_USER="root"
 DB_PASS="Newuser1"
 DB_NAME="school_management"
 BACKUP_DIR="/home/jimmy/repo/scout/db/backup"
+AUTO_MODE=false
 
-# 如果提供了第二个参数，则使用它作为数据库名
-if [ $# -ge 2 ]; then
+# 检查是否有 --auto 参数
+for arg in "$@"; do
+    if [ "$arg" = "--auto" ]; then
+        AUTO_MODE=true
+        break
+    fi
+done
+
+# 如果提供了第二个参数且不是 --auto，则使用它作为数据库名
+if [ $# -ge 2 ] && [ "$2" != "--auto" ]; then
+    DB_NAME="$2"
+elif [ $# -ge 3 ] && [ "$3" = "--auto" ] && [ "$2" != "--auto" ]; then
     DB_NAME="$2"
 fi
 
@@ -23,7 +35,7 @@ if [ ! -d "$BACKUP_DIR" ]; then
 fi
 
 # 如果没有提供参数，则列出可用的备份文件
-if [ $# -eq 0 ]; then
+if [ $# -eq 0 ] || ( [ $# -eq 1 ] && [ "$1" = "--auto" ] ); then
     echo "可用的备份文件:"
     BACKUP_FILES=($(ls -t "$BACKUP_DIR"/*.sql 2>/dev/null))
     
@@ -52,8 +64,18 @@ if [ $# -eq 0 ]; then
         exit 1
     fi
 else
-    # 使用提供的文件名
-    BACKUP_FILE="$BACKUP_DIR/$1"
+    # 使用提供的文件名（排除 --auto 参数）
+    if [ "$1" != "--auto" ]; then
+        BACKUP_FILE="$BACKUP_DIR/$1"
+    else
+        # 如果第一个参数是 --auto，需要找到下一个非 --auto 参数作为文件名
+        for arg in "$@"; do
+            if [ "$arg" != "--auto" ]; then
+                BACKUP_FILE="$BACKUP_DIR/$arg"
+                break
+            fi
+        done
+    fi
     
     # 检查指定的备份文件是否存在
     if [ ! -f "$BACKUP_FILE" ]; then
@@ -75,12 +97,16 @@ echo ""
 echo "目标数据库: $DB_NAME"
 echo ""
 
-# 确认操作
-read -p "确定要恢复这个备份吗？这将覆盖 $DB_NAME 数据库中的所有数据！(y/N): " CONFIRM
+# 确认操作（除非在自动模式下）
+if [ "$AUTO_MODE" = false ]; then
+    read -p "确定要恢复这个备份吗？这将覆盖 $DB_NAME 数据库中的所有数据！(y/N): " CONFIRM
 
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "操作已取消"
-    exit 0
+    if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+        echo "操作已取消"
+        exit 0
+    fi
+else
+    echo "自动模式: 正在恢复数据库 $DB_NAME..."
 fi
 
 # 执行恢复

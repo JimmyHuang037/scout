@@ -39,20 +39,19 @@ def restore_test_database():
         # 按修改时间排序，获取最新的备份文件
         latest_backup = max(backup_files, key=os.path.getmtime)
         
-        # 构建恢复命令
+        # 构建恢复命令，并启用自动模式
         restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
-        cmd = ['bash', restore_script, os.path.basename(latest_backup), 'school_management_test']
+        cmd = ['bash', restore_script, os.path.basename(latest_backup), 'school_management_test', '--auto']
         
-        # 设置环境变量以自动确认恢复
+        # 设置环境变量
         env = os.environ.copy()
         env['DB_USER'] = 'root'
         env['DB_PASS'] = 'Newuser1'
         
-        # 执行恢复命令，自动确认
+        # 执行恢复命令
         result = subprocess.run(
             cmd,
             cwd=os.path.join(project_root, 'db'),
-            input='y\n',  # 自动输入确认
             text=True,
             capture_output=True,
             env=env
