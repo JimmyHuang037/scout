@@ -70,13 +70,15 @@ def restore_test_database():
         
         print(f"恢复命令: {' '.join(cmd)}")
         print(f"返回码: {result.returncode}")
+        
+        # 始终打印标准输出和错误输出
         if result.stdout:
-            print(f"标准输出: {result.stdout}")
+            print(f"标准输出:\n{result.stdout}")
         if result.stderr:
-            print(f"错误输出: {result.stderr}")
+            print(f"错误输出:\n{result.stderr}")
             
         if result.returncode == 0:
-            print(f"成功恢复测试数据库: {os.path.basename(latest_backup)}")
+            print("数据库恢复成功完成!")
             return True
         else:
             print(f"恢复测试数据库失败: {result.stderr}")
@@ -143,11 +145,25 @@ def admin_client(client):
 def teacher_client(client):
     """创建已登录的教师测试客户端"""
     response = client.post('/api/auth/login', json={
-        'user_id': '3',
-        'password': '123456'
+        'user_id': '1',  # 使用实际存在的教师ID
+        'password': 'test123'  # 使用实际的密码
     })
     
     if response.status_code != 200:
         raise Exception(f"Failed to login as teacher: {response.get_json()}")
+    
+    return client
+
+
+@pytest.fixture(scope="function")
+def student_client(client):
+    """创建已登录的学生测试客户端"""
+    response = client.post('/api/auth/login', json={
+        'user_id': 'S0201',  # 使用实际存在的学生ID
+        'password': 'pass123'  # 使用实际的密码
+    })
+    
+    if response.status_code != 200:
+        raise Exception(f"Failed to login as student: {response.get_json()}")
     
     return client

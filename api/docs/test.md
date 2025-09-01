@@ -40,6 +40,24 @@ cd /home/jimmy/repo/scout/api && coverage run -m pytest && coverage html
    cd /home/jimmy/repo/scout/api && python -m pytest > test_results.txt 2>&1 && cat test_results.txt
    ```
 
+## 测试账户信息
+
+在测试数据库中，有以下默认账户可用于测试：
+
+### 管理员账户
+- 用户ID: `admin`
+- 密码: `admin`
+
+### 教师账户
+- 用户ID: `1` (及其他数字ID，如2, 3, 4...)
+- 密码: `123456`
+
+### 学生账户
+- 用户ID: `S0201` (及其他S开头的ID，如S0202, S0203...)
+- 密码: `pass123`
+
+这些账户在测试环境中由测试框架自动创建，并在每次测试运行时通过数据库恢复过程重新初始化。
+
 ## 常见问题
 
 ### 1. 数据库相关问题
