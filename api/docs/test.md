@@ -8,3 +8,13 @@
 7. test_curl要记录每个curl的命令，同时将每个curl的结果输出到项目目录/logs_testing/下
 8. 代码注释要简洁有效，不要太多。
 9. 每个方法不应该超过15行代码
+10. 学生测试规则：
+    - 测试文件位于 api/tests/test_py/blueprints/student/ 目录下
+    - 每个测试文件应专注于特定功能模块（如考试管理、个人信息管理、成绩查询等）
+    - 使用student_client fixture进行已认证的学生用户测试
+    - 需要测试学生权限范围内的所有功能
+11. 后续添加的admin和teacher测试应遵循与学生测试类似的规则
+12. 数据库恢复命令：
+    - 手动恢复测试数据库命令：cd /home/jimmy/repo/scout/db && ./restore_db.sh school_management_backup_20250831_103236.sql school_management_test --auto
+    - 恢复脚本会自动使用root用户和Newuser1密码连接数据库
+    - 备份文件位于 /home/jimmy/repo/scout/db/backup/ 目录下
