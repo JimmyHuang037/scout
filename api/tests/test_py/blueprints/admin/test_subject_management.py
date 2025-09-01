@@ -54,7 +54,8 @@ class TestAdminSubjectManagement:
                     subject_id = subject['subject_id']
                     break
         
-        return subject_id
+        # 验证科目创建成功
+        assert subject_id is not None
 
     def test_get_subject(self, admin_client):
         """测试获取单个科目信息"""

@@ -40,7 +40,7 @@ class TestStudentService:
             student_data = {
                 'student_id': 'S9999',
                 'student_name': 'Test Student',
-                'class_id': 1,
+                'class_id': 2,  # 使用存在的class_id
                 'password': 'test123'
             }
             result = student_service.create_student(student_data)
@@ -52,7 +52,7 @@ class TestStudentService:
             student_service = StudentService()
             student_data = {
                 'student_name': 'Updated Student',
-                'class_id': 2
+                'class_id': 2  # 使用存在的class_id
             }
             result = student_service.update_student('S0101', student_data)
             assert isinstance(result, bool)
