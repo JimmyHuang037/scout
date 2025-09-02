@@ -13,12 +13,12 @@ from config.config import TestingConfig
 class CurlTestBase:
     """Curl测试基类"""
     
-    def __init__(self, test_environment=None):
-        """初始化测试基类"""
-        # 初始化curl命令记录文件路径
-        self.curl_commands_file = None
-        
-        # 初始化测试环境配置
+    def setup_test_environment(self, test_environment):
+        """设置测试环境配置"""
+        # 确保curl_commands_file属性存在
+        if not hasattr(self, 'curl_commands_file'):
+            self.curl_commands_file = None
+            
         if test_environment:
             self.base_url = test_environment['base_url']
             self.test_results_dir = test_environment['test_results_dir']

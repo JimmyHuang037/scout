@@ -49,6 +49,7 @@ def _setup_error_handlers(app):
         """全局异常处理器"""
         app.logger.error(f'Unhandled exception: {str(e)}')
         app.logger.error(traceback.format_exc())
+        return {'error': 'Internal Server Error'}, 500
 
 
 def _initialize_extensions(app):
@@ -89,6 +90,7 @@ def create_app(config_name=None):
     _initialize_extensions(app)
     
     # 注册蓝图
+    from app.routes import main  # 导入主蓝图
     from blueprints.admin import admin_bp
     from blueprints.admin.exam_types import exam_type_bp
     from blueprints.admin.students import student_bp
@@ -99,6 +101,7 @@ def create_app(config_name=None):
     from blueprints.student import student_bp as student_main_bp
     from blueprints.teacher import teacher_bp as teacher_main_bp
     
+    app.register_blueprint(main)  # 注册主蓝图（包含健康检查端点）
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(exam_type_bp)

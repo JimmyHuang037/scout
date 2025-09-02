@@ -12,29 +12,29 @@ from tests.test_curl.test_curl_base import CurlTestBase
 class TestAdminEndpoints(CurlTestBase):
     """管理员端点测试类"""
     
-    def setup_class(self, test_environment):
-        """在类级别设置测试环境并登录"""
-        # 调用父类初始化方法设置测试环境
-        super().__init__(test_environment)
+    @pytest.fixture(autouse=True)
+    def setup_test(self, test_environment):
+        """自动使用的fixture，用于设置测试环境"""
+        # 设置测试环境配置
+        self.setup_test_environment(test_environment)
         
         # 设置curl命令记录文件
         self.set_curl_commands_file(self.curl_commands_file)
         
-        # 管理员登录
+        # 登录管理员账户
         assert self.login_admin(self.base_url, self.cookie_file), "管理员登录失败"
-    
-    def teardown_class(self):
-        """在类级别登出"""
-        assert self.logout(self.base_url, self.cookie_file), "管理员登出失败"
-    
-    def setup_method(self):
-        """每个测试方法执行前的设置"""
-        # 设置测试环境
+        
+        # 保存环境变量供测试方法使用
         self.test_setup = {
             'api_base_url': self.base_url,
             'result_dir': self.test_results_dir,
             'cookie_file': self.cookie_file
         }
+        
+        yield  # 测试执行完毕后继续执行下面的代码
+        
+        # 测试结束后登出
+        self.logout(self.base_url, self.cookie_file)
     
     def test_01_get_students(self):
         """测试用例1: 获取学生列表"""
