@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 测试配置文件
@@ -6,17 +7,12 @@
 import os
 import sys
 import pytest
-import warnings
 import subprocess
 import glob
 
 # =============================================================================
 # 初始化设置
 # =============================================================================
-
-# 忽略特定模块的弃用警告
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="flask_session")
-warnings.filterwarnings("ignore", category=DeprecationWarning, module="cachelib")
 
 # 将项目根目录添加到Python路径中
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -68,15 +64,7 @@ def restore_test_database():
             env=env
         )
         
-        print(f"恢复命令: {' '.join(cmd)}")
-        print(f"返回码: {result.returncode}")
-        
-        # 始终打印标准输出和错误输出
-        if result.stdout:
-            print(f"标准输出:\n{result.stdout}")
-        if result.stderr:
-            print(f"错误输出:\n{result.stderr}")
-            
+        # 只在失败时打印详细错误信息
         if result.returncode == 0:
             print("数据库恢复成功完成!")
             return True
@@ -91,7 +79,13 @@ def restore_test_database():
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
     """在测试会话开始前自动恢复测试数据库"""
-    restore_test_database()
+    print("正在恢复测试数据库...")
+    success = restore_test_database()
+    if success:
+        print("测试数据库恢复成功!")
+    else:
+        print("测试数据库恢复失败!")
+    return success
 
 
 # =============================================================================

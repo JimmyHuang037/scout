@@ -49,8 +49,8 @@ cd /home/jimmy/repo/scout/api && coverage run -m pytest && coverage html
 - 密码: `admin`
 
 ### 教师账户
-- 用户ID: `1` (及其他数字ID，如2, 3, 4...)
-- 密码: `123456`
+- 用户ID: `1` (以及其他ID如2, 8, 14, 20...)
+- 密码: `test123` (ID为1的教师) 或 `123456` (其他教师)
 
 ### 学生账户
 - 用户ID: `S0201` (及其他S开头的ID，如S0202, S0203...)
