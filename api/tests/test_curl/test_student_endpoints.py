@@ -83,16 +83,20 @@ class CurlTestBase:
 import os
 import pytest
 from tests.test_curl.test_curl_base import CurlTestBase
+
+
+class TestStudentEndpoints(CurlTestBase):
+    """学生端点测试类"""
     
-    def test_student_endpoints(self, start_api_server, test_results_dir):
+    def test_student_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试学生端点"""
-        # 获取测试配置
-        test_config = TestingConfig()
-        base_url = f'http://localhost:{test_config.PORT}'
+        # 设置curl命令记录文件
+        self.set_curl_commands_file(curl_commands_file)
+        
         cookie_file = '/tmp/test_cookie.txt'
         
         test_setup = {
-            'api_base_url': base_url,
+            'api_base_url': self.base_url,
             'result_dir': test_results_dir,
             'cookie_file': cookie_file
         }
@@ -100,14 +104,14 @@ from tests.test_curl.test_curl_base import CurlTestBase
         # 测试用例36: 学生获取个人成绩
         self.run_api_test(
             36, "学生获取个人成绩",
-            ['curl', '-s', f'{base_url}/api/student/scores', '-b', cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/student/scores', '-b', cookie_file],
             "36_get_student_scores.json", test_setup
         )
         
         # 测试用例37: 学生获取个人信息
         self.run_api_test(
             37, "学生获取个人信息",
-            ['curl', '-s', f'{base_url}/api/student/profile', '-b', cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/student/profile', '-b', cookie_file],
             "37_get_student_profile.json", test_setup
         )
     

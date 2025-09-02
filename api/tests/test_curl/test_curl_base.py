@@ -1,4 +1,4 @@
-呕#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 Curl测试基类
 包含所有test_curl测试文件共享的方法和功能
@@ -17,11 +17,27 @@ class CurlTestBase:
         """初始化测试基类"""
         self.test_config = TestingConfig()
         self.base_url = f'http://localhost:{self.test_config.PORT}'
+        # 初始化curl命令记录文件路径
+        self.curl_commands_file = None
+    
+    def set_curl_commands_file(self, file_path):
+        """设置curl命令记录文件路径"""
+        self.curl_commands_file = file_path
+    
+    def _record_curl_command(self, test_number, description, command):
+        """记录curl命令到文件"""
+        if self.curl_commands_file:
+            with open(self.curl_commands_file, 'a', encoding='utf-8') as f:
+                f.write(f"\n{test_number}. {description}\n")
+                f.write(f"命令: {' '.join(command)}\n")
     
     def run_api_test(self, test_number, description, command, output_file, test_setup):
         """运行单个API测试"""
         print(f"\n{test_number}. {description}")
         print(f"执行命令: {' '.join(command)}")
+        
+        # 记录curl命令
+        self._record_curl_command(test_number, description, command)
         
         # 执行测试命令
         result = subprocess.run(command, capture_output=True, text=True)
@@ -52,6 +68,9 @@ class CurlTestBase:
             '-c', cookie_file
         ]
         
+        # 记录curl命令
+        self._record_curl_command("登录", "管理员登录", cmd)
+        
         result = subprocess.run(cmd, capture_output=True, text=True)
         return result.stdout
     
@@ -65,6 +84,9 @@ class CurlTestBase:
             '-c', cookie_file
         ]
         
+        # 记录curl命令
+        self._record_curl_command("登录", "教师登录", cmd)
+        
         result = subprocess.run(cmd, capture_output=True, text=True)
         return result.stdout
     
@@ -77,6 +99,9 @@ class CurlTestBase:
             '-d', '{"user_id": "S0201", "password": "pass123"}',
             '-c', cookie_file
         ]
+        
+        # 记录curl命令
+        self._record_curl_command("登录", "学生登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         return result.stdout

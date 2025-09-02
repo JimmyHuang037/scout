@@ -17,6 +17,40 @@ from config.config import TestingConfig
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
 
+def _start_flask_server(test_config, api_dir):
+    """启动Flask服务器进程"""
+    os.chdir(api_dir)
+    return subprocess.Popen([
+        'python', '-m', 'flask', '--app', 'app/factory:create_app', 
+        'run', '--port', str(test_config.PORT)
+    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+
+
+def _wait_for_server(port, timeout=10):
+    """等待服务器启动并验证"""
+    base_url = f'http://localhost:{port}'
+    for _ in range(timeout):
+        try:
+            response = request.urlopen(f'{base_url}/api/auth/health', timeout=1)
+            if response.getcode() == 200:
+                return True
+        except URLError:
+            time.sleep(1)
+    return False
+
+
+def _terminate_server(server_process):
+    """终止服务器进程"""
+    try:
+        os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
+        server_process.wait(timeout=5)
+    except:
+        try:
+            os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
+        except:
+            pass
+
+
 @pytest.fixture(scope="session")
 def test_results_dir():
     """创建并返回测试结果目录路径"""
@@ -28,60 +62,41 @@ def test_results_dir():
 
 
 @pytest.fixture(scope="session")
+def curl_commands_file(test_results_dir):
+    """创建并返回curl命令记录文件路径"""
+    commands_file = os.path.join(test_results_dir, "curl_test_commands.txt")
+    # 创建文件并写入标题
+    with open(commands_file, 'w', encoding='utf-8') as f:
+        f.write("# Curl测试命令记录\n")
+        f.write(f"# 测试时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    return commands_file
+
+
+@pytest.fixture(scope="session")
 def start_api_server():
     """启动API服务器用于测试"""
     # 设置环境变量
     os.environ['FLASK_ENV'] = 'testing'
     
-    # 获取项目路径
+    # 获取项目路径和配置
     api_dir = os.path.join(os.path.dirname(__file__), '..', '..')
     original_dir = os.getcwd()
-    
-    # 获取测试配置
     test_config = TestingConfig()
     
-    # 切换到API目录
-    os.chdir(api_dir)
-    
-    # 启动API服务器
-    server_process = subprocess.Popen([
-        'python', '-m', 'flask', '--app', 'app/factory:create_app', 
-        'run', '--port', str(test_config.PORT)
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-    
-    # 等待服务器启动并验证
-    server_ready = False
-    base_url = f'http://localhost:{test_config.PORT}'
-    for _ in range(10):  # 最多等待10秒
-        try:
-            response = request.urlopen(f'{base_url}/api/auth/health', timeout=1)
-            if response.getcode() == 200:
-                server_ready = True
-                break
-        except URLError:
-            time.sleep(1)
-    
-    if not server_ready:
-        # 终止进程
-        try:
-            os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
-        except:
-            pass
-        raise Exception("API服务器启动失败")
-    
-    print("API服务器启动成功!")
-    
-    yield server_process
-    
-    # 关闭服务器
     try:
-        os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
-        server_process.wait(timeout=5)
-    except:
-        try:
-            os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
-        except:
-            pass
-    
-    # 恢复原始目录
-    os.chdir(original_dir)
+        # 启动API服务器
+        server_process = _start_flask_server(test_config, api_dir)
+        
+        # 等待服务器启动并验证
+        if not _wait_for_server(test_config.PORT):
+            _terminate_server(server_process)
+            raise Exception("API服务器启动失败")
+        
+        print("API服务器启动成功!")
+        yield server_process
+        
+    finally:
+        # 关闭服务器并恢复原始目录
+        if 'server_process' in locals():
+            _terminate_server(server_process)
+        os.chdir(original_dir)
