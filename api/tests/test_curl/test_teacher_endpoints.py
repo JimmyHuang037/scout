@@ -1,77 +1,12 @@
-#!/usr/bin/env python3
-"""
-Curl测试基类
-提供通用的测试工具和设置
-"""
-
 import os
-import time
-import subprocess
-import signal
-import json
 import pytest
-from urllib import request
-from urllib.error import URLError
-from pathlib import Path
-from config.config import TestingConfig
+from tests.test_curl.test_curl_base import CurlTestBase
 
-
-class CurlTestBase:
-    """Curl测试基类"""
-    
-    def __init__(self):
-        """初始化测试基类"""
-        test_config = TestingConfig()
-        self.base_url = f'http://localhost:{test_config.PORT}'
-    
-    def login_teacher(self, cookie_file):
-        """教师登录"""
-        print("登录教师账户...")
-        cmd = [
-            'curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/login',
-            '-H', 'Content-Type: application/json',
-            '-d', '{"user_id": "3", "password": "123456"}',
-            '-c', cookie_file
-        ]
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.stdout
-    
-    def run_api_test(self, test_number, description, command, output_file, test_setup):
-        """运行单个API测试"""
-        print(f"\n{test_number}. {description}")
-        print(f"执行命令: {' '.join(command)}")
-        
-        # 教师登录
-        self.login_teacher(test_setup['cookie_file'])
-        
-        # 执行测试命令
-        result = subprocess.run(command, capture_output=True, text=True)
-        
-        # 保存结果
-        output_path = os.path.join(test_setup['result_dir'], output_file)
-        try:
-            # 尝试解析为JSON
-            json_data = json.loads(result.stdout)
-            with open(output_path, 'w') as f:
-                json.dump(json_data, f, indent=2)
-        except json.JSONDecodeError:
-            # 保存为文本
-            with open(output_path, 'w') as f:
-                f.write(result.stdout)
-        
-        # 验证结果
-        assert result.returncode == 0, f"测试 {test_number} 失败: {result.stderr}"
-        print(f"测试 {test_number} 完成")
 #!/usr/bin/env python3
 """
 教师端点测试
 使用 pytest 框架执行黑盒测试
 """
-
-import os
-import pytest
-from tests.test_curl.test_curl_base import CurlTestBase
 
 
 class TestTeacherEndpoints(CurlTestBase):
