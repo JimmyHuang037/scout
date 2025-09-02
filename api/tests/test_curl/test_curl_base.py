@@ -24,6 +24,26 @@ class CurlTestBase:
         """设置curl命令记录文件路径"""
         self.curl_commands_file = file_path
     
+    def setup_test_environment(self, test_results_dir, curl_commands_file=None):
+        """设置测试环境，返回测试配置"""
+        # 如果提供了curl_commands_file，则自动设置
+        if curl_commands_file:
+            self.set_curl_commands_file(curl_commands_file)
+        
+        # 检查是否已设置curl命令记录文件
+        if self.curl_commands_file is None:
+            raise ValueError("未设置curl命令记录文件，请先调用set_curl_commands_file方法")
+        
+        cookie_file = '/tmp/test_cookie.txt'
+        
+        test_setup = {
+            'api_base_url': self.base_url,
+            'result_dir': test_results_dir,
+            'cookie_file': cookie_file
+        }
+        
+        return test_setup, cookie_file
+    
     def _record_curl_command(self, test_number, description, command):
         """记录curl命令到文件"""
         if self.curl_commands_file:

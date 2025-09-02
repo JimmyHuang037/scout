@@ -1,12 +1,12 @@
-import os
-import pytest
-from tests.test_curl.test_curl_base import CurlTestBase
-
 #!/usr/bin/env python3
 """
 教师端点测试
 使用 pytest 框架执行黑盒测试
 """
+
+import os
+import pytest
+from tests.test_curl.test_curl_base import CurlTestBase
 
 
 class TestTeacherEndpoints(CurlTestBase):
@@ -14,16 +14,8 @@ class TestTeacherEndpoints(CurlTestBase):
     
     def test_teacher_exam_type_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试教师考试类型管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例21: 获取考试类型列表(教师)
         self.run_api_test(
@@ -68,16 +60,8 @@ class TestTeacherEndpoints(CurlTestBase):
     
     def test_teacher_score_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试教师成绩管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例26: 教师获取任教班级列表
         self.run_api_test(
@@ -122,16 +106,8 @@ class TestTeacherEndpoints(CurlTestBase):
     
     def test_teacher_exam_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试教师考试管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例31: 教师获取考试列表
         self.run_api_test(

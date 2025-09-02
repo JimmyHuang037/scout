@@ -14,16 +14,8 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_admin_student_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试管理员学生管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例1: 获取学生列表
         self.run_api_test(
@@ -68,16 +60,8 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_admin_teacher_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试管理员教师管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例6: 获取教师列表
         self.run_api_test(
@@ -122,16 +106,8 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_admin_class_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试管理员班级管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例11: 获取班级列表
         self.run_api_test(
@@ -176,16 +152,8 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_admin_subject_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试管理员科目管理端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例16: 获取科目列表(管理员)
         self.run_api_test(

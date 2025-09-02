@@ -14,16 +14,8 @@ class TestStudentEndpoints(CurlTestBase):
     
     def test_student_endpoints(self, start_api_server, test_results_dir, curl_commands_file):
         """测试学生端点"""
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(curl_commands_file)
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
+        # 设置测试环境
+        test_setup, cookie_file = self.setup_test_environment(test_results_dir, curl_commands_file)
         
         # 测试用例36: 学生获取个人成绩
         self.run_api_test(
