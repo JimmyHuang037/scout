@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-教师端点测试
-使用 pytest 框架执行黑盒测试
+Curl测试基类
+提供通用的测试工具和设置
 """
 
 import os
@@ -13,16 +13,22 @@ import pytest
 from urllib import request
 from urllib.error import URLError
 from pathlib import Path
+from config.config import TestingConfig
 
 
-class TestTeacherEndpoints:
-    """教师端点测试类"""
+class CurlTestBase:
+    """Curl测试基类"""
     
-    def login_teacher(self, base_url, cookie_file):
+    def __init__(self):
+        """初始化测试基类"""
+        test_config = TestingConfig()
+        self.base_url = f'http://localhost:{test_config.PORT}'
+    
+    def login_teacher(self, cookie_file):
         """教师登录"""
         print("登录教师账户...")
         cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/login',
+            'curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/login',
             '-H', 'Content-Type: application/json',
             '-d', '{"user_id": "3", "password": "123456"}',
             '-c', cookie_file
@@ -37,7 +43,7 @@ class TestTeacherEndpoints:
         print(f"执行命令: {' '.join(command)}")
         
         # 教师登录
-        self.login_teacher(test_setup['api_base_url'], test_setup['cookie_file'])
+        self.login_teacher(test_setup['cookie_file'])
         
         # 执行测试命令
         result = subprocess.run(command, capture_output=True, text=True)
@@ -57,17 +63,23 @@ class TestTeacherEndpoints:
         # 验证结果
         assert result.returncode == 0, f"测试 {test_number} 失败: {result.stderr}"
         print(f"测试 {test_number} 完成")
+#!/usr/bin/env python3
+"""
+教师端点测试
+使用 pytest 框架执行黑盒测试
+"""
+
+import os
+import pytest
+from tests.test_curl.test_curl_base import CurlTestBase
     
-    def test_teacher_exam_type_endpoints(self, start_api_server):
+    def test_teacher_exam_type_endpoints(self, start_api_server, test_results_dir):
         """测试教师考试类型管理端点"""
-        base_url = 'http://localhost:5010'
         cookie_file = '/tmp/test_cookie.txt'
-        result_dir = '/tmp/curl_test_results'
-        os.makedirs(result_dir, exist_ok=True)
         
         test_setup = {
-            'api_base_url': base_url,
-            'result_dir': result_dir,
+            'api_base_url': self.base_url,
+            'result_dir': test_results_dir,
             'cookie_file': cookie_file
         }
         
@@ -112,16 +124,13 @@ class TestTeacherEndpoints:
             "25_delete_exam_type.json", test_setup
         )
     
-    def test_teacher_score_endpoints(self, start_api_server):
+    def test_teacher_score_endpoints(self, start_api_server, test_results_dir):
         """测试教师成绩管理端点"""
-        base_url = 'http://localhost:5010'
         cookie_file = '/tmp/test_cookie.txt'
-        result_dir = '/tmp/curl_test_results'
-        os.makedirs(result_dir, exist_ok=True)
         
         test_setup = {
-            'api_base_url': base_url,
-            'result_dir': result_dir,
+            'api_base_url': self.base_url,
+            'result_dir': test_results_dir,
             'cookie_file': cookie_file
         }
         
@@ -166,16 +175,13 @@ class TestTeacherEndpoints:
             "30_delete_score.json", test_setup
         )
     
-    def test_teacher_exam_endpoints(self, start_api_server):
+    def test_teacher_exam_endpoints(self, start_api_server, test_results_dir):
         """测试教师考试管理端点"""
-        base_url = 'http://localhost:5010'
         cookie_file = '/tmp/test_cookie.txt'
-        result_dir = '/tmp/curl_test_results'
-        os.makedirs(result_dir, exist_ok=True)
         
         test_setup = {
-            'api_base_url': base_url,
-            'result_dir': result_dir,
+            'api_base_url': self.base_url,
+            'result_dir': test_results_dir,
             'cookie_file': cookie_file
         }
         

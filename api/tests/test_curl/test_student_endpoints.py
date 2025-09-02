@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-学生端点测试
-使用 pytest 框架执行黑盒测试
+Curl测试基类
+提供公共测试功能
 """
 
 import os
@@ -9,20 +9,24 @@ import time
 import subprocess
 import signal
 import json
-import pytest
 from urllib import request
 from urllib.error import URLError
 from pathlib import Path
 
-
-class TestStudentEndpoints:
-    """学生端点测试类"""
+class CurlTestBase:
+    """Curl测试基类"""
     
-    def login_student(self, base_url, cookie_file):
+    def __init__(self):
+        """初始化测试基类"""
+        from config.config import TestingConfig
+        self.config = TestingConfig()
+        self.base_url = f'http://localhost:{self.config.PORT}'
+    
+    def login_student(self, cookie_file):
         """学生登录"""
         print("登录学生账户...")
         cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/login',
+            'curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/login',
             '-H', 'Content-Type: application/json',
             '-d', '{"user_id": "S0201", "password": "pass123"}',
             '-c', cookie_file
@@ -37,7 +41,7 @@ class TestStudentEndpoints:
         print(f"执行命令: {' '.join(command)}")
         
         # 学生登录
-        self.login_student(test_setup['api_base_url'], test_setup['cookie_file'])
+        self.login_student(test_setup['cookie_file'])
         
         # 执行测试命令
         result = subprocess.run(command, capture_output=True, text=True)
@@ -58,16 +62,38 @@ class TestStudentEndpoints:
         assert result.returncode == 0, f"测试 {test_number} 失败: {result.stderr}"
         print(f"测试 {test_number} 完成")
     
-    def test_student_endpoints(self, start_api_server):
+    def login_admin(self, cookie_file):
+        """管理员登录"""
+        print("登录管理员账户...")
+        cmd = [
+            'curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/login',
+            '-H', 'Content-Type: application/json',
+            '-d', '{"user_id": "admin", "password": "admin"}',
+            '-c', cookie_file
+        ]
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.stdout
+#!/usr/bin/env python3
+"""
+学生端点测试
+使用 pytest 框架执行黑盒测试
+"""
+
+import os
+import pytest
+from tests.test_curl.test_curl_base import CurlTestBase
+    
+    def test_student_endpoints(self, start_api_server, test_results_dir):
         """测试学生端点"""
-        base_url = 'http://localhost:5010'
+        # 获取测试配置
+        test_config = TestingConfig()
+        base_url = f'http://localhost:{test_config.PORT}'
         cookie_file = '/tmp/test_cookie.txt'
-        result_dir = '/tmp/curl_test_results'
-        os.makedirs(result_dir, exist_ok=True)
         
         test_setup = {
             'api_base_url': base_url,
-            'result_dir': result_dir,
+            'result_dir': test_results_dir,
             'cookie_file': cookie_file
         }
         

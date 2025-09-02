@@ -11,9 +11,20 @@ import time
 import signal
 from urllib import request
 from urllib.error import URLError
+from config.config import TestingConfig
 
 # 将项目根目录添加到Python路径中
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
+@pytest.fixture(scope="session")
+def test_results_dir():
+    """创建并返回测试结果目录路径"""
+    test_config = TestingConfig()
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    result_dir = os.path.join(test_config.CURL_TEST_DIR, timestamp)
+    os.makedirs(result_dir, exist_ok=True)
+    return result_dir
 
 
 @pytest.fixture(scope="session")
@@ -26,20 +37,24 @@ def start_api_server():
     api_dir = os.path.join(os.path.dirname(__file__), '..', '..')
     original_dir = os.getcwd()
     
+    # 获取测试配置
+    test_config = TestingConfig()
+    
     # 切换到API目录
     os.chdir(api_dir)
     
     # 启动API服务器
     server_process = subprocess.Popen([
         'python', '-m', 'flask', '--app', 'app/factory:create_app', 
-        'run', '--port', '5010'
+        'run', '--port', str(test_config.PORT)
     ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     
     # 等待服务器启动并验证
     server_ready = False
+    base_url = f'http://localhost:{test_config.PORT}'
     for _ in range(10):  # 最多等待10秒
         try:
-            response = request.urlopen('http://localhost:5010/api/auth/health', timeout=1)
+            response = request.urlopen(f'{base_url}/api/auth/health', timeout=1)
             if response.getcode() == 200:
                 server_ready = True
                 break

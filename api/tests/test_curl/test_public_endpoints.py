@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-公共端点测试
-使用 pytest 框架执行黑盒测试
+CURL测试基类
+提供通用的测试方法和设置
 """
 
 import os
-import time
 import subprocess
-import signal
 import json
 import pytest
-from urllib import request
-from urllib.error import URLError
-from pathlib import Path
 
-
-class TestPublicEndpoints:
-    """公共端点测试类"""
+class CurlTestBase:
+    """CURL测试基类"""
+    
+    def __init__(self):
+        """初始化测试基类"""
+        self.base_url = 'http://localhost:5010'
     
     def run_api_test(self, test_number, description, command, output_file, test_setup):
         """运行单个API测试"""
@@ -41,16 +39,28 @@ class TestPublicEndpoints:
         # 验证结果
         assert result.returncode == 0, f"测试 {test_number} 失败: {result.stderr}"
         print(f"测试 {test_number} 完成")
+
+#!/usr/bin/env python3
+"""
+公共端点测试
+使用 pytest 框架执行黑盒测试
+"""
+
+import os
+import pytest
+from tests.test_curl.test_curl_base import CurlTestBase
+
+
+class TestPublicEndpoints(CurlTestBase):
+    """公共端点测试类"""
     
-    def test_public_endpoints(self, start_api_server):
+    def test_public_endpoints(self, start_api_server, test_results_dir):
         """测试公共端点"""
         base_url = 'http://localhost:5010'
-        result_dir = '/tmp/curl_test_results'
-        os.makedirs(result_dir, exist_ok=True)
         
         test_setup = {
             'api_base_url': base_url,
-            'result_dir': result_dir,
+            'result_dir': test_results_dir,
             'cookie_file': '/tmp/test_cookie.txt'
         }
         

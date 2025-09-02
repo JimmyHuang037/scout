@@ -34,6 +34,11 @@ def _get_logs_config(env):
     return logs_dir, log_file_path, session_dir
 
 
+def _get_curl_test_dir(env, logs_dir):
+    """获取curl测试结果目录"""
+    return os.path.join(logs_dir, 'curl_test')
+
+
 class Config:
     """应用基础配置"""
     
@@ -65,6 +70,9 @@ class Config:
     SESSION_TYPE = 'filesystem'
     SESSION_PERMANENT = False
     PERMANENT_SESSION_LIFETIME = 3600
+    
+    # test_curl配置
+    CURL_TEST_DIR = _get_curl_test_dir('development', LOGS_DIR)
 
 
 class ProductionConfig(Config):
@@ -88,6 +96,9 @@ class ProductionConfig(Config):
     
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('production')
+    
+    # test_curl配置
+    CURL_TEST_DIR = _get_curl_test_dir('production', LOGS_DIR)
 
 
 class TestingConfig(Config):
@@ -111,6 +122,9 @@ class TestingConfig(Config):
     
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('testing')
+    
+    # test_curl配置
+    CURL_TEST_DIR = _get_curl_test_dir('testing', LOGS_DIR)
 
 
 # 配置映射
