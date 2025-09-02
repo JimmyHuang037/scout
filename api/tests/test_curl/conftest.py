@@ -1,102 +1,94 @@
 #!/usr/bin/env python3
 """
-test_curl模块的pytest配置文件
+测试配置文件
 """
 
-import pytest
-import subprocess
 import os
 import sys
 import time
 import signal
-from urllib import request
-from urllib.error import URLError
+import subprocess
+import pytest
 from config.config import TestingConfig
 
-# 将项目根目录添加到Python路径中
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
 
-
-def _start_flask_server(test_config, api_dir):
-    """启动Flask服务器进程"""
-    os.chdir(api_dir)
-    return subprocess.Popen([
-        'python', '-m', 'flask', '--app', 'app/factory:create_app', 
-        'run', '--port', str(test_config.PORT)
-    ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-
-
-def _wait_for_server(port, timeout=10):
-    """等待服务器启动并验证"""
-    base_url = f'http://localhost:{port}'
-    for _ in range(timeout):
+@pytest.fixture(scope="session")
+def start_api_server():
+    """启动和关闭API服务器"""
+    config = TestingConfig()
+    base_url = f'http://localhost:{config.PORT}'
+    env = os.environ.copy()
+    env.update({'FLASK_APP': 'app/app.py', 'FLASK_ENV': 'testing'})
+    
+    process = subprocess.Popen([
+        sys.executable, '-m', 'flask', 'run', '--host=127.0.0.1', f'--port={config.PORT}'
+    ], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    
+    import requests
+    start_time = time.time()
+    
+    while time.time() - start_time < 30:
         try:
-            response = request.urlopen(f'{base_url}/api/auth/health', timeout=1)
-            if response.getcode() == 200:
-                return True
-        except URLError:
-            time.sleep(1)
-    return False
-
-
-def _terminate_server(server_process):
-    """终止服务器进程"""
-    try:
-        os.killpg(os.getpgid(server_process.pid), signal.SIGTERM)
-        server_process.wait(timeout=5)
-    except:
-        try:
-            os.killpg(os.getpgid(server_process.pid), signal.SIGKILL)
-        except:
+            if requests.get(f'{base_url}/api/auth/health', timeout=1).status_code == 200:
+                yield base_url
+                break
+        except requests.RequestException:
             pass
+        time.sleep(0.5)
+    else:
+        _terminate_server(process)
+        pytest.fail("服务器启动超时")
+    
+    _terminate_server(process)
+
+
+def _terminate_server(process):
+    """终止服务器进程"""
+    if process and process.poll() is None:
+        try:
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            process.wait(timeout=5)
+        except (subprocess.TimeoutExpired, ProcessLookupError):
+            os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            process.wait()
 
 
 @pytest.fixture(scope="session")
 def test_results_dir():
-    """创建并返回测试结果目录路径"""
-    test_config = TestingConfig()
+    """创建测试结果目录"""
+    # 使用配置文件中的CURL_TEST_DIR配置，并添加时间戳
+    config = TestingConfig()
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    result_dir = os.path.join(test_config.CURL_TEST_DIR, timestamp)
+    result_dir = os.path.join(config.CURL_TEST_DIR, timestamp)
     os.makedirs(result_dir, exist_ok=True)
     return result_dir
 
 
 @pytest.fixture(scope="session")
 def curl_commands_file(test_results_dir):
-    """创建并返回curl命令记录文件路径"""
-    commands_file = os.path.join(test_results_dir, "curl_test_commands.txt")
-    # 创建文件并写入标题
-    with open(commands_file, 'w', encoding='utf-8') as f:
-        f.write("# Curl测试命令记录\n")
-        f.write(f"# 测试时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+    """创建curl命令记录文件"""
+    commands_file = os.path.join(test_results_dir, 'curl_commands.txt')
+    # 清空或创建文件
+    with open(commands_file, 'w') as f:
+        f.write("Curl测试命令记录\n")
+        f.write("=" * 50 + "\n")
+    
     return commands_file
 
 
 @pytest.fixture(scope="session")
-def start_api_server():
-    """启动API服务器用于测试"""
-    # 设置环境变量
-    os.environ['FLASK_ENV'] = 'testing'
-    
-    # 获取项目路径和配置
-    api_dir = os.path.join(os.path.dirname(__file__), '..', '..')
-    original_dir = os.getcwd()
-    test_config = TestingConfig()
-    
-    try:
-        # 启动API服务器
-        server_process = _start_flask_server(test_config, api_dir)
-        
-        # 等待服务器启动并验证
-        if not _wait_for_server(test_config.PORT):
-            _terminate_server(server_process)
-            raise Exception("API服务器启动失败")
-        
-        print("API服务器启动成功!")
-        yield server_process
-        
-    finally:
-        # 关闭服务器并恢复原始目录
-        if 'server_process' in locals():
-            _terminate_server(server_process)
-        os.chdir(original_dir)
+def cookie_file():
+    """提供cookie文件路径"""
+    return '/tmp/test_cookie.txt'
+
+
+@pytest.fixture(scope="class")
+def test_environment(start_api_server, test_results_dir, curl_commands_file, cookie_file):
+    """提供完整的测试环境配置"""
+    environment = {
+        'base_url': start_api_server,
+        'test_results_dir': test_results_dir,
+        'curl_commands_file': curl_commands_file,
+        'cookie_file': cookie_file
+    }
+    return environment

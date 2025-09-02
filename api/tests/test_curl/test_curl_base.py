@@ -13,36 +13,21 @@ from config.config import TestingConfig
 class CurlTestBase:
     """Curl测试基类"""
     
-    def __init__(self):
+    def __init__(self, test_environment=None):
         """初始化测试基类"""
-        self.test_config = TestingConfig()
-        self.base_url = f'http://localhost:{self.test_config.PORT}'
         # 初始化curl命令记录文件路径
         self.curl_commands_file = None
+        
+        # 初始化测试环境配置
+        if test_environment:
+            self.base_url = test_environment['base_url']
+            self.test_results_dir = test_environment['test_results_dir']
+            self.curl_commands_file = test_environment['curl_commands_file']
+            self.cookie_file = test_environment['cookie_file']
     
     def set_curl_commands_file(self, file_path):
         """设置curl命令记录文件路径"""
         self.curl_commands_file = file_path
-    
-    def setup_test_environment(self, test_results_dir, curl_commands_file=None):
-        """设置测试环境，返回测试配置"""
-        # 如果提供了curl_commands_file，则自动设置
-        if curl_commands_file:
-            self.set_curl_commands_file(curl_commands_file)
-        
-        # 检查是否已设置curl命令记录文件
-        if self.curl_commands_file is None:
-            raise ValueError("未设置curl命令记录文件，请先调用set_curl_commands_file方法")
-        
-        cookie_file = '/tmp/test_cookie.txt'
-        
-        test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': test_results_dir,
-            'cookie_file': cookie_file
-        }
-        
-        return test_setup, cookie_file
     
     def _record_curl_command(self, test_number, description, command):
         """记录curl命令到文件"""
@@ -92,7 +77,7 @@ class CurlTestBase:
         self._record_curl_command("登录", "管理员登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.stdout
+        return result.returncode == 0
     
     def login_teacher(self, base_url, cookie_file):
         """教师登录"""
@@ -108,7 +93,7 @@ class CurlTestBase:
         self._record_curl_command("登录", "教师登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.stdout
+        return result.returncode == 0
     
     def login_student(self, base_url, cookie_file):
         """学生登录"""
@@ -124,4 +109,18 @@ class CurlTestBase:
         self._record_curl_command("登录", "学生登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.stdout
+        return result.returncode == 0
+    
+    def logout(self, base_url, cookie_file):
+        """登出"""
+        print("登出账户...")
+        cmd = [
+            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/logout',
+            '-b', cookie_file
+        ]
+        
+        # 记录curl命令
+        self._record_curl_command("登出", "用户登出", cmd)
+        
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.returncode == 0

@@ -72,7 +72,7 @@ class Config:
     PERMANENT_SESSION_LIFETIME = 3600
     
     # test_curl配置
-    CURL_TEST_DIR = _get_curl_test_dir('development', LOGS_DIR)
+    CURL_TEST_DIR = _get_curl_test_dir('', LOGS_DIR)
 
 
 class ProductionConfig(Config):
