@@ -54,6 +54,10 @@ class CurlTestBase:
             json_data = json.loads(result.stdout)
             with open(output_path, 'w') as f:
                 json.dump(json_data, f, indent=2)
+                
+            # 检查返回的JSON中是否有error字段
+            if 'error' in json_data and json_data['error']:
+                assert False, f"测试 {test_number} 失败: API返回错误 - {json_data['error']}"
         except json.JSONDecodeError:
             # 保存为文本
             with open(output_path, 'w') as f:
