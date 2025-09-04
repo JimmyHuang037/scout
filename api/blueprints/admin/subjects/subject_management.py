@@ -29,16 +29,10 @@ def create_subject():
         # 创建科目
         subject_service = SubjectService()
         subject_data = {'subject_name': subject_name}
-        result = subject_service.create_subject(subject_data)
+        new_subject_id = subject_service.create_subject(subject_data)
         
-        if not result:
+        if not new_subject_id:
             return error_response("创建科目失败", 400)
-        
-        # 获取新创建的科目信息
-        # 由于create_subject只返回布尔值，我们需要重新查询获取新创建的科目信息
-        # 先获取新创建科目的ID
-        query = "SELECT LAST_INSERT_ID() as subject_id"
-        new_subject_id = subject_service.db_service.execute_query(query, (), fetch_one=True)['subject_id']
         
         # 获取新创建的科目信息
         new_subject = subject_service.get_subject_by_id(new_subject_id)

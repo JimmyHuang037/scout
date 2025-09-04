@@ -31,17 +31,17 @@ class StudentService:
             
             # 构建查询语句
             base_query = """
-                SELECT s.student_id, s.student_name, s.class_id, c.class_name
+                SELECT s.student_id, s.student_name, c.class_name
                 FROM Students s
                 JOIN Classes c ON s.class_id = c.class_id
-                JOIN TeacherClasses tc ON s.class_id = tc.class_id
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
                 WHERE tc.teacher_id = %s
             """
             count_query = """
                 SELECT COUNT(*) as total
                 FROM Students s
                 JOIN Classes c ON s.class_id = c.class_id
-                JOIN TeacherClasses tc ON s.class_id = tc.class_id
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
                 WHERE tc.teacher_id = %s
             """
             params = [teacher_id]
@@ -49,8 +49,8 @@ class StudentService:
             
             # 如果指定了班级ID，则添加到查询条件中
             if class_id:
-                base_query += " AND s.class_id = %s"
-                count_query += " AND s.class_id = %s"
+                base_query += " AND c.class_id = %s"
+                count_query += " AND c.class_id = %s"
                 params.append(class_id)
                 count_params.append(class_id)
             
@@ -94,9 +94,9 @@ class StudentService:
         """
         try:
             query = """
-                SELECT s.student_id, s.student_name, s.class_id, c.class_name
+                SELECT s.student_id, s.student_name, c.class_name
                 FROM Students s
-                LEFT JOIN Classes c ON s.class_id = c.class_id
+                JOIN Classes c ON s.class_id = c.class_id
                 WHERE s.student_id = %s
             """
             result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
@@ -125,9 +125,9 @@ class StudentService:
             
             # 构建查询语句
             base_query = """
-                SELECT s.student_id, s.student_name, s.class_id, c.class_name
+                SELECT s.student_id, s.student_name, c.class_name
                 FROM Students s
-                LEFT JOIN Classes c ON s.class_id = c.class_id
+                JOIN Classes c ON s.class_id = c.class_id
                 ORDER BY s.student_id
                 LIMIT %s OFFSET %s
             """
@@ -198,7 +198,7 @@ class StudentService:
             dict: 创建的学生信息
         """
         try:
-            # 先插入学生信息到Students表
+            # 先插入学生信息到students表
             student_query = """
                 INSERT INTO Students (student_id, student_name, class_id)
                 VALUES (%s, %s, %s)
@@ -211,19 +211,8 @@ class StudentService:
             
             self.db_service.execute_update(student_query, student_params)
             
-            # 插入用户信息到Users表
-            user_query = """
-                INSERT INTO Users (user_id, user_name, password, role)
-                VALUES (%s, %s, %s, %s)
-            """
-            user_params = (
-                student_data['student_id'],
-                student_data['student_name'],
-                student_data['password'],
-                'student'
-            )
-            
-            self.db_service.execute_update(user_query, user_params)
+            # Note: users is a view, not a table, so we don't insert directly into it
+            # The users view automatically includes data from the Students table
             
             current_app.logger.info(f"Student {student_data['student_id']} created successfully")
             return {"student_id": student_data['student_id']}
@@ -284,16 +273,12 @@ class StudentService:
             bool: 删除是否成功
         """
         try:
-            # 先从Users表中删除
-            user_query = "DELETE FROM Users WHERE user_id = %s AND role = 'student'"
-            user_result = self.db_service.execute_update(user_query, (student_id,))
-            
-            # 再从Students表中删除
+            # Note: users is a view, not a table, so we don't delete from it directly
+            # Only delete from the students table
             student_query = "DELETE FROM Students WHERE student_id = %s"
             student_result = self.db_service.execute_update(student_query, (student_id,))
             
-            # 两个操作都需要成功才算删除成功
-            return user_result > 0 and student_result > 0
+            return student_result > 0
             
         except Exception as e:
             if current_app:

@@ -91,14 +91,18 @@ class TestScoreService:
         with app.app_context():
             score_service = ScoreService()
             result = score_service.get_exam_results(1)
-            assert isinstance(result, (list, tuple))
+            assert isinstance(result, dict)
+            assert 'exam_results' in result
+            assert isinstance(result['exam_results'], (list, tuple))
 
     def test_get_teacher_performance(self, app):
         """测试获取教师表现数据"""
         with app.app_context():
             score_service = ScoreService()
             result = score_service.get_teacher_performance(1)
-            assert isinstance(result, (list, tuple))
+            assert isinstance(result, dict)
+            assert 'performance' in result
+            assert isinstance(result['performance'], (list, tuple))
 
     def test_get_student_exam_results(self, app):
         """测试获取学生考试结果"""

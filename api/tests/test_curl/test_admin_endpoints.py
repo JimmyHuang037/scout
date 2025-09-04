@@ -85,7 +85,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例5: 删除学生"""
         self.run_api_test(
             5, "删除学生",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/students/S9999', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/students/S0101', '-b', self.cookie_file],
             "5_delete_student.json", self.test_setup
         )
     
@@ -122,7 +122,7 @@ class TestAdminEndpoints(CurlTestBase):
             9, "更新教师信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teachers/3',
              '-H', 'Content-Type: application/json',
-             '-d', '{"phone": "13900139000", "address": "更新的地址"}',
+             '-d', '{"teacher_name": "更新的张老师", "subject_id": 2}',
              '-b', self.cookie_file],
             "9_update_teacher.json", self.test_setup
         )
@@ -177,7 +177,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例15: 删除班级"""
         self.run_api_test(
             15, "删除班级",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/classes/999', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/classes/1', '-b', self.cookie_file],
             "15_delete_class.json", self.test_setup
         )
     
@@ -202,17 +202,37 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_18_get_subject(self):
         """测试用例18: 获取特定科目"""
+        # 先读取测试17创建的科目结果，获取科目ID
+        import json
+        result_file = os.path.join(self.test_results_dir, "17_create_subject.json")
+        if os.path.exists(result_file):
+            with open(result_file, 'r') as f:
+                result = json.load(f)
+                subject_id = result.get('data', {}).get('subject_id', 4)
+        else:
+            subject_id = 4  # 默认值
+        
         self.run_api_test(
             18, "获取特定科目",
-            ['curl', '-s', f'{self.base_url}/api/admin/subjects/2', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/admin/subjects/{subject_id}', '-b', self.cookie_file],
             "18_get_subject.json", self.test_setup
         )
     
     def test_19_update_subject(self):
         """测试用例19: 更新科目信息"""
+        # 先读取测试17创建的科目结果，获取科目ID
+        import json
+        result_file = os.path.join(self.test_results_dir, "17_create_subject.json")
+        if os.path.exists(result_file):
+            with open(result_file, 'r') as f:
+                result = json.load(f)
+                subject_id = result.get('data', {}).get('subject_id', 4)
+        else:
+            subject_id = 4  # 默认值
+        
         self.run_api_test(
             19, "更新科目信息",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/subjects/2',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/subjects/{subject_id}',
              '-H', 'Content-Type: application/json',
              '-d', '{"subject_name": "更新的科目名称"}',
              '-b', self.cookie_file],
@@ -221,9 +241,19 @@ class TestAdminEndpoints(CurlTestBase):
     
     def test_20_delete_subject(self):
         """测试用例20: 删除科目"""
+        # 先读取测试17创建的科目结果，获取科目ID
+        import json
+        result_file = os.path.join(self.test_results_dir, "17_create_subject.json")
+        if os.path.exists(result_file):
+            with open(result_file, 'r') as f:
+                result = json.load(f)
+                subject_id = result.get('data', {}).get('subject_id', 4)
+        else:
+            subject_id = 4  # 默认值
+        
         self.run_api_test(
             20, "删除科目",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/subjects/2', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/subjects/{subject_id}', '-b', self.cookie_file],
             "20_delete_subject.json", self.test_setup
         )
     
@@ -269,7 +299,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例25: 删除考试类型"""
         self.run_api_test(
             25, "删除考试类型",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam-types/999', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam-types/1', '-b', self.cookie_file],
             "25_delete_exam_type.json", self.test_setup
         )
     

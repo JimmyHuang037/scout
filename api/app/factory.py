@@ -32,7 +32,8 @@ def _setup_logging(app):
         
         # 确保日志消息立即刷新
         for handler in logging.root.handlers:
-            handler.stream.flush()
+            if hasattr(handler, 'stream'):
+                handler.stream.flush()
     else:
         # 非测试环境保持原有的日志配置
         # 确保日志目录存在

@@ -27,11 +27,11 @@ class ScoreService:
                 # 教师只能查看自己班级的成绩
                 query = """
                     SELECT sc.score_id, sc.student_id, st.student_name, 
-                           sc.subject_id, sub.subject_name,
+                           sc.subject_id, su.subject_name,
                            sc.exam_type_id, et.exam_type_name, sc.score
                     FROM Scores sc
                     JOIN Students st ON sc.student_id = st.student_id
-                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN Subjects su ON sc.subject_id = su.subject_id
                     JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                     JOIN Classes c ON st.class_id = c.class_id
                     JOIN TeacherClasses tc ON c.class_id = tc.class_id
@@ -58,11 +58,11 @@ class ScoreService:
                 # 管理员或其他角色可以查看所有成绩
                 query = """
                     SELECT sc.score_id, sc.student_id, st.student_name, 
-                           sc.subject_id, sub.subject_name,
+                           sc.subject_id, su.subject_name,
                            sc.exam_type_id, et.exam_type_name, sc.score
                     FROM Scores sc
                     JOIN Students st ON sc.student_id = st.student_id
-                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN Subjects su ON sc.subject_id = su.subject_id
                     JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                 """
                 params = []
@@ -112,11 +112,11 @@ class ScoreService:
             # 教师只能查看自己班级的成绩
             query = """
                 SELECT sc.score_id, sc.student_id, st.student_name, 
-                       sc.subject_id, sub.subject_name,
+                       sc.subject_id, su.subject_name,
                        sc.exam_type_id, et.exam_type_name, sc.score
                 FROM Scores sc
                 JOIN Students st ON sc.student_id = st.student_id
-                JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                JOIN Subjects su ON sc.subject_id = su.subject_id
                 JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                 JOIN Classes c ON st.class_id = c.class_id
                 JOIN TeacherClasses tc ON c.class_id = tc.class_id
@@ -275,13 +275,13 @@ class ScoreService:
         db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
-                SELECT COUNT(*) as count
-                FROM Scores s
-                JOIN Students st ON s.student_id = st.student_id
-                JOIN Classes c ON st.class_id = c.class_id
-                JOIN TeacherClasses tc ON c.class_id = tc.class_id
-                WHERE s.score_id = %s AND tc.teacher_id = %s
-            """
+            SELECT COUNT(*) as count
+            FROM Scores s
+            JOIN Students st ON s.student_id = st.student_id
+            JOIN Classes c ON st.class_id = c.class_id
+            JOIN TeacherClasses tc ON c.class_id = tc.class_id
+            WHERE s.score_id = %s AND tc.teacher_id = %s
+        """
             params = (score_id, teacher_id)
             result = db_service.execute_query(query, params, fetch_one=True)
             return result['count'] > 0
@@ -300,7 +300,7 @@ class ScoreService:
             class_id (int, optional): 班级ID
             
         Returns:
-            list: 考试结果数据
+            dict: 包含exam_results键的字典
         """
         db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
@@ -325,7 +325,7 @@ class ScoreService:
             query += " ORDER BY er.ranking"
             
             exam_results = db_service.execute_query(query, params)
-            return exam_results
+            return {'exam_results': exam_results}
             
         except Exception as e:
             raise e
@@ -349,11 +349,11 @@ class ScoreService:
                 # 教师只能查看自己班级的成绩
                 query = """
                     SELECT sc.score_id, sc.student_id, st.student_name, 
-                           sc.subject_id, sub.subject_name,
+                           sc.subject_id, su.subject_name,
                            sc.exam_type_id, et.exam_type_name, sc.score
                     FROM Scores sc
                     JOIN Students st ON sc.student_id = st.student_id
-                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN Subjects su ON sc.subject_id = su.subject_id
                     JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                     JOIN Classes c ON st.class_id = c.class_id
                     JOIN TeacherClasses tc ON c.class_id = tc.class_id
@@ -364,11 +364,11 @@ class ScoreService:
                 # 管理员或其他角色可以查看所有成绩
                 query = """
                     SELECT sc.score_id, sc.student_id, st.student_name, 
-                           sc.subject_id, sub.subject_name,
+                           sc.subject_id, su.subject_name,
                            sc.exam_type_id, et.exam_type_name, sc.score
                     FROM Scores sc
                     JOIN Students st ON sc.student_id = st.student_id
-                    JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                    JOIN Subjects su ON sc.subject_id = su.subject_id
                     JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                     WHERE sc.score_id = %s
                 """
@@ -436,13 +436,10 @@ class ScoreService:
         try:
             db_service = database_service.DatabaseService()
             query = """
-                SELECT sc.score_id, sc.student_id, st.student_name, 
-                       sc.subject_id, sub.subject_name,
-                       sc.exam_type_id, et.exam_type_name, sc.score
+                SELECT sc.score_id, sc.student_id, sc.student_name, 
+                       sc.subject_id, sc.subject_name,
+                       sc.exam_type_id, sc.exam_type_name, sc.score
                 FROM Scores sc
-                JOIN Students st ON sc.student_id = st.student_id
-                JOIN Subjects sub ON sc.subject_id = sub.subject_id
-                JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                 WHERE sc.student_id = %s
                 ORDER BY sc.exam_type_id, sc.subject_id
             """
@@ -463,22 +460,23 @@ class ScoreService:
             teacher_id (int): 教师ID
             
         Returns:
-            list: 教师表现数据列表
+            dict: 包含performance键的字典
         """
         db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             query = """
                 SELECT tp.*
                 FROM teacher_performance tp
-                JOIN Teachers t ON tp.teacher_name = t.teacher_name
+                JOIN teachers t ON tp.teacher_name = t.teacher_name
                 WHERE t.teacher_id = %s
              ORDER BY tp.rank_in_school"""
             
             result = db_service.execute_query(query, (teacher_id,))
             # 确保返回的是列表而不是元组
-            return list(result) if result else []
+            performance_data = list(result) if result else []
+            return {'performance': performance_data}
         except Exception as e:
-            # 确保在出错时也返回列表
-            return []
+            # 确保在出错时也返回正确的字典结构
+            return {'performance': []}
         finally:
             db_service.close()

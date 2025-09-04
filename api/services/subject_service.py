@@ -86,13 +86,17 @@ class SubjectService:
             subject_data (dict): 科目信息
             
         Returns:
-            bool: 是否创建成功
+            int: 新创建的科目ID
         """
         try:
             query = "INSERT INTO Subjects (subject_name) VALUES (%s)"
             params = (subject_data.get('subject_name'),)
             self.db_service.execute_update(query, params)
-            return True
+            
+            # 获取新创建的科目ID
+            id_query = "SELECT LAST_INSERT_ID() as subject_id"
+            result = self.db_service.execute_query(id_query, fetch_one=True)
+            return result['subject_id'] if result else None
         except Exception as e:
             current_app.logger.error(f"Failed to create subject: {str(e)}")
             raise e

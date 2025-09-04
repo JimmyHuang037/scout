@@ -36,8 +36,8 @@ class TestTeacherEndpoints(CurlTestBase):
         
         # 登录教师账户
         login_data = {
-            "user_id": "T001",
-            "password": "pass123"
+            "user_id": "1",
+            "password": "test123"
         }
         import json
         import subprocess

@@ -44,7 +44,8 @@ class TestStudentService:
                 'password': 'test123'
             }
             result = student_service.create_student(student_data)
-            assert isinstance(result, bool)
+            assert isinstance(result, dict)
+            assert 'student_id' in result
 
     def test_update_student(self, app):
         """测试更新学生"""
