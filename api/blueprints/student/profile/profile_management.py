@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, session
 from utils.auth import role_required
 from utils.helpers import success_response, error_response
 from services.student_service import StudentService
@@ -10,7 +10,7 @@ student_profile_bp = Blueprint('student_profile_bp', __name__)
 def get_my_profile():
     try:
         # 获取当前学生ID
-        student_id = request.user['user_id']
+        student_id = session.get('user_id')
         
         # 获取学生个人信息
         profile = StudentService.get_student_profile(student_id)

@@ -7,7 +7,7 @@ class ScoreService:
     
     def __init__(self):
         """初始化成绩服务"""
-        pass  # 不在初始化时创建数据库连接
+        self.db_service = database_service.DatabaseService()
     
     def get_scores(self, teacher_id=None, student_id=None, subject_id=None, exam_type_id=None):
         """
@@ -22,7 +22,6 @@ class ScoreService:
         Returns:
             list: 成绩列表
         """
-        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
             if teacher_id:
                 # 教师只能查看自己班级的成绩
@@ -54,7 +53,7 @@ class ScoreService:
                     
                 query += " ORDER BY sc.score_id DESC"
                 
-                return db_service.execute_query(query, params)
+                return self.db_service.execute_query(query, params)
             else:
                 # 管理员或其他角色可以查看所有成绩
                 query = """
@@ -85,15 +84,15 @@ class ScoreService:
                     else:
                         query += " WHERE sc.exam_type_id = %s"
                     params.append(exam_type_id)
-                
+                    
                 query += " ORDER BY sc.score_id DESC"
                 
-                return db_service.execute_query(query, params)
-            
+                return self.db_service.execute_query(query, params)
+                
         except Exception as e:
             raise e
         finally:
-            db_service.close()
+            self.db_service.close()
     
     def get_teacher_scores(self, teacher_id, student_id=None, subject_id=None, exam_type_id=None):
         """
@@ -383,19 +382,20 @@ class ScoreService:
         finally:
             db_service.close()
     
-    def get_student_exam_results(self, student_id, exam_type_id=None):
+    @staticmethod
+    def get_student_exam_results(student_id):
         """
-        获取学生的考试结果
+        获取学生考试结果
         
         Args:
             student_id (str): 学生ID
-            exam_type_id (int, optional): 考试类型ID
             
         Returns:
-            list: 学生的考试结果数据
+            list: 学生考试结果列表
         """
-        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
         try:
+            db_service = database_service.DatabaseService()
+            
             # 首先获取学生姓名
             student_query = "SELECT student_name FROM Students WHERE student_id = %s"
             student_params = (student_id,)
@@ -411,19 +411,45 @@ class ScoreService:
                 SELECT *
                 FROM exam_results
                 WHERE student_name = %s
+                ORDER BY exam_type
             """
             params = (student_name,)
             
-            # 添加筛选条件
-            if exam_type_id:
-                query += " AND exam_type = %s"
-                params += (exam_type_id,)
-            
-            query += " ORDER BY exam_type"
-            
             exam_results = db_service.execute_query(query, params)
             return exam_results
+        except Exception as e:
+            raise e
+        finally:
+            db_service.close()
             
+    @staticmethod
+    def get_student_scores(student_id):
+        """
+        获取学生成绩列表
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            list: 学生成绩列表
+        """
+        try:
+            db_service = database_service.DatabaseService()
+            query = """
+                SELECT sc.score_id, sc.student_id, st.student_name, 
+                       sc.subject_id, sub.subject_name,
+                       sc.exam_type_id, et.exam_type_name, sc.score
+                FROM Scores sc
+                JOIN Students st ON sc.student_id = st.student_id
+                JOIN Subjects sub ON sc.subject_id = sub.subject_id
+                JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
+                WHERE sc.student_id = %s
+                ORDER BY sc.exam_type_id, sc.subject_id
+            """
+            params = [student_id]
+            
+            scores = db_service.execute_query(query, params)
+            return scores
         except Exception as e:
             raise e
         finally:

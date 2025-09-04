@@ -7,6 +7,7 @@ Curl测试基类
 import os
 import subprocess
 import json
+import shlex
 from config.config import TestingConfig
 
 
@@ -44,8 +45,16 @@ class CurlTestBase:
         # 记录curl命令
         self._record_curl_command(test_number, description, command)
         
+        # 使用shlex.join来正确处理命令参数中的引号
+        if '|' not in ' '.join(command):
+            # 如果命令中没有管道符，添加jq处理
+            full_command = shlex.join(command) + ' | jq'
+        else:
+            # 如果已经有管道符，直接使用原命令
+            full_command = shlex.join(command)
+        
         # 执行测试命令
-        result = subprocess.run(command, capture_output=True, text=True)
+        result = subprocess.run(full_command, shell=True, capture_output=True, text=True)
         
         # 保存结果
         output_path = os.path.join(test_setup['result_dir'], output_file)
@@ -53,14 +62,14 @@ class CurlTestBase:
             # 尝试解析为JSON
             json_data = json.loads(result.stdout)
             with open(output_path, 'w') as f:
-                json.dump(json_data, f, indent=2)
+                json.dump(json_data, f, indent=2, ensure_ascii=False)
                 
             # 检查返回的JSON中是否有error字段
             if 'error' in json_data and json_data['error']:
                 assert False, f"测试 {test_number} 失败: API返回错误 - {json_data['error']}"
         except json.JSONDecodeError:
             # 保存为文本
-            with open(output_path, 'w') as f:
+            with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(result.stdout)
         
         # 验证结果
@@ -81,6 +90,7 @@ class CurlTestBase:
         self._record_curl_command("登录", "管理员登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
         return result.returncode == 0
     
     def login_teacher(self, base_url, cookie_file):
@@ -97,6 +107,7 @@ class CurlTestBase:
         self._record_curl_command("登录", "教师登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
         return result.returncode == 0
     
     def login_student(self, base_url, cookie_file):
@@ -113,6 +124,7 @@ class CurlTestBase:
         self._record_curl_command("登录", "学生登录", cmd)
         
         result = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
         return result.returncode == 0
     
     def logout(self, base_url, cookie_file):

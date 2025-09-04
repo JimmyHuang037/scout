@@ -47,17 +47,22 @@ def create_score():
         # 获取请求数据
         data = request.get_json()
         student_id = data.get('student_id')
-        exam_id = data.get('exam_id')
+        subject_id = data.get('subject_id')
+        exam_type_id = data.get('exam_type_id')
         score = data.get('score')
+        
+        # 验证必填字段
+        if not all([student_id, subject_id, exam_type_id, score]):
+            return error_response('Missing required fields', 400)
         
         # 创建成绩服务实例
         score_service = ScoreService()
         
         # 创建成绩
-        new_score = score_service.create_score(student_id, exam_id, score, teacher_id)
+        new_score = score_service.create_score(student_id, subject_id, exam_type_id, score)
         if new_score:
-            current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}, exam {exam_id}")
-            return success_response(new_score, 201)
+            current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}")
+            return success_response({'message': 'Score created successfully'}, 201)
         else:
             current_app.logger.warning(f"Teacher {teacher_id} failed to create score (unauthorized or invalid data)")
             return error_response('Failed to create score', 400)
@@ -81,7 +86,7 @@ def update_score(score_id):
         score_service = ScoreService()
         
         # 更新成绩
-        updated_score = score_service.update_score(score_id, score, teacher_id)
+        updated_score = score_service.update_score(score_id, score)
         if updated_score:
             current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
             return success_response(updated_score)
@@ -104,7 +109,7 @@ def delete_score(score_id):
         score_service = ScoreService()
         
         # 删除成绩
-        result = score_service.delete_score(score_id, teacher_id)
+        result = score_service.delete_score(score_id)
         if result:
             current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
             return success_response({'message': 'Score deleted successfully'})

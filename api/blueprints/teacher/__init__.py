@@ -8,7 +8,7 @@ from .exam.exam_management import create_exam, get_exams, get_exam, update_exam,
 from .exam.exam_class_management import get_exam_classes
 from .exam.exam_results_management import get_exam_results
 from .exam.performance_management import get_teacher_performance
-from .students.student_management import get_teacher_students
+from .students.student_management import get_teacher_students, get_teacher_student, update_teacher_student
 from .scores.score_management import create_score, update_score, delete_score, get_scores, get_exam_scores
 
 # 注册路由
@@ -21,6 +21,8 @@ teacher_bp.add_url_rule('/exam-classes', view_func=get_exam_classes, methods=['G
 teacher_bp.add_url_rule('/exam-results', view_func=get_exam_results, methods=['GET'])
 teacher_bp.add_url_rule('/performance', view_func=get_teacher_performance, methods=['GET'])
 teacher_bp.add_url_rule('/students', view_func=get_teacher_students, methods=['GET'])
+teacher_bp.add_url_rule('/students/<string:student_id>', view_func=get_teacher_student, methods=['GET'])
+teacher_bp.add_url_rule('/students/<string:student_id>', view_func=update_teacher_student, methods=['PUT'])
 teacher_bp.add_url_rule('/scores', view_func=get_scores, methods=['GET'])
 teacher_bp.add_url_rule('/scores', view_func=create_score, methods=['POST'])
 teacher_bp.add_url_rule('/scores/<int:score_id>', view_func=update_score, methods=['PUT'])

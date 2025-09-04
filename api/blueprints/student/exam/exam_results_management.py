@@ -1,4 +1,4 @@
-from flask import Blueprint, request, current_app
+from flask import Blueprint, request, current_app, session
 from utils.auth import role_required
 from utils.helpers import success_response, error_response
 from services.score_service import ScoreService
@@ -10,7 +10,7 @@ student_exam_results_bp = Blueprint('student_exam_results_bp', __name__)
 def get_my_exam_results():
     try:
         # 获取当前学生ID
-        student_id = request.user['user_id']
+        student_id = session.get('user_id')
         
         # 获取学生考试结果
         results = ScoreService.get_student_exam_results(student_id)

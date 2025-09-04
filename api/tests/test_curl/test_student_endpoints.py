@@ -7,39 +7,56 @@
 import os
 import pytest
 from tests.test_curl.test_curl_base import CurlTestBase
+from config.config import TestingConfig
 
 
 class TestStudentEndpoints(CurlTestBase):
     """学生端点测试类"""
     
-    @pytest.fixture(autouse=True)
-    def setup_test(self, test_environment):
-        """自动使用的fixture，用于设置测试环境"""
-        # 设置测试环境配置
-        self.setup_test_environment(test_environment)
+    @classmethod
+    def setup_class(cls):
+        """测试类级别的设置"""
+        # 创建实例以访问方法
+        instance = cls()
         
-        # 设置curl命令记录文件
-        self.set_curl_commands_file(self.curl_commands_file)
+        cls.base_url = f"http://127.0.0.1:{TestingConfig.PORT}"
+        cls.cookie_file = "/tmp/test_cookie.txt"
+        cls.test_results_dir = TestingConfig.CURL_TEST_DIR
+        cls.curl_commands_file = os.path.join(cls.test_results_dir, "student_curl_commands.log")
         
+        # 确保测试结果目录存在
+        os.makedirs(cls.test_results_dir, exist_ok=True)
+        
+        # 清理之前的cookie文件
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
+            
         # 登录学生账户
-        assert self.login_student(self.base_url, self.cookie_file), "学生登录失败"
+        instance.set_curl_commands_file(cls.curl_commands_file)  # 设置命令记录文件
+        assert instance.login_student(cls.base_url, cls.cookie_file), "学生登录失败"
         
         # 保存环境变量供测试方法使用
-        self.test_setup = {
-            'api_base_url': self.base_url,
-            'result_dir': self.test_results_dir,
-            'cookie_file': self.cookie_file
+        cls.test_setup = {
+            'result_dir': cls.test_results_dir,
+            'base_url': cls.base_url,
+            'cookie_file': cls.cookie_file,
+            'curl_commands_file': cls.curl_commands_file
         }
-        
-        yield  # 测试执行完毕后继续执行下面的代码
+    
+    @classmethod
+    def teardown_class(cls):
+        """测试类级别的清理"""
+        # 创建实例以访问方法
+        instance = cls()
         
         # 测试结束后登出
-        self.logout(self.base_url, self.cookie_file)
-    
-    def teardown_method(self, request):
-        """每个测试方法执行后的清理工作"""
-        pass
-    
+        if cls.base_url and cls.cookie_file:
+            instance.logout(cls.base_url, cls.cookie_file)
+            
+        # 删除cookie文件
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
+
     def test_01_get_profile(self):
         """测试用例1: 学生获取个人信息"""
         self.run_api_test(
@@ -54,4 +71,12 @@ class TestStudentEndpoints(CurlTestBase):
             2, "学生获取个人成绩",
             ['curl', '-s', f'{self.base_url}/api/student/scores', '-b', self.cookie_file],
             "2_get_student_scores.json", self.test_setup
+        )
+    
+    def test_03_get_exam_results(self):
+        """测试用例3: 学生获取考试结果"""
+        self.run_api_test(
+            3, "学生获取考试结果",
+            ['curl', '-s', f'{self.base_url}/api/student/exam/results', '-b', self.cookie_file],
+            "3_get_student_exam_results.json", self.test_setup
         )

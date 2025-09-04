@@ -1,5 +1,5 @@
 """学生成绩管理模块"""
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, session
 from utils.auth import role_required
 from utils.helpers import success_response, error_response
 from services.score_service import ScoreService
@@ -11,7 +11,7 @@ student_scores_bp = Blueprint('student_scores_bp', __name__)
 def get_my_scores():
     try:
         # 获取当前学生ID
-        student_id = request.user['user_id']
+        student_id = session.get('user_id')
         
         # 获取学生成绩
         scores = ScoreService.get_student_scores(student_id)
