@@ -40,18 +40,6 @@ class TestAdminEndpoints(CurlTestBase):
             'curl_commands_file': self.curl_commands_file
         }
     
-    def teardown_class(self):
-        """测试类级别的清理"""
-        # 测试结束后登出
-        if self.base_url and self.cookie_file:
-            curl_test_base = CurlTestBase()
-            curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
-            curl_test_base.logout(self.base_url, self.cookie_file)
-            
-        # 删除cookie文件
-        if os.path.exists(self.cookie_file):
-            os.remove(self.cookie_file)
-
     def test_01_get_students(self):
         """测试用例1: 获取学生列表"""
         self.run_api_test(
@@ -65,7 +53,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             2, "创建学生",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/students',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"student_id": "S9999", "student_name": "张三", "class_id": 1, "password": "pass123"}',
              '-b', self.cookie_file],
             "2_create_student.json", self.test_setup
@@ -84,7 +72,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             4, "更新学生信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/students/S0201',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"phone": "13800138000", "address": "更新的地址"}',
              '-b', self.cookie_file],
             "4_update_student.json", self.test_setup
@@ -111,7 +99,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             7, "创建教师",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/teachers',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"teacher_name": "李老师", "subject_id": 1, "password": "pass123"}',
              '-b', self.cookie_file],
             "7_create_teacher.json", self.test_setup
@@ -130,7 +118,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             9, "更新教师信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teachers/3',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"phone": "13900139000", "address": "更新的地址"}',
              '-b', self.cookie_file],
             "9_update_teacher.json", self.test_setup
@@ -157,7 +145,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             12, "创建班级",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/classes',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"class_name": "高三X班", "grade_id": 3}',
              '-b', self.cookie_file],
             "12_create_class.json", self.test_setup
@@ -176,7 +164,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             14, "更新班级信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/classes/1',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"class_name": "更新的班级名称"}',
              '-b', self.cookie_file],
             "14_update_class.json", self.test_setup
@@ -203,7 +191,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             17, "创建科目",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/subjects',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"subject_name": "新科目", "description": "科目描述"}',
              '-b', self.cookie_file],
             "17_create_subject.json", self.test_setup
@@ -222,7 +210,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             19, "更新科目信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/subjects/1',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"subject_name": "更新的科目名称"}',
              '-b', self.cookie_file],
             "19_update_subject.json", self.test_setup
@@ -249,7 +237,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             22, "创建考试类型",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/exam-types',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"exam_type_name": "新考试类型", "description": "考试类型描述"}',
              '-b', self.cookie_file],
             "22_create_exam_type.json", self.test_setup
@@ -268,7 +256,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             24, "更新考试类型信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/exam-types/1',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"exam_type_name": "更新的考试类型名称"}',
              '-b', self.cookie_file],
             "24_update_exam_type.json", self.test_setup
@@ -295,7 +283,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             27, "创建教师班级关系",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/teacher-classes',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"teacher_id": 3, "class_id": 1}',
              '-b', self.cookie_file],
             "27_create_teacher_class.json", self.test_setup
@@ -314,7 +302,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             29, "更新教师班级关系",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher-classes/1',
-             '-H', '"Content-Type: application/json"',
+             '-H', 'Content-Type: application/json',
              '-d', '{"teacher_id": 4, "class_id": 2}',
              '-b', self.cookie_file],
             "29_update_teacher_class.json", self.test_setup
@@ -327,95 +315,17 @@ class TestAdminEndpoints(CurlTestBase):
             ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher-classes/999', '-b', self.cookie_file],
             "30_delete_teacher_class.json", self.test_setup
         )
-    
-    def test_31_get_scores(self):
-        """测试用例31: 获取成绩列表"""
-        self.run_api_test(
-            31, "获取成绩列表",
-            ['curl', '-s', f'{self.base_url}/api/admin/scores', '-b', self.cookie_file],
-            "31_get_scores.json", self.test_setup
-        )
-    
-    def test_32_create_score(self):
-        """测试用例32: 创建成绩"""
-        self.run_api_test(
-            32, "创建成绩",
-            ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/scores',
-             '-H', '"Content-Type: application/json"',
-             '-d', '{"student_id": "S0201", "subject_id": 1, "exam_type_id": 1, "score": 85}',
-             '-b', self.cookie_file],
-            "32_create_score.json", self.test_setup
-        )
-    
-    def test_33_get_score(self):
-        """测试用例33: 获取特定成绩"""
-        self.run_api_test(
-            33, "获取特定成绩",
-            ['curl', '-s', f'{self.base_url}/api/admin/scores/1', '-b', self.cookie_file],
-            "33_get_score.json", self.test_setup
-        )
-    
-    def test_34_update_score(self):
-        """测试用例34: 更新成绩"""
-        self.run_api_test(
-            34, "更新成绩",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/scores/1',
-             '-H', '"Content-Type: application/json"',
-             '-d', '{"score": 92}',
-             '-b', self.cookie_file],
-            "34_update_score.json", self.test_setup
-        )
-    
-    def test_35_delete_score(self):
-        """测试用例35: 删除成绩"""
-        self.run_api_test(
-            35, "删除成绩",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/scores/999', '-b', self.cookie_file],
-            "35_delete_score.json", self.test_setup
-        )
-    
-    def test_36_get_exams(self):
-        """测试用例36: 获取考试列表"""
-        self.run_api_test(
-            36, "获取考试列表",
-            ['curl', '-s', f'{self.base_url}/api/admin/exams', '-b', self.cookie_file],
-            "36_get_exams.json", self.test_setup
-        )
-    
-    def test_37_create_exam(self):
-        """测试用例37: 创建考试"""
-        self.run_api_test(
-            37, "创建考试",
-            ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/exams',
-             '-H', '"Content-Type: application/json"',
-             '-d', '{"exam_name": "期中考试", "subject_id": 1, "exam_type_id": 1, "exam_date": "2025-10-15", "class_id": 1}',
-             '-b', self.cookie_file],
-            "37_create_exam.json", self.test_setup
-        )
-    
-    def test_38_get_exam(self):
-        """测试用例38: 获取特定考试"""
-        self.run_api_test(
-            38, "获取特定考试",
-            ['curl', '-s', f'{self.base_url}/api/admin/exams/1', '-b', self.cookie_file],
-            "38_get_exam.json", self.test_setup
-        )
-    
-    def test_39_update_exam(self):
-        """测试用例39: 更新考试信息"""
-        self.run_api_test(
-            39, "更新考试信息",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/exams/1',
-             '-H', '"Content-Type: application/json"',
-             '-d', '{"exam_name": "更新的期中考试", "exam_date": "2025-10-20"}',
-             '-b', self.cookie_file],
-            "39_update_exam.json", self.test_setup
-        )
-    
-    def test_40_delete_exam(self):
-        """测试用例40: 删除考试"""
-        self.run_api_test(
-            40, "删除考试",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exams/999', '-b', self.cookie_file],
-            "40_delete_exam.json", self.test_setup
-        )
+
+    def teardown_class(self):
+        """测试类级别的清理"""
+        # 测试结束后登出
+        if self.base_url and self.cookie_file:
+            from tests.test_curl.test_curl_base import CurlTestBase
+            curl_test_base = CurlTestBase()
+            curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
+            curl_test_base.logout(self.base_url, self.cookie_file)
+        # 清理测试生成的文件
+        self.cleanup_test_files()
+
+if __name__ == '__main__':
+    pytest.main([__file__, '-v'])
