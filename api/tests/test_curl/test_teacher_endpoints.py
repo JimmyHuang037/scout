@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 教师端点测试
 使用 pytest 框架执行黑盒测试
 """
 
 import os
-import json
-import subprocess
-import pytest
+import sys
+
+# 将项目根目录添加到Python路径中
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_dir not in sys.path:
+    sys.path.insert(0, project_dir)
+
 from tests.test_curl.test_curl_base import CurlTestBase
 from config.config import TestingConfig
 
@@ -15,44 +20,63 @@ from config.config import TestingConfig
 class TestTeacherEndpoints(CurlTestBase):
     """教师端点测试类"""
     
-    def setup_class(self):
+    @classmethod
+    def setup_class(cls):
         """测试类级别的设置"""
-        self.base_url = f"http://127.0.0.1:{TestingConfig.PORT}"
-        self.cookie_file = "/tmp/test_cookie.txt"
-        self.test_results_dir = TestingConfig.CURL_TEST_DIR
-        self.curl_commands_file = os.path.join(self.test_results_dir, "teacher_curl_commands.log")
+        # 调用父类的setup_class
+        super().setup_class()
         
-        # 确保测试结果目录存在
-        os.makedirs(self.test_results_dir, exist_ok=True)
+        cls.cookie_file = "/tmp/test_cookie.txt"
+        cls.test_results_dir = TestingConfig.CURL_TEST_DIR
+        cls.curl_commands_file = os.path.join(cls.test_results_dir, "teacher_curl_commands.log")
         
         # 清理之前的cookie文件
-        if os.path.exists(self.cookie_file):
-            os.remove(self.cookie_file)
-            
-        # 登录教师账户
-        curl_test_base = CurlTestBase()
-        curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
-        assert curl_test_base.login_teacher(self.base_url, self.cookie_file), "教师登录失败"
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
         
-        # 保存环境变量供测试方法使用
-        self.test_setup = {
-            'result_dir': self.test_results_dir,
-            'base_url': self.base_url,
-            'cookie_file': self.cookie_file,
-            'curl_commands_file': self.curl_commands_file
+        # 登录教师账户
+        login_data = {
+            "user_id": "T001",
+            "password": "pass123"
+        }
+        import json
+        import subprocess
+        curl_cmd = [
+            "curl", "-s", "-X", "POST", f"{cls.base_url}/api/auth/login",
+            "-H", "Content-Type: application/json",
+            "-d", json.dumps(login_data),
+            "-c", cls.cookie_file
+        ]
+        
+        result = subprocess.run(curl_cmd, capture_output=True, text=True)
+        assert result.returncode == 0, f"教师登录失败: {result.stderr}"
+        
+        response_data = json.loads(result.stdout)
+        assert response_data.get("success"), f"教师登录失败: {response_data.get('message', 'Unknown error')}"
+
+        # 测试设置
+        cls.test_setup = {
+            'base_url': cls.base_url,
+            'cookie_file': cls.cookie_file,
+            'curl_commands_file': cls.curl_commands_file,
+            'result_dir': cls.test_results_dir
         }
     
-    def teardown_class(self):
+    @classmethod
+    def teardown_class(cls):
         """测试类级别的清理"""
-        # 测试结束后登出
-        if self.base_url and self.cookie_file:
-            curl_test_base = CurlTestBase()
-            curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
-            curl_test_base.logout(self.base_url, self.cookie_file)
-            
-        # 删除cookie文件
-        if os.path.exists(self.cookie_file):
-            os.remove(self.cookie_file)
+        # 登出
+        import subprocess
+        curl_cmd = [
+            "curl", "-s", "-X", "POST", f"{cls.base_url}/api/auth/logout",
+            "-b", cls.cookie_file
+        ]
+        
+        subprocess.run(curl_cmd, capture_output=True, text=True)
+        
+        # 清理cookie文件
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
 
     def test_01_get_exam_classes(self):
         """测试用例1: 教师获取任教班级列表"""
@@ -129,12 +153,28 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_09_get_exams(self):
-        """测试用例9: 教师获取考试列表"""
+    def test_08_get_classes(self):
+        """测试用例8: 获取班级列表"""
         self.run_api_test(
-            9, "教师获取考试列表",
+            8, "获取班级列表",
+            ['curl', '-s', f'{self.base_url}/api/teacher/classes', '-b', self.cookie_file],
+            "teacher_8_get_classes.json", self.test_setup
+        )
+    
+    def test_09_get_class_students(self):
+        """测试用例9: 获取班级学生列表"""
+        self.run_api_test(
+            9, "获取班级学生列表",
+            ['curl', '-s', f'{self.base_url}/api/teacher/classes/1/students', '-b', self.cookie_file],
+            "teacher_9_get_class_students.json", self.test_setup
+        )
+    
+    def test_10_get_exams(self):
+        """测试用例10: 教师获取考试列表"""
+        self.run_api_test(
+            10, "教师获取考试列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/exams', '-b', self.cookie_file],
-            "9_get_exams.json",
+            "teacher_10_get_exams.json",
             self.test_setup
         )
     
@@ -146,7 +186,7 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"name": "Midterm Exam", "subject_id": 1, "class_ids": [1], "exam_type_id": 1, "date": "2025-10-15", "total_score": 100}',
              '-b', self.cookie_file],
-            "10_create_exam.json",
+            "teacher_10_create_exam.json",
             self.test_setup
         )
     
@@ -155,7 +195,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             11, "教师获取特定考试",
             ['curl', '-s', f'{self.base_url}/api/teacher/exams/1', '-b', self.cookie_file],
-            "11_get_exam.json",
+            "teacher_11_get_exam.json",
             self.test_setup
         )
     
@@ -167,7 +207,7 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"exam_name": "Updated Midterm Exam", "exam_date": "2025-10-20"}',
              '-b', self.cookie_file],
-            "12_update_exam.json",
+            "teacher_12_update_exam.json",
             self.test_setup
         )
     
@@ -176,7 +216,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             13, "教师删除考试",
             ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/teacher/exams/1', '-b', self.cookie_file],
-            "13_delete_exam.json",
+            "teacher_13_delete_exam.json",
             self.test_setup
         )
     
@@ -185,7 +225,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             14, "教师获取考试结果",
             ['curl', '-s', f'{self.base_url}/api/teacher/exam-results', '-b', self.cookie_file],
-            "14_get_exam_results.json",
+            "teacher_14_get_exam_results.json",
             self.test_setup
         )
     
@@ -194,7 +234,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             15, "教师获取教学表现统计",
             ['curl', '-s', f'{self.base_url}/api/teacher/performance', '-b', self.cookie_file],
-            "15_get_performance_stats.json",
+            "teacher_15_get_performance_stats.json",
             self.test_setup
         )
     
@@ -203,7 +243,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             16, "教师获取学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/students', '-b', self.cookie_file],
-            "16_get_students.json",
+            "teacher_16_get_students.json",
             self.test_setup
         )
     
@@ -212,7 +252,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             17, "教师获取特定学生",
             ['curl', '-s', f'{self.base_url}/api/teacher/students/S0201', '-b', self.cookie_file],
-            "17_get_student.json",
+            "teacher_17_get_student.json",
             self.test_setup
         )
     
@@ -224,6 +264,24 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"student_name": "Updated Name"}',
              '-b', self.cookie_file],
-            "18_update_student.json",
+            "teacher_18_update_student.json",
+            self.test_setup
+        )
+    
+    def test_19_get_teachers(self):
+        """测试用例19: 教师获取教师列表"""
+        self.run_api_test(
+            19, "教师获取教师列表",
+            ['curl', '-s', f'{self.base_url}/api/teacher/teachers', '-b', self.cookie_file],
+            "teacher_19_get_teachers.json",
+            self.test_setup
+        )
+    
+    def test_20_get_teacher(self):
+        """测试用例20: 教师获取特定教师信息"""
+        self.run_api_test(
+            20, "教师获取特定教师信息",
+            ['curl', '-s', f'{self.base_url}/api/teacher/teachers/T001', '-b', self.cookie_file],
+            "teacher_20_get_teacher.json",
             self.test_setup
         )

@@ -22,19 +22,25 @@ def start_server(request):
     
     # 获取日志目录和文件路径
     logs_dir = TestingConfig.LOGS_DIR
-    api_log_file = os.path.join(os.path.dirname(TestingConfig.LOG_FILE_PATH), 'api.log')
+    api_log_file = os.path.join(logs_dir, 'api.log')
     
     # 确保日志目录存在
     os.makedirs(logs_dir, exist_ok=True)
-    
-    # 清空API日志文件
-    open(api_log_file, 'w').close()
     
     # 使用直接运行app.py的方式启动服务器，并将日志输出到api.log文件
     api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'app.py'))
     
     # 打开API日志文件用于追加写入
-    api_log_f = open(api_log_file, 'a')
+    try:
+        api_log_f = open(api_log_file, 'a')
+    except IOError as e:
+        pytest.fail(f"无法打开日志文件 {api_log_file}: {str(e)}")
+    
+    # 清空API日志文件
+    try:
+        open(api_log_file, 'w').close()
+    except IOError as e:
+        pytest.fail(f"无法清空日志文件 {api_log_file}: {str(e)}")
     
     # 启动进程并将stdout和stderr重定向到api.log
     process = subprocess.Popen([
@@ -94,10 +100,10 @@ def cookie_file():
 
 
 @pytest.fixture(scope="class")
-def test_environment(start_api_server, test_results_dir, curl_commands_file, cookie_file):
+def test_environment(start_server, test_results_dir, curl_commands_file, cookie_file):
     """提供完整的测试环境配置"""
     environment = {
-        'base_url': start_api_server,
+        'base_url': start_server,
         'test_results_dir': test_results_dir,
         'curl_commands_file': curl_commands_file,
         'cookie_file': cookie_file

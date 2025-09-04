@@ -7,6 +7,8 @@
 """
 
 import os
+import logging
+import sys
 from flask import Flask
 from flask_cors import CORS
 from flask_session import Session
@@ -17,6 +19,42 @@ from config.config import config
 from utils.database_service import DatabaseService
 
 
+def _setup_logging(app):
+    """设置应用日志配置"""
+    # 在测试环境中，将日志输出到标准输出，便于重定向捕获
+    if os.environ.get('FLASK_ENV') == 'testing':
+        # 配置日志输出到标准输出和标准错误
+        logging.basicConfig(
+            level=getattr(logging, app.config['LOG_LEVEL']),
+            format='%(asctime)s %(levelname)s %(name)s %(message)s',
+            stream=sys.stdout
+        )
+        
+        # 确保日志消息立即刷新
+        for handler in logging.root.handlers:
+            handler.stream.flush()
+    else:
+        # 非测试环境保持原有的日志配置
+        # 确保日志目录存在
+        if not os.path.exists(app.config['LOGS_DIR']):
+            os.makedirs(app.config['LOGS_DIR'])
+        
+        # 创建文件处理器
+        file_handler = logging.FileHandler(app.config['LOG_FILE_PATH'], encoding='utf-8')
+        file_handler.setLevel(getattr(logging, app.config['LOG_LEVEL']))
+        
+        # 创建格式化器并将其添加到处理器
+        formatter = logging.Formatter(
+            '%(asctime)s %(levelname)s %(name)s %(message)s'
+        )
+        file_handler.setFormatter(formatter)
+        
+        # 将处理器添加到应用日志记录器
+        app.logger.addHandler(file_handler)
+        app.logger.setLevel(getattr(logging, app.config['LOG_LEVEL']))
+    
+    # 记录应用启动日志
+    app.logger.info('Application started')
 
 
 def _setup_error_handlers(app):
@@ -60,6 +98,8 @@ def create_app(config_name=None):
     # 加载配置
     app.config.from_object(config[config_name])
     
+    # 设置日志
+    _setup_logging(app)
     
     # 初始化扩展
     _initialize_extensions(app)

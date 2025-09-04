@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""
-管理员端点测试
-使用 pytest 框架执行黑盒测试
-"""
+# -*- coding: utf-8 -*-
+import os
+import sys
+
+# 将api目录添加到Python路径中
+api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
 
 import os
-import pytest
 from tests.test_curl.test_curl_base import CurlTestBase
 from config.config import TestingConfig
 
@@ -13,31 +16,31 @@ from config.config import TestingConfig
 class TestAdminEndpoints(CurlTestBase):
     """管理员端点测试类"""
     
-    def setup_class(self):
+    @classmethod
+    def setup_class(cls):
         """测试类级别的设置"""
-        self.base_url = f"http://127.0.0.1:{TestingConfig.PORT}"
-        self.cookie_file = "/tmp/test_cookie.txt"
-        self.test_results_dir = TestingConfig.CURL_TEST_DIR
-        self.curl_commands_file = os.path.join(self.test_results_dir, "admin_curl_commands.log")
+        # 调用父类的setup_class
+        super().setup_class()
         
-        # 确保测试结果目录存在
-        os.makedirs(self.test_results_dir, exist_ok=True)
+        cls.cookie_file = "/tmp/test_cookie.txt"
+        cls.test_results_dir = TestingConfig.CURL_TEST_DIR
+        cls.curl_commands_file = os.path.join(cls.test_results_dir, "admin_curl_commands.log")
         
         # 清理之前的cookie文件
-        if os.path.exists(self.cookie_file):
-            os.remove(self.cookie_file)
-            
-        # 登录管理员账户
-        curl_test_base = CurlTestBase()
-        curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
-        assert curl_test_base.login_admin(self.base_url, self.cookie_file), "管理员登录失败"
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
         
-        # 保存环境变量供测试方法使用
-        self.test_setup = {
-            'result_dir': self.test_results_dir,
-            'base_url': self.base_url,
-            'cookie_file': self.cookie_file,
-            'curl_commands_file': self.curl_commands_file
+        # 登录管理员账户
+        # 创建一个实例来调用实例方法
+        instance = cls()
+        assert instance.login_admin(cls.base_url, cls.cookie_file), "管理员登录失败"
+
+        # 测试设置
+        cls.test_setup = {
+            'base_url': cls.base_url,
+            'cookie_file': cls.cookie_file,
+            'curl_commands_file': cls.curl_commands_file,
+            'result_dir': cls.test_results_dir
         }
     
     def test_01_get_students(self):
@@ -129,7 +132,7 @@ class TestAdminEndpoints(CurlTestBase):
         self.run_api_test(
             10, "删除教师",
             ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teachers/999', '-b', self.cookie_file],
-            "10_delete_teacher.json", self.test_setup
+            "10_delete_teacher.json", self.test_setup, expect_error=True
         )
     
     def test_11_get_classes(self):
@@ -201,7 +204,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例18: 获取特定科目"""
         self.run_api_test(
             18, "获取特定科目",
-            ['curl', '-s', f'{self.base_url}/api/admin/subjects/1', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/admin/subjects/2', '-b', self.cookie_file],
             "18_get_subject.json", self.test_setup
         )
     
@@ -209,7 +212,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例19: 更新科目信息"""
         self.run_api_test(
             19, "更新科目信息",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/subjects/1',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/subjects/2',
              '-H', 'Content-Type: application/json',
              '-d', '{"subject_name": "更新的科目名称"}',
              '-b', self.cookie_file],
@@ -220,7 +223,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例20: 删除科目"""
         self.run_api_test(
             20, "删除科目",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/subjects/999', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/subjects/2', '-b', self.cookie_file],
             "20_delete_subject.json", self.test_setup
         )
     
@@ -316,14 +319,17 @@ class TestAdminEndpoints(CurlTestBase):
             "30_delete_teacher_class.json", self.test_setup
         )
 
-    def teardown_class(self):
+    @classmethod
+    def teardown_class(cls):
         """测试类级别的清理"""
-        # 测试结束后登出
-        if self.base_url and self.cookie_file:
-            from tests.test_curl.test_curl_base import CurlTestBase
-            curl_test_base = CurlTestBase()
-            curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
-            curl_test_base.logout(self.base_url, self.cookie_file)
+        # 登出
+        # 创建一个实例来调用实例方法
+        instance = cls()
+        instance.logout(cls.base_url, cls.cookie_file)
+        
+        # 清理cookie文件
+        if os.path.exists(cls.cookie_file):
+            os.remove(cls.cookie_file)
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

@@ -123,44 +123,59 @@ class TeacherService:
         Returns:
             bool: 是否更新成功
         """
+        connection = None
         try:
-            # 先检查教师是否存在
-            check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
-            check_result = self.db_service.execute_query(check_query, (teacher_id,), fetch_one=True)
-            if not check_result or check_result['count'] == 0:
-                current_app.logger.warning(f"Teacher {teacher_id} does not exist")
-                return False
+            # 获取数据库连接并开始事务
+            connection = self.db_service.get_connection()
+            connection.autocommit(False)
             
-            # 构建动态更新语句
-            update_fields = []
-            params = []
-            
-            if 'teacher_name' in teacher_data:
-                update_fields.append("teacher_name = %s")
-                params.append(teacher_data['teacher_name'])
+            with connection.cursor() as cursor:
+                # 先检查教师是否存在
+                check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
+                cursor.execute(check_query, (teacher_id,))
+                check_result = cursor.fetchone()
                 
-            if 'subject_id' in teacher_data:
-                update_fields.append("subject_id = %s")
-                params.append(teacher_data['subject_id'])
+                if not check_result or check_result['count'] == 0:
+                    current_app.logger.warning(f"Teacher {teacher_id} does not exist")
+                    connection.rollback()
+                    return False
                 
-            if 'password' in teacher_data:
-                update_fields.append("password = %s")
-                params.append(teacher_data['password'])
-            
-            if not update_fields:
-                return False
+                # 构建动态更新语句
+                update_fields = []
+                params = []
                 
-            query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
-            params.append(teacher_id)
-            
-            affected_rows = self.db_service.execute_update(query, params)
-            return affected_rows > 0
+                if 'teacher_name' in teacher_data:
+                    update_fields.append("teacher_name = %s")
+                    params.append(teacher_data['teacher_name'])
+                    
+                if 'subject_id' in teacher_data:
+                    update_fields.append("subject_id = %s")
+                    params.append(teacher_data['subject_id'])
+                    
+                if 'password' in teacher_data:
+                    update_fields.append("password = %s")
+                    params.append(teacher_data['password'])
+                
+                if not update_fields:
+                    connection.rollback()
+                    return False
+                    
+                query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
+                params.append(teacher_id)
+                
+                affected_rows = cursor.execute(query, params)
+                connection.commit()
+                return affected_rows > 0
         except Exception as e:
+            if connection:
+                connection.rollback()
             if current_app:
                 current_app.logger.error(f"Failed to update teacher {teacher_id}: {str(e)}")
             raise e
         finally:
-            self.db_service.close()
+            if connection:
+                connection.autocommit(True)
+            # 不在这里关闭连接，让DatabaseService管理连接生命周期
     
     def delete_teacher(self, teacher_id):
         """

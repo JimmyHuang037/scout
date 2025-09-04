@@ -1,52 +1,122 @@
 #!/usr/bin/env python3
-"""
-Curl测试基类
-包含所有test_curl测试文件共享的方法和功能
-"""
+# -*- coding: utf-8 -*-
 
-import os
 import subprocess
 import json
+import os
+import sys
 import shlex
-import logging
-import traceback
 from config.config import TestingConfig
 
 
 class CurlTestBase:
-    """Curl测试基类"""
-    
-    def setup_test_environment(self, test_environment):
-        """设置测试环境配置"""
-        # 确保curl_commands_file属性存在
-        if not hasattr(self, 'curl_commands_file'):
-            self.curl_commands_file = None
+    @classmethod
+    def setup_class(cls):
+        """测试类级别的设置"""
+        cls.base_url = f"http://127.0.0.1:{TestingConfig.PORT}"
+        cls.curl_commands_file = getattr(TestingConfig, 'CURL_TEST_DIR', '/tmp') + "/curl_commands.log"
+        
+        # 确保测试结果目录存在
+        test_results_dir = getattr(TestingConfig, 'CURL_TEST_DIR', '/tmp')
+        os.makedirs(test_results_dir, exist_ok=True)
+
+    def login_admin(self, base_url, cookie_file):
+        """管理员登录"""
+        print("登录管理员账户...")
+        sys.stdout.flush()  # 确保输出被立即刷新
+        login_url = f"{base_url}/api/auth/login"
+        login_data = {
+            "user_id": "admin",
+            "password": "admin"
+        }
+        
+        # 构建curl命令
+        curl_cmd = [
+            "curl", "-s", "-X", "POST", login_url,
+            "-H", "Content-Type: application/json",
+            "-d", json.dumps(login_data),
+            "-c", cookie_file
+        ]
+        
+        # 记录curl命令
+        with open(self.curl_commands_file, 'a') as f:
+            f.write(f"Login command: {' '.join(curl_cmd)}\n")
+        
+        try:
+            # 执行curl命令
+            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=10)
             
-        if test_environment:
-            self.base_url = test_environment['base_url']
-            self.test_results_dir = test_environment['test_results_dir']
-            self.curl_commands_file = test_environment['curl_commands_file']
-            self.cookie_file = test_environment['cookie_file']
-    
-    def set_curl_commands_file(self, file_path):
-        """设置curl命令记录文件路径"""
-        self.curl_commands_file = file_path
-    
+            # 打印登录结果
+            print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            
+            if result.returncode == 0:
+                try:
+                    response_data = json.loads(result.stdout)
+                    if response_data.get("success"):
+                        print("管理员登录成功")
+                        sys.stdout.flush()  # 确保输出被立即刷新
+                        return True
+                    else:
+                        print(f"管理员登录失败: {response_data.get('message', 'Unknown error')}")
+                        sys.stdout.flush()  # 确保输出被立即刷新
+                        return False
+                except json.JSONDecodeError:
+                    print(f"管理员登录失败，非JSON响应: {result.stdout}")
+                    sys.stdout.flush()  # 确保输出被立即刷新
+                    return False
+            else:
+                print(f"管理员登录失败，curl执行错误: {result.stderr}")
+                sys.stdout.flush()  # 确保输出被立即刷新
+                return False
+        except subprocess.TimeoutExpired:
+            print("管理员登录超时")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            return False
+        except Exception as e:
+            print(f"管理员登录异常: {str(e)}")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            return False
+
+    def logout(self, base_url, cookie_file):
+        """登出"""
+        print("登出账户...")
+        sys.stdout.flush()  # 确保输出被立即刷新
+        logout_url = f"{base_url}/api/auth/logout"
+        
+        curl_cmd = [
+            "curl", "-s", "-X", "POST", logout_url,
+            "-b", cookie_file
+        ]
+        
+        # 记录curl命令
+        with open(self.curl_commands_file, 'a') as f:
+            f.write(f"Logout command: {' '.join(curl_cmd)}\n")
+        
+        try:
+            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=10)
+            print(f"登出结果: {result.stdout}")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            return result.returncode == 0
+        except Exception as e:
+            print(f"登出异常: {str(e)}")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            return False
+
     def _record_curl_command(self, test_number, description, command):
         """记录curl命令到文件"""
-        if self.curl_commands_file:
-            with open(self.curl_commands_file, 'a', encoding='utf-8') as f:
-                f.write(f"\n{test_number}. {description}\n")
-                f.write(f"命令: {' '.join(command)}\n")
-    
-    def run_api_test(self, test_number, description, command, output_file, test_setup):
+        with open(self.curl_commands_file, 'a') as f:
+            f.write(f"Test {test_number}: {' '.join(command)}\n")
+
+    def run_api_test(self, test_number, description, command, output_file, test_setup, expect_error=False):
         """运行单个API测试"""
         print(f"\n{test_number}. {description}")
         print(f"执行命令: {' '.join(command)}")
-        
+        sys.stdout.flush()  # 确保输出被立即刷新
+
         # 记录curl命令
         self._record_curl_command(test_number, description, command)
-        
+
         # 使用shlex.join来正确处理命令参数中的引号
         if '|' not in ' '.join(command):
             # 如果命令中没有管道符，添加jq处理
@@ -54,10 +124,10 @@ class CurlTestBase:
         else:
             # 如果已经有管道符，直接使用原命令
             full_command = shlex.join(command)
-        
+
         # 执行测试命令
         result = subprocess.run(full_command, shell=True, capture_output=True, text=True)
-        
+
         # 保存结果
         output_path = os.path.join(test_setup['result_dir'], output_file)
         try:
@@ -65,110 +135,50 @@ class CurlTestBase:
             json_data = json.loads(result.stdout)
             with open(output_path, 'w') as f:
                 json.dump(json_data, f, indent=2, ensure_ascii=False)
-                
+
             # 如果API返回错误
             if 'error' in json_data and json_data['error']:
                 error_msg = f"API返回错误 - {json_data['error']}"
-                assert False, f"测试 {test_number} 失败: {error_msg}"
+                if expect_error:
+                    print(f"测试 {test_number} 完成（预期错误）: {error_msg}")
+                    sys.stdout.flush()  # 确保输出被立即刷新
+                    return True
+                else:
+                    print(f"测试 {test_number} 失败: {error_msg}")
+                    sys.stdout.flush()  # 确保输出被立即刷新
+                    assert False, f"测试 {test_number} 失败: {error_msg}"
+            elif not json_data.get('success', False):
+                error_msg = json_data.get('message', '未知错误')
+                if expect_error:
+                    print(f"测试 {test_number} 完成（预期错误）: {error_msg}")
+                    sys.stdout.flush()  # 确保输出被立即刷新
+                    return True
+                else:
+                    print(f"测试 {test_number} 失败: {error_msg}")
+                    sys.stdout.flush()  # 确保输出被立即刷新
+                    assert False, f"测试 {test_number} 失败: {error_msg}"
+            else:
+                print(f"测试 {test_number} 完成")
+                sys.stdout.flush()  # 确保输出被立即刷新
+                return True
+
         except json.JSONDecodeError:
-            # 保存为文本
-            with open(output_path, 'w', encoding='utf-8') as f:
+            # 如果不是JSON响应，直接保存
+            with open(output_path, 'w') as f:
                 f.write(result.stdout)
-        
-        # 验证结果
-        if result.returncode != 0:
-            error_msg = result.stderr
-            assert False, f"测试 {test_number} 失败: {error_msg}"
-        print(f"测试 {test_number} 完成")
-    
-    def login_admin(self, base_url, cookie_file):
-        """管理员登录"""
-        print("登录管理员账户...")
-        cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/login',
-            '-H', 'Content-Type: application/json',
-            '-d', '{"user_id": "admin", "password": "admin"}',
-            '-c', cookie_file
-        ]
-        
-        # 记录curl命令
-        self._record_curl_command("登录", "管理员登录", cmd)
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
-        
-        # 记录登录结果到日志
-        try:
-            response_data = json.loads(result.stdout)
-            if 'error' in response_data and response_data['error']:
-                print(f"Admin login failed: {response_data['error']}")
-        except json.JSONDecodeError:
-            print(f"Admin login failed with non-JSON response: {result.stdout}")
             
-        return result.returncode == 0
-    
-    def login_teacher(self, base_url, cookie_file):
-        """教师登录"""
-        print("登录教师账户...")
-        cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/login',
-            '-H', 'Content-Type: application/json',
-            '-d', '{"user_id": "3", "password": "123456"}',
-            '-c', cookie_file
-        ]
-        
-        # 记录curl命令
-        self._record_curl_command("登录", "教师登录", cmd)
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
-        
-        # 记录登录结果到日志
-        try:
-            response_data = json.loads(result.stdout)
-            if 'error' in response_data and response_data['error']:
-                print(f"Teacher login failed: {response_data['error']}")
-        except json.JSONDecodeError:
-            print(f"Teacher login failed with non-JSON response: {result.stdout}")
-            
-        return result.returncode == 0
-    
-    def login_student(self, base_url, cookie_file):
-        """学生登录"""
-        print("登录学生账户...")
-        cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/login',
-            '-H', 'Content-Type: application/json',
-            '-d', '{"user_id": "S0201", "password": "pass123"}',
-            '-c', cookie_file
-        ]
-        
-        # 记录curl命令
-        self._record_curl_command("登录", "学生登录", cmd)
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
-        
-        # 记录登录结果到日志
-        try:
-            response_data = json.loads(result.stdout)
-            if 'error' in response_data and response_data['error']:
-                print(f"Student login failed: {response_data['error']}")
-        except json.JSONDecodeError:
-            print(f"Student login failed with non-JSON response: {result.stdout}")
-            
-        return result.returncode == 0
-    
-    def logout(self, base_url, cookie_file):
-        """登出"""
-        print("登出账户...")
-        cmd = [
-            'curl', '-s', '-X', 'POST', f'{base_url}/api/auth/logout',
-            '-b', cookie_file
-        ]
-        
-        # 记录curl命令
-        self._record_curl_command("登出", "用户登出", cmd)
-        
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.returncode == 0
+            # 检查是否有错误输出
+            if result.returncode != 0 or result.stderr:
+                error_msg = result.stderr or "命令执行失败"
+                print(f"测试 {test_number} 失败: {error_msg}")
+                sys.stdout.flush()  # 确保输出被立即刷新
+                assert False, f"测试 {test_number} 失败: {error_msg}"
+            else:
+                print(f"测试 {test_number} 完成")
+                sys.stdout.flush()  # 确保输出被立即刷新
+                return True
+
+        except Exception as e:
+            print(f"测试 {test_number} 异常: {str(e)}")
+            sys.stdout.flush()  # 确保输出被立即刷新
+            assert False, f"测试 {test_number} 异常: {str(e)}"

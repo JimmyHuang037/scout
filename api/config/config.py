@@ -28,6 +28,7 @@ def _get_logs_config(env):
     else:
         logs_dir = os.path.join(project_dir, 'logs')
     
+    # 在测试环境中仍然创建日志目录和文件，但app.log不会被使用
     log_file_path = os.path.join(logs_dir, 'app.log')
     session_dir = os.path.join(logs_dir, 'flask_session')  # 会话目录应该在logs_testing下
     
@@ -57,14 +58,15 @@ class Config:
     SQLALCHEMY_DATABASE_URI = _get_database_uri(
         MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DB
     )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # 应用配置
     PORT = 5000
     
+    # 日志级别配置
+    LOG_LEVEL = 'DEBUG'
+    
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('development')
-    LOG_LEVEL = 'DEBUG'
     LOG_FILE_MAX_BYTES = 1024 * 1024 * 10  # 10MB
     LOG_FILE_BACKUP_COUNT = 5
     SESSION_TYPE = 'filesystem'
@@ -79,9 +81,7 @@ class ProductionConfig(Config):
     """生产环境配置"""
     
     DEBUG = False
-    TESTING = False
-    SECRET_KEY = os.getenv('SECRET_KEY', 'prod-secret-key')
-    LOG_LEVEL = 'WARNING'
+    LOG_LEVEL = 'WARNING'  # 生产环境使用WARNING级别
     
     # 生产数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
@@ -91,8 +91,8 @@ class ProductionConfig(Config):
         Config.MYSQL_USER, Config.MYSQL_PASSWORD, Config.MYSQL_HOST, MYSQL_DB
     )
     
-    # 生产配置
-    PORT = 8000
+    # 生产环境端口
+    PORT = 5000
     
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('production')
@@ -107,7 +107,7 @@ class TestingConfig(Config):
     DEBUG = True
     TESTING = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'test-secret-key')
-    LOG_LEVEL = 'DEBUG'
+    LOG_LEVEL = 'DEBUG'  # 测试环境使用DEBUG级别
     
     # 测试数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
