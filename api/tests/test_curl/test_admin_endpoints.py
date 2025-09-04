@@ -238,7 +238,7 @@ class TestAdminEndpoints(CurlTestBase):
             22, "创建考试类型",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/exam-types',
              '-H', 'Content-Type: application/json',
-             '-d', '{"exam_type_name": "新考试类型", "description": "考试类型描述"}',
+             '-d', '{"exam_type_name": "新考试类型1", "description": "考试类型描述"}',
              '-b', self.cookie_file],
             "22_create_exam_type.json", self.test_setup
         )
@@ -284,7 +284,7 @@ class TestAdminEndpoints(CurlTestBase):
             27, "创建教师班级关系",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/teacher-classes',
              '-H', 'Content-Type: application/json',
-             '-d', '{"teacher_id": 3, "class_id": 1}',
+             '-d', '{"teacher_id": 4, "class_id": 2}',
              '-b', self.cookie_file],
             "27_create_teacher_class.json", self.test_setup
         )
@@ -312,7 +312,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例30: 删除教师班级关系"""
         self.run_api_test(
             30, "删除教师班级关系",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher-classes/999', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher-classes/4?class_id=2', '-b', self.cookie_file],
             "30_delete_teacher_class.json", self.test_setup
         )
 
@@ -324,8 +324,6 @@ class TestAdminEndpoints(CurlTestBase):
             curl_test_base = CurlTestBase()
             curl_test_base.curl_commands_file = self.curl_commands_file  # 直接设置属性
             curl_test_base.logout(self.base_url, self.cookie_file)
-        # 清理测试生成的文件
-        self.cleanup_test_files()
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])

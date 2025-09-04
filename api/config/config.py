@@ -64,7 +64,7 @@ class Config:
     
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('development')
-    LOG_LEVEL = 'INFO'
+    LOG_LEVEL = 'DEBUG'
     LOG_FILE_MAX_BYTES = 1024 * 1024 * 10  # 10MB
     LOG_FILE_BACKUP_COUNT = 5
     SESSION_TYPE = 'filesystem'
@@ -107,7 +107,7 @@ class TestingConfig(Config):
     DEBUG = True
     TESTING = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'test-secret-key')
-    LOG_LEVEL = 'INFO'
+    LOG_LEVEL = 'DEBUG'
     
     # 测试数据库
     MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')

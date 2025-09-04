@@ -13,9 +13,27 @@ import signal
 from pathlib import Path
 from urllib import request
 from urllib.error import URLError
+from datetime import datetime
 
 # 将项目根目录添加到Python路径中
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_environment():
+    """在测试会话开始前自动设置测试环境"""
+    # 设置FLASK_ENV为testing，确保使用测试配置
+    os.environ['FLASK_ENV'] = 'testing'
+    print("测试环境已设置: FLASK_ENV=testing")
+    
+    # 清空测试日志文件
+    logs_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'logs_testing')
+    os.makedirs(logs_dir, exist_ok=True)
+    log_file = os.path.join(logs_dir, 'app.log')
+    
+    # 清空日志文件
+    with open(log_file, 'w') as f:
+        f.write(f"=== TEST SESSION STARTED AT {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ===\n")
 
 
 def restore_test_database():

@@ -1,14 +1,6 @@
-"""科目服务模块"""
-from utils.database_service import DatabaseService
-try:
-    from flask import current_app
-except ImportError:
-    current_app = None
-# 移除不存在的模块导入
-
-# 初始化日志器
-# logging.basicConfig(level=logging.INFO)
-# logger = logging.getLogger(__name__)
+"""科目服务模块，处理与科目相关的业务逻辑"""
+from flask import current_app
+from utils import database_service
 
 
 class SubjectService:
@@ -16,7 +8,7 @@ class SubjectService:
 
     def __init__(self):
         """初始化科目服务"""
-        self.db_service = DatabaseService()
+        self.db_service = database_service.DatabaseService()
 
     def get_all_subjects(self, page=1, per_page=10):
         """
@@ -76,7 +68,10 @@ class SubjectService:
         """
         try:
             query = "SELECT subject_id, subject_name FROM Subjects WHERE subject_id = %s"
-            return self.db_service.execute_query(query, (subject_id,), fetch_one=True)
+            result = self.db_service.execute_query(query, (subject_id,), fetch_one=True)
+            if not result:
+                current_app.logger.warning(f"Subject {subject_id} does not exist")
+            return result
         except Exception as e:
             current_app.logger.error(f"Failed to get subject by id {subject_id}: {str(e)}")
             raise e
@@ -116,6 +111,13 @@ class SubjectService:
             bool: 是否更新成功
         """
         try:
+            # 先检查科目是否存在
+            check_query = "SELECT COUNT(*) as count FROM Subjects WHERE subject_id = %s"
+            check_result = self.db_service.execute_query(check_query, (subject_id,), fetch_one=True)
+            if not check_result or check_result['count'] == 0:
+                current_app.logger.warning(f"Subject {subject_id} does not exist")
+                return False
+            
             query = "UPDATE Subjects SET subject_name = %s WHERE subject_id = %s"
             params = (subject_data.get('subject_name'), subject_id)
             self.db_service.execute_update(query, params)
@@ -137,6 +139,13 @@ class SubjectService:
             bool: 是否删除成功
         """
         try:
+            # 先检查科目是否存在
+            check_query = "SELECT COUNT(*) as count FROM Subjects WHERE subject_id = %s"
+            check_result = self.db_service.execute_query(check_query, (subject_id,), fetch_one=True)
+            if not check_result or check_result['count'] == 0:
+                current_app.logger.warning(f"Subject {subject_id} does not exist")
+                return False
+            
             # 开始事务
             self.db_service.start_transaction()
             
@@ -146,11 +155,11 @@ class SubjectService:
             
             # 删除科目
             delete_subject_query = "DELETE FROM Subjects WHERE subject_id = %s"
-            self.db_service.execute_update(delete_subject_query, (subject_id,))
+            affected_rows = self.db_service.execute_update(delete_subject_query, (subject_id,))
             
             # 提交事务
             self.db_service.commit()
-            return True
+            return affected_rows > 0
         except Exception as e:
             current_app.logger.error(f"Failed to delete subject {subject_id}: {str(e)}")
             # 回滚事务

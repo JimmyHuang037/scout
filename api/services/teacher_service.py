@@ -1,9 +1,8 @@
-"""教师服务模块"""
+"""教师服务类"""
+
+import logging
+from flask import current_app
 from utils.database_service import DatabaseService
-try:
-    from flask import current_app
-except ImportError:
-    current_app = None
 
 
 class TeacherService:
@@ -125,6 +124,13 @@ class TeacherService:
             bool: 是否更新成功
         """
         try:
+            # 先检查教师是否存在
+            check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
+            check_result = self.db_service.execute_query(check_query, (teacher_id,), fetch_one=True)
+            if not check_result or check_result['count'] == 0:
+                current_app.logger.warning(f"Teacher {teacher_id} does not exist")
+                return False
+            
             # 构建动态更新语句
             update_fields = []
             params = []
@@ -147,8 +153,8 @@ class TeacherService:
             query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
             params.append(teacher_id)
             
-            self.db_service.execute_update(query, params)
-            return True
+            affected_rows = self.db_service.execute_update(query, params)
+            return affected_rows > 0
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to update teacher {teacher_id}: {str(e)}")
@@ -167,6 +173,13 @@ class TeacherService:
             bool: 是否删除成功
         """
         try:
+            # 先检查教师是否存在
+            check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
+            check_result = self.db_service.execute_query(check_query, (teacher_id,), fetch_one=True)
+            if not check_result or check_result['count'] == 0:
+                current_app.logger.warning(f"Teacher {teacher_id} does not exist")
+                return False
+            
             query = "DELETE FROM Teachers WHERE teacher_id = %s"
             affected_rows = self.db_service.execute_update(query, (teacher_id,))
             return affected_rows > 0

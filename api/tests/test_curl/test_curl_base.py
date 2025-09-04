@@ -8,6 +8,8 @@ import os
 import subprocess
 import json
 import shlex
+import logging
+import traceback
 from config.config import TestingConfig
 
 
@@ -64,16 +66,19 @@ class CurlTestBase:
             with open(output_path, 'w') as f:
                 json.dump(json_data, f, indent=2, ensure_ascii=False)
                 
-            # 检查返回的JSON中是否有error字段
+            # 如果API返回错误
             if 'error' in json_data and json_data['error']:
-                assert False, f"测试 {test_number} 失败: API返回错误 - {json_data['error']}"
+                error_msg = f"API返回错误 - {json_data['error']}"
+                assert False, f"测试 {test_number} 失败: {error_msg}"
         except json.JSONDecodeError:
             # 保存为文本
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(result.stdout)
         
         # 验证结果
-        assert result.returncode == 0, f"测试 {test_number} 失败: {result.stderr}"
+        if result.returncode != 0:
+            error_msg = result.stderr
+            assert False, f"测试 {test_number} 失败: {error_msg}"
         print(f"测试 {test_number} 完成")
     
     def login_admin(self, base_url, cookie_file):
@@ -91,6 +96,15 @@ class CurlTestBase:
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
+        
+        # 记录登录结果到日志
+        try:
+            response_data = json.loads(result.stdout)
+            if 'error' in response_data and response_data['error']:
+                print(f"Admin login failed: {response_data['error']}")
+        except json.JSONDecodeError:
+            print(f"Admin login failed with non-JSON response: {result.stdout}")
+            
         return result.returncode == 0
     
     def login_teacher(self, base_url, cookie_file):
@@ -108,6 +122,15 @@ class CurlTestBase:
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
+        
+        # 记录登录结果到日志
+        try:
+            response_data = json.loads(result.stdout)
+            if 'error' in response_data and response_data['error']:
+                print(f"Teacher login failed: {response_data['error']}")
+        except json.JSONDecodeError:
+            print(f"Teacher login failed with non-JSON response: {result.stdout}")
+            
         return result.returncode == 0
     
     def login_student(self, base_url, cookie_file):
@@ -125,6 +148,15 @@ class CurlTestBase:
         
         result = subprocess.run(cmd, capture_output=True, text=True)
         print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
+        
+        # 记录登录结果到日志
+        try:
+            response_data = json.loads(result.stdout)
+            if 'error' in response_data and response_data['error']:
+                print(f"Student login failed: {response_data['error']}")
+        except json.JSONDecodeError:
+            print(f"Student login failed with non-JSON response: {result.stdout}")
+            
         return result.returncode == 0
     
     def logout(self, base_url, cookie_file):

@@ -17,4 +17,5 @@ if __name__ == '__main__':
     
     # 创建并运行应用
     app = create_app(config_name)
-    app.run(debug=True, host='0.0.0.0', port=app.config['PORT'])
+    port = app.config.get('PORT', 5000)  # 默认端口5000，测试环境使用5010
+    app.run(debug=True, host='0.0.0.0', port=port)

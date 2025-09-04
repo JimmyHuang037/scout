@@ -1,6 +1,8 @@
-"""学生服务模块"""
-from utils.database_service import DatabaseService
+"""学生服务类"""
+
+import logging
 from flask import current_app
+from utils.database_service import DatabaseService
 
 
 class StudentService:
@@ -106,6 +108,62 @@ class StudentService:
         finally:
             self.db_service.close()
             
+    def get_all_students(self, page=1, per_page=1000):
+        """
+        获取所有学生列表（供管理员使用）
+        
+        Args:
+            page (int): 页码
+            per_page (int): 每页数量
+            
+        Returns:
+            dict: 学生列表和分页信息
+        """
+        try:
+            # 计算偏移量
+            offset = (page - 1) * per_page
+            
+            # 构建查询语句
+            base_query = """
+                SELECT s.student_id, s.student_name, s.class_id, c.class_name
+                FROM Students s
+                LEFT JOIN Classes c ON s.class_id = c.class_id
+                ORDER BY s.student_id
+                LIMIT %s OFFSET %s
+            """
+            
+            count_query = """
+                SELECT COUNT(*) as total
+                FROM Students
+            """
+            
+            # 获取总数
+            total_result = self.db_service.execute_query(count_query, fetch_one=True)
+            total = total_result['total'] if total_result else 0
+            
+            # 执行查询
+            students = self.db_service.execute_query(base_query, (per_page, offset))
+            current_app.logger.info(f"Retrieved {len(students)} students")
+            
+            # 计算总页数
+            pages = (total + per_page - 1) // per_page
+            
+            return {
+                'students': students,
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': total,
+                    'pages': pages
+                }
+            }
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get all students: {str(e)}")
+            raise
+        finally:
+            self.db_service.close()
+    
     def update_student_name(self, student_id, student_name):
         """
         更新学生姓名
@@ -126,5 +184,202 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to update student name for {student_id}: {str(e)}")
             return False
+        finally:
+            self.db_service.close()
+
+    def create_student(self, student_data):
+        """
+        创建学生
+        
+        Args:
+            student_data (dict): 学生信息字典，包含student_id, student_name, class_id, password
+            
+        Returns:
+            dict: 创建的学生信息
+        """
+        try:
+            # 先插入学生信息到Students表
+            student_query = """
+                INSERT INTO Students (student_id, student_name, class_id)
+                VALUES (%s, %s, %s)
+            """
+            student_params = (
+                student_data['student_id'],
+                student_data['student_name'],
+                student_data['class_id']
+            )
+            
+            self.db_service.execute_update(student_query, student_params)
+            
+            # 插入用户信息到Users表
+            user_query = """
+                INSERT INTO Users (user_id, user_name, password, role)
+                VALUES (%s, %s, %s, %s)
+            """
+            user_params = (
+                student_data['student_id'],
+                student_data['student_name'],
+                student_data['password'],
+                'student'
+            )
+            
+            self.db_service.execute_update(user_query, user_params)
+            
+            current_app.logger.info(f"Student {student_data['student_id']} created successfully")
+            return {"student_id": student_data['student_id']}
+            
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to create student: {str(e)}")
+            raise
+        finally:
+            self.db_service.close()
+
+    def update_student(self, student_id, update_data):
+        """
+        更新学生信息
+        
+        Args:
+            student_id (str): 学生ID
+            update_data (dict): 要更新的学生信息
+            
+        Returns:
+            bool: 更新是否成功
+        """
+        try:
+            # 构建动态更新语句
+            set_clauses = []
+            params = []
+            
+            for key, value in update_data.items():
+                # 只允许更新特定字段
+                if key in ['student_name', 'class_id', 'phone', 'address']:
+                    set_clauses.append(f"{key} = %s")
+                    params.append(value)
+            
+            if not set_clauses:
+                return False
+            
+            query = f"UPDATE Students SET {', '.join(set_clauses)} WHERE student_id = %s"
+            params.append(student_id)
+            
+            result = self.db_service.execute_update(query, params)
+            return result > 0
+            
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to update student {student_id}: {str(e)}")
+            return False
+        finally:
+            self.db_service.close()
+
+    def delete_student(self, student_id):
+        """
+        删除学生
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            bool: 删除是否成功
+        """
+        try:
+            # 先从Users表中删除
+            user_query = "DELETE FROM Users WHERE user_id = %s AND role = 'student'"
+            user_result = self.db_service.execute_update(user_query, (student_id,))
+            
+            # 再从Students表中删除
+            student_query = "DELETE FROM Students WHERE student_id = %s"
+            student_result = self.db_service.execute_update(student_query, (student_id,))
+            
+            # 两个操作都需要成功才算删除成功
+            return user_result > 0 and student_result > 0
+            
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to delete student {student_id}: {str(e)}")
+            return False
+        finally:
+            self.db_service.close()
+
+    def get_student_scores(self, student_id):
+        """
+        获取学生的所有成绩
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            list: 学生成绩列表
+        """
+        try:
+            query = """
+                SELECT 
+                    s.score_id,
+                    s.student_id,
+                    s.subject_id,
+                    sub.subject_name,
+                    s.exam_id,
+                    e.exam_name,
+                    s.score,
+                    s.exam_date
+                FROM Scores s
+                JOIN Subjects sub ON s.subject_id = sub.subject_id
+                JOIN Exams e ON s.exam_id = e.exam_id
+                WHERE s.student_id = %s
+                ORDER BY s.exam_date DESC, sub.subject_name
+            """
+            result = self.db_service.execute_query(query, (student_id,))
+            return result
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get student scores for {student_id}: {str(e)}")
+            raise
+        finally:
+            self.db_service.close()
+
+    def get_student_exam_results(self, student_id, exam_id=None):
+        """
+        获取学生考试结果
+        
+        Args:
+            student_id (str): 学生ID
+            exam_id (int, optional): 考试ID
+            
+        Returns:
+            list: 学生考试结果列表
+        """
+        try:
+            query = """
+                SELECT 
+                    s.student_id,
+                    st.student_name,
+                    e.exam_id,
+                    e.exam_name,
+                    e.exam_date,
+                    sub.subject_id,
+                    sub.subject_name,
+                    s.score,
+                    e.total_score
+                FROM Scores s
+                JOIN Students st ON s.student_id = st.student_id
+                JOIN Exams e ON s.exam_id = e.exam_id
+                JOIN Subjects sub ON s.subject_id = sub.subject_id
+                WHERE s.student_id = %s
+            """
+            params = [student_id]
+            
+            if exam_id:
+                query += " AND s.exam_id = %s"
+                params.append(exam_id)
+                
+            query += " ORDER BY e.exam_date DESC, sub.subject_name"
+            
+            result = self.db_service.execute_query(query, params)
+            return result
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get student exam results for {student_id}: {str(e)}")
+            raise
         finally:
             self.db_service.close()

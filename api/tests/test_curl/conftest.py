@@ -1,75 +1,67 @@
 #!/usr/bin/env python3
 """
-测试配置文件
+test_curl测试模块的配置文件
+包含该模块共享的fixture和配置
 """
 
+import pytest
+import subprocess
 import os
 import sys
 import time
 import signal
-import subprocess
-import pytest
 from config.config import TestingConfig
 
 
-@pytest.fixture(scope="session")
-def start_api_server():
-    """启动和关闭API服务器"""
-    config = TestingConfig()
-    base_url = f'http://127.0.0.1:{config.PORT}'  # 使用127.0.0.1而不是localhost
+@pytest.fixture(scope="session", autouse=True)
+def start_server(request):
+    """在测试会话开始前启动服务器"""
+    # 设置环境变量
     env = os.environ.copy()
-    env.update({'FLASK_ENV': 'testing'})
+    env['FLASK_ENV'] = 'testing'
     
-    # 使用直接运行app.py的方式启动服务器
+    # 获取日志目录和文件路径
+    logs_dir = TestingConfig.LOGS_DIR
+    api_log_file = os.path.join(os.path.dirname(TestingConfig.LOG_FILE_PATH), 'api.log')
+    
+    # 确保日志目录存在
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # 清空API日志文件
+    open(api_log_file, 'w').close()
+    
+    # 使用直接运行app.py的方式启动服务器，并将日志输出到api.log文件
     api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'app.py'))
+    
+    # 打开API日志文件用于追加写入
+    api_log_f = open(api_log_file, 'a')
+    
+    # 启动进程并将stdout和stderr重定向到api.log
     process = subprocess.Popen([
         sys.executable, api_path
-    ], env=env, preexec_fn=os.setsid)
+    ], env=env, preexec_fn=os.setsid, stdout=api_log_f, stderr=api_log_f)
     
-    # 打印进程信息用于调试
-    print(f"启动API服务器进程 PID: {process.pid}")
+    # 等待服务器启动
+    time.sleep(3)
     
-    import requests
-    start_time = time.time()
-    
-    # 等待服务器启动，最多等待60秒
-    while time.time() - start_time < 60:
+    # 注册测试会话结束时的清理函数
+    def cleanup():
         try:
-            response = requests.get(f'{base_url}/api/health', timeout=5)
-            if response.status_code == 200:
-                print(f"API服务器启动成功，URL: {base_url}")
-                yield base_url
-                break
-        except requests.RequestException as e:
-            print(f"等待服务器启动... 错误: {e}")
-            time.sleep(1)
-    else:
-        # 服务器启动超时，终止进程并输出错误信息
-        print("服务器启动超时，正在终止进程...")
-        _terminate_server(process)
-        # 输出进程的stdout和stderr用于调试
-        try:
-            stdout, stderr = process.communicate(timeout=5)
-            print(f"服务器stdout: {stdout.decode()}")
-            print(f"服务器stderr: {stderr.decode()}")
-        except subprocess.TimeoutExpired:
-            print("无法获取服务器输出")
-        pytest.fail("服务器启动超时")
-    
-    # 测试完成后终止服务器
-    print("测试完成，正在关闭服务器...")
-    _terminate_server(process)
-
-
-def _terminate_server(process):
-    """终止服务器进程"""
-    if process and process.poll() is None:
-        try:
+            # 终止进程组
             os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            process.terminate()
             process.wait(timeout=5)
-        except (subprocess.TimeoutExpired, ProcessLookupError):
-            os.killpg(os.getpgid(process.pid), signal.SIGKILL)
-            process.wait()
+        except Exception as e:
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except:
+                pass
+        finally:
+            api_log_f.close()
+    
+    request.addfinalizer(cleanup)
+    
+    return process
 
 
 @pytest.fixture(scope="session")
