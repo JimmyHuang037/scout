@@ -436,10 +436,13 @@ class ScoreService:
         try:
             db_service = database_service.DatabaseService()
             query = """
-                SELECT sc.score_id, sc.student_id, sc.student_name, 
-                       sc.subject_id, sc.subject_name,
-                       sc.exam_type_id, sc.exam_type_name, sc.score
+                SELECT sc.score_id, sc.student_id, st.student_name, 
+                       sc.subject_id, su.subject_name,
+                       sc.exam_type_id, et.exam_type_name, sc.score
                 FROM Scores sc
+                JOIN Students st ON sc.student_id = st.student_id
+                JOIN Subjects su ON sc.subject_id = su.subject_id
+                JOIN ExamTypes et ON sc.exam_type_id = et.exam_type_id
                 WHERE sc.student_id = %s
                 ORDER BY sc.exam_type_id, sc.subject_id
             """

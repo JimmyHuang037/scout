@@ -36,8 +36,8 @@ class TestTeacherEndpoints(CurlTestBase):
         
         # 登录教师账户
         login_data = {
-            "user_id": "1",
-            "password": "test123"
+            "user_id": "2",
+            "password": "123456"
         }
         import json
         import subprocess
@@ -281,7 +281,7 @@ class TestTeacherEndpoints(CurlTestBase):
         """测试用例20: 教师获取特定教师信息"""
         self.run_api_test(
             20, "教师获取特定教师信息",
-            ['curl', '-s', f'{self.base_url}/api/teacher/teachers/T001', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/teacher/teachers/1', '-b', self.cookie_file],
             "teacher_20_get_teacher.json",
             self.test_setup
         )

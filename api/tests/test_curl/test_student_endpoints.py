@@ -32,7 +32,7 @@ class TestStudentEndpoints(CurlTestBase):
         
         # 登录学生账户
         login_data = {
-            "user_id": "S0001",
+            "user_id": "S0101",
             "password": "pass123"
         }
         import json
@@ -78,6 +78,6 @@ class TestStudentEndpoints(CurlTestBase):
         """测试用例1: 获取成绩列表"""
         self.run_api_test(
             1, "获取成绩列表",
-            ['curl', '-s', f'{self.base_url}/api/student/grades', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/student/scores', '-b', self.cookie_file],
             "student_1_get_grades.json", self.test_setup
         )

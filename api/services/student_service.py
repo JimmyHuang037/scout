@@ -242,7 +242,7 @@ class StudentService:
             
             for key, value in update_data.items():
                 # 只允许更新特定字段
-                if key in ['student_name', 'class_id', 'phone', 'address']:
+                if key in ['student_name', 'class_id']:
                     set_clauses.append(f"{key} = %s")
                     params.append(value)
             
@@ -273,10 +273,28 @@ class StudentService:
             bool: 删除是否成功
         """
         try:
-            # Note: users is a view, not a table, so we don't delete from it directly
-            # Only delete from the students table
+            # 首先检查学生是否存在
+            check_query = "SELECT student_id FROM Students WHERE student_id = %s"
+            student_exists = self.db_service.execute_query(check_query, (student_id,), fetch_one=True)
+            
+            if not student_exists:
+                if current_app:
+                    current_app.logger.warning(f"Student {student_id} not found for deletion")
+                return False
+            
+            # 首先删除学生的成绩记录（由于外键约束）
+            scores_query = "DELETE FROM Scores WHERE student_id = %s"
+            scores_result = self.db_service.execute_update(scores_query, (student_id,))
+            
+            if current_app:
+                current_app.logger.info(f"Deleted {scores_result} score records for student {student_id}")
+            
+            # 然后删除学生记录
             student_query = "DELETE FROM Students WHERE student_id = %s"
             student_result = self.db_service.execute_update(student_query, (student_id,))
+            
+            if current_app:
+                current_app.logger.info(f"Delete student {student_id} result: {student_result}")
             
             return student_result > 0
             

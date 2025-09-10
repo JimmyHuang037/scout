@@ -76,7 +76,7 @@ class TestAdminEndpoints(CurlTestBase):
             4, "更新学生信息",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/students/S0201',
              '-H', 'Content-Type: application/json',
-             '-d', '{"phone": "13800138000", "address": "更新的地址"}',
+             '-d', '{"student_name": "更新的学生姓名"}',
              '-b', self.cookie_file],
             "4_update_student.json", self.test_setup
         )
@@ -85,7 +85,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例5: 删除学生"""
         self.run_api_test(
             5, "删除学生",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/students/S0101', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/students/S0201', '-b', self.cookie_file],
             "5_delete_student.json", self.test_setup
         )
     
@@ -280,7 +280,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例23: 获取特定考试类型"""
         self.run_api_test(
             23, "获取特定考试类型",
-            ['curl', '-s', f'{self.base_url}/api/admin/exam-types/1', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/admin/exam-types/2', '-b', self.cookie_file],
             "23_get_exam_type.json", self.test_setup
         )
     
@@ -288,7 +288,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例24: 更新考试类型信息"""
         self.run_api_test(
             24, "更新考试类型信息",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/exam-types/1',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/exam-types/2',
              '-H', 'Content-Type: application/json',
              '-d', '{"exam_type_name": "更新的考试类型名称"}',
              '-b', self.cookie_file],
@@ -299,7 +299,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例25: 删除考试类型"""
         self.run_api_test(
             25, "删除考试类型",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam-types/1', '-b', self.cookie_file],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam-types/2', '-b', self.cookie_file],
             "25_delete_exam_type.json", self.test_setup
         )
     
