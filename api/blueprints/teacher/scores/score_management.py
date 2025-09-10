@@ -55,20 +55,23 @@ def create_score():
         if not all([student_id, subject_id, exam_type_id, score]):
             return error_response('Missing required fields', 400)
         
+        # 记录请求参数
+        current_app.logger.info(f"Creating score with params: student_id={student_id}, subject_id={subject_id}, exam_type_id={exam_type_id}, score={score}, teacher_id={teacher_id}")
+        
         # 创建成绩服务实例
         score_service = ScoreService()
         
-        # 创建成绩
-        new_score = score_service.create_score(student_id, subject_id, exam_type_id, score)
+        # 创建成绩（包含权限验证）
+        new_score = score_service.create_score(student_id, subject_id, exam_type_id, score, teacher_id)
         if new_score:
             current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}")
             return success_response({'message': 'Score created successfully'}, 201)
         else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to create score (unauthorized or invalid data)")
+            current_app.logger.warning(f"Teacher {teacher_id} failed to create score for student {student_id} (unauthorized or invalid data)")
             return error_response('Failed to create score', 400)
     except Exception as e:
         current_app.logger.error(f'Failed to create score: {str(e)}')
-        return error_response('Failed to create score', 500)
+        return error_response(f'Failed to create score: {str(e)}', 500)
 
 
 @teacher_scores_bp.route('/scores/<int:score_id>', methods=['PUT'])

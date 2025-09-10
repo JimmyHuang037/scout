@@ -3,18 +3,7 @@
 数据库服务模块"""
 import pymysql
 from flask import current_app
-from config.config import Config
 import os
-
-# 数据库连接配置
-db_config = {
-    'host': Config.MYSQL_HOST,
-    'user': Config.MYSQL_USER,
-    'password': Config.MYSQL_PASSWORD,
-    'database': Config.MYSQL_DB,
-    'charset': 'utf8mb4',
-    'cursorclass': pymysql.cursors.DictCursor
-}
 
 def get_db_connection():
     """
@@ -24,6 +13,17 @@ def get_db_connection():
         pymysql.Connection: 数据库连接对象
     """
     try:
+        # 从当前应用配置中获取数据库信息
+        config = current_app.config
+        db_config = {
+            'host': config['MYSQL_HOST'],
+            'user': config['MYSQL_USER'],
+            'password': config['MYSQL_PASSWORD'],
+            'database': config['MYSQL_DB'],
+            'charset': 'utf8mb4',
+            'cursorclass': pymysql.cursors.DictCursor
+        }
+        
         connection = pymysql.connect(**db_config)
         current_app.logger.info("Database connection established")
         return connection

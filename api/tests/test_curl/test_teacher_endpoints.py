@@ -36,7 +36,7 @@ class TestTeacherEndpoints(CurlTestBase):
         
         # 登录教师账户
         login_data = {
-            "user_id": "2",
+            "user_id": "4",
             "password": "123456"
         }
         import json
@@ -102,7 +102,7 @@ class TestTeacherEndpoints(CurlTestBase):
             3, "教师创建学生成绩",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/teacher/scores',
              '-H', 'Content-Type: application/json',
-             '-d', '{"student_id": "S0201", "subject_id": 1, "exam_type_id": 1, "score": 85}',
+             '-d', '{"student_id": "S0601", "subject_id": 1, "exam_type_id": 2, "score": 85}',
              '-b', self.cookie_file],
             "3_create_score.json",
             self.test_setup
@@ -184,7 +184,7 @@ class TestTeacherEndpoints(CurlTestBase):
             10, "教师创建考试",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/teacher/exams',
              '-H', 'Content-Type: application/json',
-             '-d', '{"name": "Midterm Exam", "subject_id": 1, "class_ids": [1], "exam_type_id": 1, "date": "2025-10-15", "total_score": 100}',
+             '-d', '{"name": "Midterm Exam", "subject_id": 1, "class_ids": [6], "exam_type_id": 2, "date": "2025-10-15", "total_score": 100}',
              '-b', self.cookie_file],
             "teacher_10_create_exam.json",
             self.test_setup
@@ -251,7 +251,7 @@ class TestTeacherEndpoints(CurlTestBase):
         """测试用例17: 教师获取特定学生"""
         self.run_api_test(
             17, "教师获取特定学生",
-            ['curl', '-s', f'{self.base_url}/api/teacher/students/S0201', '-b', self.cookie_file],
+            ['curl', '-s', f'{self.base_url}/api/teacher/students/S0601', '-b', self.cookie_file],
             "teacher_17_get_student.json",
             self.test_setup
         )
@@ -260,7 +260,7 @@ class TestTeacherEndpoints(CurlTestBase):
         """测试用例18: 教师更新学生信息"""
         self.run_api_test(
             18, "教师更新学生信息",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/teacher/students/S0201',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/teacher/students/S0601',
              '-H', 'Content-Type: application/json',
              '-d', '{"student_name": "Updated Name"}',
              '-b', self.cookie_file],
