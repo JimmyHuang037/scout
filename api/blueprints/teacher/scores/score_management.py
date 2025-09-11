@@ -88,8 +88,8 @@ def update_score(score_id):
         # 创建成绩服务实例
         score_service = ScoreService()
         
-        # 更新成绩
-        updated_score = score_service.update_score(score_id, score)
+        # 更新成绩（包含权限验证）
+        updated_score = score_service.update_score(score_id, score, teacher_id)
         if updated_score:
             current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
             return success_response(updated_score)
@@ -111,8 +111,8 @@ def delete_score(score_id):
         # 创建成绩服务实例
         score_service = ScoreService()
         
-        # 删除成绩
-        result = score_service.delete_score(score_id)
+        # 删除成绩（包含权限验证）
+        result = score_service.delete_score(score_id, teacher_id)
         if result:
             current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
             return success_response({'message': 'Score deleted successfully'})
