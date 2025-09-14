@@ -13,7 +13,8 @@ def get_my_profile():
         student_id = session.get('user_id')
         
         # 获取学生个人信息
-        profile = StudentService.get_student_profile(student_id)
+        student_service = StudentService()
+        profile = student_service.get_student_profile(student_id)
         current_app.logger.info(f"Student {student_id} retrieved profile")
         return success_response(profile)
     except Exception as e:

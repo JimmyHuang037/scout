@@ -13,7 +13,7 @@ def get_my_exam_results():
         student_id = session.get('user_id')
         
         # 获取学生考试结果
-        results = ScoreService.get_student_exam_results(student_id)
+        results = ScoreService().get_student_exam_results(student_id)
         current_app.logger.info(f"Student {student_id} retrieved exam results")
         return success_response(results)
     except Exception as e:

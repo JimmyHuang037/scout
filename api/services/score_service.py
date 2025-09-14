@@ -8,6 +8,36 @@ class ScoreService:
         """初始化成绩服务"""
         pass  # 不在初始化时创建数据库服务实例
     
+    def get_student_scores(self, student_id):
+        """
+        获取学生所有成绩
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            list: 学生成绩列表
+        """
+        from utils import database_service
+        db_service = database_service.DatabaseService()  # 在方法内创建数据库连接
+        try:
+            query = """
+                SELECT s.score_id, s.student_id, st.student_name, s.subject_id, sub.subject_name,
+                       s.exam_type_id, et.exam_type_name, s.score
+                FROM Scores s
+                JOIN Students st ON s.student_id = st.student_id
+                JOIN Subjects sub ON s.subject_id = sub.subject_id
+                JOIN ExamTypes et ON s.exam_type_id = et.exam_type_id
+                WHERE s.student_id = %s
+                ORDER BY s.score_id DESC
+            """
+            
+            return db_service.execute_query(query, (student_id,))
+        except Exception as e:
+            raise e
+        finally:
+            db_service.close()
+    
     def get_scores(self, teacher_id=None, student_id=None, subject_id=None, exam_type_id=None):
         """
         获取成绩列表

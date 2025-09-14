@@ -12,6 +12,32 @@ class StudentService:
         """初始化学生服务"""
         self.db_service = DatabaseService()
 
+    def get_student_profile(self, student_id):
+        """
+        获取学生个人信息
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            dict: 学生个人信息
+        """
+        try:
+            query = """
+                SELECT s.student_id, s.student_name, c.class_name
+                FROM Students s
+                JOIN Classes c ON s.class_id = c.class_id
+                WHERE s.student_id = %s
+            """
+            result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
+            return result
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get student profile for {student_id}: {str(e)}")
+            raise
+        finally:
+            self.db_service.close()
+
     def get_teacher_students(self, teacher_id, class_id=None, page=1, per_page=10):
         """
         获取教师所教班级的学生列表

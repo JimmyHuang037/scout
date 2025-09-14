@@ -14,7 +14,7 @@ def get_my_scores():
         student_id = session.get('user_id')
         
         # 获取学生成绩
-        scores = ScoreService.get_student_scores(student_id)
+        scores = ScoreService().get_student_scores(student_id)
         current_app.logger.info(f"Student {student_id} retrieved scores")
         return success_response(scores)
     except Exception as e:
