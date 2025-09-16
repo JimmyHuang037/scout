@@ -1,5 +1,13 @@
 """班级管理模块，处理班级相关的所有操作"""
 from flask import jsonify, request, session, current_app
+# 修复导入问题，使用相对导入
+import sys
+import os
+# 将api目录添加到Python路径中
+api_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+if api_dir not in sys.path:
+    sys.path.insert(0, api_dir)
+
 from services import ClassService
 from services.class_service import ClassNotFoundError
 from utils.helpers import success_response, error_response, auth_required, role_required
