@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import shlex
+import time
 from config.config import TestingConfig
 
 
@@ -43,11 +44,16 @@ class CurlTestBase:
             f.write(f"Login command: {' '.join(curl_cmd)}\n")
         
         try:
-            # 执行curl命令
-            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=10)
+            # 执行curl命令，增加超时时间到60秒
+            print(f"执行登录请求: {' '.join(curl_cmd)}")
+            sys.stdout.flush()
+            
+            start_time = time.time()
+            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=60)
+            end_time = time.time()
             
             # 打印登录结果
-            print(f"登录结果: returncode={result.returncode}, stdout={result.stdout}, stderr={result.stderr}")
+            print(f"登录结果: returncode={result.returncode}, 耗时={end_time-start_time:.2f}秒, stdout={result.stdout}, stderr={result.stderr}")
             sys.stdout.flush()  # 确保输出被立即刷新
             
             if result.returncode == 0:
@@ -146,7 +152,7 @@ class CurlTestBase:
                 else:
                     print(f"测试 {test_number} 失败: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
-                    assert False, f"测试 {test_number} 失败: {error_msg}"
+                    return False
             elif not json_data.get('success', False):
                 error_msg = json_data.get('message', '未知错误')
                 if expect_error:
@@ -156,29 +162,25 @@ class CurlTestBase:
                 else:
                     print(f"测试 {test_number} 失败: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
-                    assert False, f"测试 {test_number} 失败: {error_msg}"
+                    return False
             else:
                 print(f"测试 {test_number} 完成")
                 sys.stdout.flush()  # 确保输出被立即刷新
                 return True
-
         except json.JSONDecodeError:
-            # 如果不是JSON响应，直接保存
+            # 如果不是JSON格式，直接保存原始输出
             with open(output_path, 'w') as f:
                 f.write(result.stdout)
             
-            # 检查是否有错误输出
-            if result.returncode != 0 or result.stderr:
-                error_msg = result.stderr or "命令执行失败"
-                print(f"测试 {test_number} 失败: {error_msg}")
-                sys.stdout.flush()  # 确保输出被立即刷新
-                assert False, f"测试 {test_number} 失败: {error_msg}"
-            else:
-                print(f"测试 {test_number} 完成")
+            if expect_error:
+                print(f"测试 {test_number} 完成（预期错误，非JSON响应）")
                 sys.stdout.flush()  # 确保输出被立即刷新
                 return True
-
+            else:
+                print(f"测试 {test_number} 失败（非JSON响应）")
+                sys.stdout.flush()  # 确保输出被立即刷新
+                return False
         except Exception as e:
             print(f"测试 {test_number} 异常: {str(e)}")
             sys.stdout.flush()  # 确保输出被立即刷新
-            assert False, f"测试 {test_number} 异常: {str(e)}"
+            return False

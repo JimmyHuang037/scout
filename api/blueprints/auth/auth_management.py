@@ -2,11 +2,13 @@
 from flask import jsonify, request, session, current_app
 from utils import database_service
 from utils.helpers import success_response, error_response
+import time
 
 
 def login():
     """用户登录"""
     try:
+        start_time = time.time()
         data = request.get_json()
         user_id = data.get('user_id')
         password = data.get('password')
@@ -22,11 +24,13 @@ def login():
             FROM users 
             WHERE user_id = %s AND password = %s
         """
-        current_app.logger.info(f"Attempting login with user_id: {user_id}, password: {password}")
+        current_app.logger.info(f"Attempting login with user_id: {user_id}")
+        query_start = time.time()
         user = db_service.execute_query(query, (user_id, password), fetch_one=True)
+        query_end = time.time()
         db_service.close()
         
-        current_app.logger.info(f"Database query result: {user}")
+        current_app.logger.info(f"Database query took {query_end - query_start:.2f} seconds")
         
         if user:
             # 登录成功，设置session
@@ -34,14 +38,16 @@ def login():
             session['user_name'] = user['user_name']
             session['role'] = user['role']
             
-            current_app.logger.info(f"User {user['user_id']} logged in successfully")
+            end_time = time.time()
+            current_app.logger.info(f"User {user['user_id']} logged in successfully. Total time: {end_time - start_time:.2f} seconds")
             return success_response({
                 'user_id': user['user_id'],
                 'user_name': user['user_name'],
                 'role': user['role']
             })
         else:
-            current_app.logger.warning(f"Login failed for user_id: {user_id}")
+            end_time = time.time()
+            current_app.logger.warning(f"Login failed for user_id: {user_id}. Total time: {end_time - start_time:.2f} seconds")
             return error_response('Invalid credentials', 401)
     except Exception as e:
         current_app.logger.error(f'Login error: {str(e)}')
