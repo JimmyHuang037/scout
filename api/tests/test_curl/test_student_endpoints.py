@@ -43,8 +43,10 @@ class TestStudentEndpoints(CurlTestBase):
             "-d", json.dumps(login_data),
             "-c", cls.cookie_file
         ]
-        
+        print("startlogin")
         result = subprocess.run(curl_cmd, capture_output=True, text=True)
+        print("endlogin")
+        print(result)
         assert result.returncode == 0, f"学生登录失败: {result.stderr}"
         
         response_data = json.loads(result.stdout)
@@ -76,6 +78,7 @@ class TestStudentEndpoints(CurlTestBase):
 
     def test_01_get_grades(self):
         """测试用例1: 获取成绩列表"""
+        print("test123")
         self.run_api_test(
             1, "获取成绩列表",
             ['curl', '-s', f'{self.base_url}/api/student/scores', '-b', self.cookie_file],
