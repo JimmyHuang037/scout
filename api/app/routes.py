@@ -18,16 +18,3 @@ def health_check():
         'message': 'API server is running'
     })
 
-
-def register_blueprints(app):
-    """注册所有蓝图"""
-    from blueprints.admin import admin_bp
-    from blueprints.teacher import teacher_bp
-    from blueprints.student import student_bp
-    from blueprints.auth import auth_bp
-    
-    app.register_blueprint(main)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(teacher_bp)
-    app.register_blueprint(student_bp)
-    app.register_blueprint(auth_bp)

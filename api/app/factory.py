@@ -15,7 +15,7 @@ from flask_session import Session
 import traceback
 
 # 确保logs目录存在
-from config.config import config
+from config.config import config 
 from utils.database_service import DatabaseService
 
 

@@ -104,6 +104,9 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """测试环境配置"""
     
+    def  hello():
+        print('hello world')
+        
     DEBUG = True
     TESTING = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'test-secret-key')
