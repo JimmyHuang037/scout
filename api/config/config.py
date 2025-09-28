@@ -77,6 +77,54 @@ class Config:
     CURL_TEST_DIR = _get_curl_test_dir('', LOGS_DIR)
 
 
+class DevelopmentConfig(Config):
+    """开发环境配置"""
+    
+    DEBUG = True
+    LOG_LEVEL = 'DEBUG'
+    
+    # 开发数据库
+    MYSQL_DB = os.getenv('MYSQL_DB', 'school_management')
+    
+    # 数据库连接URI
+    SQLALCHEMY_DATABASE_URI = _get_database_uri(
+        Config.MYSQL_USER, Config.MYSQL_PASSWORD, Config.MYSQL_HOST, MYSQL_DB
+    )
+    
+    # 开发环境端口
+    PORT = 5000
+    
+    # 日志和会话配置
+    LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('development')
+    
+    # test_curl配置
+    CURL_TEST_DIR = _get_curl_test_dir('development', LOGS_DIR)
+
+
+class DevelopmentTestDBConfig(Config):
+    """开发环境配置（使用测试数据库）"""
+    
+    DEBUG = True
+    LOG_LEVEL = 'DEBUG'
+    
+    # 测试数据库
+    MYSQL_DB = os.getenv('MYSQL_DB', 'school_management_test')
+    
+    # 数据库连接URI
+    SQLALCHEMY_DATABASE_URI = _get_database_uri(
+        Config.MYSQL_USER, Config.MYSQL_PASSWORD, Config.MYSQL_HOST, MYSQL_DB
+    )
+    
+    # 开发环境端口
+    PORT = 5000
+    
+    # 日志和会话配置
+    LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('development')
+    
+    # test_curl配置
+    CURL_TEST_DIR = _get_curl_test_dir('development', LOGS_DIR)
+
+
 class ProductionConfig(Config):
     """生产环境配置"""
     
@@ -104,9 +152,6 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     """测试环境配置"""
     
-    def  hello():
-        print('hello world')
-        
     DEBUG = True
     TESTING = True
     SECRET_KEY = os.getenv('SECRET_KEY', 'test-secret-key')
@@ -132,8 +177,9 @@ class TestingConfig(Config):
 
 # 配置映射
 config = {
-    'development': Config,
+    'development': DevelopmentConfig,
+    'development_testdb': DevelopmentTestDBConfig,
     'production': ProductionConfig,
     'testing': TestingConfig,
-    'default': Config
+    'default': DevelopmentConfig
 }
