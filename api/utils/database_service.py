@@ -26,6 +26,7 @@ def get_db_connection():
         
         connection = pymysql.connect(**db_config)
         current_app.logger.info("Database connection established")
+        current_app.logger.info(f"Connected to database: {config['MYSQL_DB']} on {config['MYSQL_HOST']} as {config['MYSQL_USER']}")
         return connection
     except Exception as e:
         current_app.logger.error(f"Failed to establish database connection: {str(e)}")
@@ -117,7 +118,7 @@ class DatabaseService:
             )
             # 只在初始化时记录一次日志
             current_app.logger.info("DatabaseService initialized")
-            current_app.logger.info(f"Connected to database: {config['MYSQL_DB']}")
+            current_app.logger.info(f"Connected to database: {config['MYSQL_DB']} on {config['MYSQL_HOST']} as {config['MYSQL_USER']}")
         except Exception as e:
             current_app.logger.error(f"Database connection failed: {e}")
             raise

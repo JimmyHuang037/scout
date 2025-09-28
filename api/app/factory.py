@@ -56,6 +56,8 @@ def _setup_logging(app):
     
     # 记录应用启动日志
     app.logger.info('Application started')
+    app.logger.info(f'Using configuration: {os.environ.get("FLASK_ENV", "default")}')
+    app.logger.info(f'Database: {app.config["MYSQL_DB"]} on {app.config["MYSQL_HOST"]} as {app.config["MYSQL_USER"]}')
 
 
 def _setup_error_handlers(app):

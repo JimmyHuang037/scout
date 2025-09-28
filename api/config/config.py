@@ -121,7 +121,7 @@ class TestingConfig(Config):
     )
     
     # 测试配置
-    PORT = 5010
+    PORT = 5000
     
     # 日志和会话配置
     LOGS_DIR, LOG_FILE_PATH, SESSION_FILE_DIR = _get_logs_config('testing')
