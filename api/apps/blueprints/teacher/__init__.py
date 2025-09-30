@@ -10,7 +10,7 @@ from .exam.exam_results_management import get_exam_results
 from .exam.performance_management import get_teacher_performance
 from .students.student_management import get_teacher_students, get_teacher_student, update_teacher_student
 from .scores.score_management import create_score, update_score, delete_score, get_scores, get_exam_scores
-from .teacher_management import get_teachers, get_teacher
+from .teacher_management import get_all_teachers as get_teachers, get_teacher_by_id as get_teacher
 from .class_management import get_classes, get_class_students
 teacher_bp.add_url_rule('/exams', view_func=create_exam, methods=['POST'])
 teacher_bp.add_url_rule('/exams', view_func=get_exams, methods=['GET'])

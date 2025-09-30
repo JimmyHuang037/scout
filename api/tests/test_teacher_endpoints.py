@@ -5,14 +5,6 @@
 使用 pytest 框架执行黑盒测试
 """
 
-import os
-import sys
-
-# 将项目根目录添加到Python路径中
-project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if project_dir not in sys.path:
-    sys.path.insert(0, project_dir)
-
 from tests.test_curl.test_curl_base import CurlTestBase
 from config.config import TestingConfig
 

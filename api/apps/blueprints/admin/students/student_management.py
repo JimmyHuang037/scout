@@ -1,15 +1,8 @@
 """学生管理模块，处理学生相关的所有操作"""
 from flask import jsonify, request, current_app
-# 修复导入问题，使用相对导入
-import sys
-import os
-# 将api目录添加到Python路径中
-api_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-if api_dir not in sys.path:
-    sys.path.insert(0, api_dir)
+from apps.services import StudentService
+from apps.utils.helpers import success_response, error_response, auth_required, role_required
 
-from services import StudentService
-from utils.helpers import success_response, error_response
 
 
 def get_students():
@@ -50,30 +43,16 @@ def create_student():
         if not data:
             return error_response("无效的请求数据", 400)
         
-        # 提取必要字段
-        student_id = data.get('student_id')
-        student_name = data.get('student_name')
-        class_id = data.get('class_id')
-        password = data.get('password')
+        # 调用服务创建学生
+        student_service = StudentService()
+        result = student_service.create_student(data)
         
-        # 验证必填字段
-        if not student_id or not student_name or not class_id or not password:
-            return error_response("缺少必要字段", 400)
-        
-        # 创建学生
-        student_data = {
-            'student_id': student_id,
-            'student_name': student_name,
-            'class_id': class_id,
-            'password': password
-        }
-        new_student = StudentService().create_student(student_data)
-        
-        if not new_student:
+        if not result:
             return error_response("创建学生失败", 400)
-        
+            
+        student_id = data.get('student_id')
         current_app.logger.info(f'Admin created student: {student_id}')
-        return success_response({"student_id": student_id}, "学生创建成功", 201)
+        return success_response(result, "学生创建成功", 201)
     
     except Exception as e:
         current_app.logger.error(f'Failed to create student: {str(e)}')

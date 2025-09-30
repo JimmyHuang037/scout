@@ -1,7 +1,7 @@
 """认证和权限检查工具模块"""
 from functools import wraps
 from flask import session
-from utils.helpers import error_response
+from apps.utils.helpers import error_response
 
 
 def require_auth():

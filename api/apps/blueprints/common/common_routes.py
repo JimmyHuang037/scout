@@ -1,20 +1,18 @@
-from flask import Blueprint, jsonify, request
+"""公共路由模块"""
+from flask import jsonify
 
-main = Blueprint('main', __name__)
 
-
-@main.route('/')
 def index():
+    """首页路由"""
     return jsonify({
         'message': 'Welcome to School Management API',
         'version': '1.0.0'
     })
 
 
-@main.route('/api/health')
 def health_check():
+    """健康检查路由"""
     return jsonify({
         'status': 'healthy',
         'message': 'API server is running'
     })
-

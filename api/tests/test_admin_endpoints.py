@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import os
-import sys
-
-# 将api目录添加到Python路径中
-api_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-if api_dir not in sys.path:
-    sys.path.insert(0, api_dir)
 
 import os
 from tests.test_curl.test_curl_base import CurlTestBase
