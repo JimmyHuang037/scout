@@ -49,6 +49,10 @@ class AppFactory:
         app.logger.addHandler(file_handler)
         app.logger.setLevel(app.config['LOG_LEVEL'])
         
+        # 记录应用启动信息
+        app.logger.info('Flask application starting...')
+        app.logger.info(f"Database: {app.config['MYSQL_USER']}@{app.config['MYSQL_HOST']}/{app.config['MYSQL_DB']}")
+        
         # 注册错误处理器
         @app.errorhandler(404)
         def not_found(error):
