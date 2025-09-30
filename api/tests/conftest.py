@@ -1,86 +1,111 @@
 #!/usr/bin/env python3
 """
-测试配置文件 - 公共fixture和配置
+test_curl测试模块的配置文件
+包含该模块共享的fixture和配置
 """
 
-import os
-import sys
 import pytest
 import subprocess
-import glob
+import os
+import sys
 import time
 import signal
-from pathlib import Path
-from urllib import request
-from urllib.error import URLError
-from datetime import datetime
-
-# 将项目根目录添加到Python路径中
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+from config.config import TestingConfig
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_environment():
-    """在测试会话开始前自动设置测试环境"""
-    # 设置FLASK_ENV为testing，确保使用测试配置
-    os.environ['FLASK_ENV'] = 'testing'
-    print("测试环境已设置: FLASK_ENV=testing")
-
-
-def restore_test_database():
-    """恢复测试数据库"""
+def start_server(request):
+    """在测试会话开始前启动服务器"""
+    # 设置环境变量
+    env = os.environ.copy()
+    env['FLASK_ENV'] = 'testing'
+    
+    # 获取日志目录和文件路径
+    logs_dir = TestingConfig.LOGS_DIR
+    api_log_file = os.path.join(logs_dir, 'api.log')
+    
+    # 确保日志目录存在
+    os.makedirs(logs_dir, exist_ok=True)
+    
+    # 使用直接运行app.py的方式启动服务器，并将日志输出到api.log文件
+    api_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'app.py'))
+    
+    # 打开API日志文件用于追加写入
     try:
-        # 获取项目根目录
-        project_root = os.path.join(os.path.dirname(__file__), '..', '..')
-        backup_dir = os.path.join(project_root, 'db', 'backup')
-        
-        # 查找最新的备份文件
-        backup_files = glob.glob(os.path.join(backup_dir, '*.sql'))
-        if not backup_files:
-            print("警告: 没有找到备份文件")
-            return False
-            
-        # 按修改时间排序，获取最新的备份文件
-        latest_backup = max(backup_files, key=os.path.getmtime)
-        print(f"使用备份文件: {latest_backup}")
-        
-        # 构建恢复命令，并启用自动模式
-        restore_script = os.path.join(project_root, 'db', 'restore_db.sh')
-        cmd = ['bash', restore_script, os.path.basename(latest_backup), 'school_management_test', '--auto']
-        
-        # 设置环境变量，使用config.py中的配置
-        env = os.environ.copy()
-        env['DB_USER'] = 'root'  # 在测试环境中使用root用户
-        env['DB_PASS'] = 'Newuser1'  # 测试环境密码
-        
-        # 执行恢复命令
-        result = subprocess.run(
-            cmd,
-            cwd=os.path.join(project_root, 'db'),
-            text=True,
-            capture_output=True,
-            env=env
-        )
-        
-        # 只在失败时打印详细错误信息
-        if result.returncode == 0:
-            print("数据库恢复成功完成!")
-            return True
-        else:
-            print(f"恢复测试数据库失败: {result.stderr}")
-            return False
-    except Exception as e:
-        print(f"恢复测试数据库时出错: {str(e)}")
-        return False
+        api_log_f = open(api_log_file, 'a')
+    except IOError as e:
+        pytest.fail(f"无法打开日志文件 {api_log_file}: {str(e)}")
+    
+    # 清空API日志文件
+    try:
+        open(api_log_file, 'w').close()
+    except IOError as e:
+        pytest.fail(f"无法清空日志文件 {api_log_file}: {str(e)}")
+    
+    # 启动进程并将stdout和stderr重定向到api.log
+    process = subprocess.Popen([
+        sys.executable, api_path
+    ], env=env, preexec_fn=os.setsid, stdout=api_log_f, stderr=api_log_f)
+    
+    # 等待服务器启动
+    time.sleep(3)
+    
+    # 注册测试会话结束时的清理函数
+    def cleanup():
+        try:
+            # 终止进程组
+            os.killpg(os.getpgid(process.pid), signal.SIGTERM)
+            process.terminate()
+            process.wait(timeout=5)
+        except Exception as e:
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except:
+                pass
+        finally:
+            api_log_f.close()
+    
+    request.addfinalizer(cleanup)
+    
+    return process
 
 
-@pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    """在测试会话开始前自动恢复测试数据库"""
-    print("正在恢复测试数据库...")
-    success = restore_test_database()
-    if success:
-        print("测试数据库恢复成功!")
-    else:
-        print("测试数据库恢复失败!")
-    return success
+@pytest.fixture(scope="session")
+def test_results_dir():
+    """创建测试结果目录"""
+    # 使用配置文件中的CURL_TEST_DIR配置，并添加时间戳
+    config = TestingConfig()
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    result_dir = os.path.join(config.CURL_TEST_DIR, timestamp)
+    os.makedirs(result_dir, exist_ok=True)
+    return result_dir
+
+
+@pytest.fixture(scope="session")
+def curl_commands_file(test_results_dir):
+    """创建curl命令记录文件"""
+    commands_file = os.path.join(test_results_dir, 'curl_commands.txt')
+    # 清空或创建文件
+    with open(commands_file, 'w') as f:
+        f.write("Curl测试命令记录\n")
+        f.write("=" * 50 + "\n")
+    
+    return commands_file
+
+
+@pytest.fixture(scope="session")
+def cookie_file():
+    """提供cookie文件路径"""
+    return '/tmp/test_cookie.txt'
+
+
+@pytest.fixture(scope="class")
+def test_environment(start_server, test_results_dir, curl_commands_file, cookie_file):
+    """提供完整的测试环境配置"""
+    environment = {
+        'base_url': start_server,
+        'test_results_dir': test_results_dir,
+        'curl_commands_file': curl_commands_file,
+        'cookie_file': cookie_file
+    }
+    return environment

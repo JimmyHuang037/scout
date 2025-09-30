@@ -1,9 +1,9 @@
 """教师蓝图模块"""
 from flask import Blueprint
 
-teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
+teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teachers')
 
-# 导入教师考试相关路由
+# 导入教师相关路由
 from .exam.exam_management import create_exam, get_exams, get_exam, update_exam, delete_exam
 from .exam.exam_class_management import get_exam_classes
 from .exam.exam_results_management import get_exam_results
@@ -12,8 +12,6 @@ from .students.student_management import get_teacher_students, get_teacher_stude
 from .scores.score_management import create_score, update_score, delete_score, get_scores, get_exam_scores
 from .teacher_management import get_teachers, get_teacher
 from .class_management import get_classes, get_class_students
-
-# 注册路由
 teacher_bp.add_url_rule('/exams', view_func=create_exam, methods=['POST'])
 teacher_bp.add_url_rule('/exams', view_func=get_exams, methods=['GET'])
 teacher_bp.add_url_rule('/exams/<int:exam_id>', view_func=get_exam, methods=['GET'])

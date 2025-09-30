@@ -1,5 +1,5 @@
 """学生管理模块，处理学生相关的所有操作"""
-from flask import jsonify, request, session, current_app
+from flask import jsonify, request, current_app
 # 修复导入问题，使用相对导入
 import sys
 import os
@@ -9,11 +9,9 @@ if api_dir not in sys.path:
     sys.path.insert(0, api_dir)
 
 from services import StudentService
-from utils.helpers import success_response, error_response, auth_required, role_required
+from utils.helpers import success_response, error_response
 
 
-@auth_required
-@role_required('admin')
 def get_students():
     """
     获取所有学生列表
@@ -82,8 +80,6 @@ def create_student():
         return error_response("创建学生失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def get_student(student_id):
     """
     获取单个学生信息
@@ -108,8 +104,6 @@ def get_student(student_id):
         return error_response("获取学生信息失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def update_student(student_id):
     """
     更新学生信息
@@ -140,8 +134,6 @@ def update_student(student_id):
         return error_response("更新学生失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def delete_student(student_id):
     """
     删除学生

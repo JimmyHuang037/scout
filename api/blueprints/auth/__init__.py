@@ -3,6 +3,8 @@ from flask import Blueprint
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
+# 暂时移除所有认证相关路由，保持系统简单
+
 # 导入认证相关路由
 from .auth_management import login, logout, get_current_user
 

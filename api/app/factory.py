@@ -11,11 +11,10 @@ import logging
 import sys
 from flask import Flask
 from flask_cors import CORS
-from flask_session import Session
 import traceback
 
 # 确保logs目录存在
-from config.config import config 
+from app.config import config 
 from utils.database_service import DatabaseService
 
 
@@ -56,7 +55,7 @@ def _setup_logging(app):
     
     # 记录应用启动日志
     app.logger.info('Application started')
-    app.logger.info(f'Using configuration: {os.environ.get("FLASK_ENV", "default")}')
+    app.logger.info(f'Using configuration: default')
     app.logger.info(f'Database: {app.config["MYSQL_DB"]} on {app.config["MYSQL_HOST"]} as {app.config["MYSQL_USER"]}')
 
 
@@ -73,12 +72,7 @@ def _setup_error_handlers(app):
 def _initialize_extensions(app):
     """初始化Flask扩展"""
     CORS(app)
-    Session(app)
-    
-    # 确保会话目录存在
-    session_dir = app.config.get('SESSION_FILE_DIR')
-    if session_dir and not os.path.exists(session_dir):
-        os.makedirs(session_dir)
+    # 移除了Session(app)的初始化，因为我们暂时不使用基于session的认证
 
 
 def create_app(config_name=None):
@@ -86,20 +80,16 @@ def create_app(config_name=None):
     创建Flask应用实例
     
     Args:
-        config_name (str): 配置名称，如果未提供则从环境变量FLASK_ENV获取，默认为'default'
+        config_name (str): 配置名称，仅为兼容性保留，默认为'default'
         
     Returns:
         Flask: 配置好的Flask应用实例
     """
-    # 如果未提供配置名称，则从配置模块获取
-    if config_name is None:
-        config_name = os.getenv('FLASK_ENV', 'default')
-    
     # 初始化应用
     app = Flask(__name__)
     
     # 加载配置
-    app.config.from_object(config[config_name])
+    app.config.from_object(config['default'])
     
     # 设置日志
     _setup_logging(app)
@@ -110,15 +100,15 @@ def create_app(config_name=None):
     # 注册蓝图
     from app.routes import main  # 导入主蓝图
     from blueprints.admin import admin_bp
-    from blueprints.auth import auth_bp
     from blueprints.student import student_bp as student_main_bp
     from blueprints.teacher import teacher_bp as teacher_main_bp
     
     app.register_blueprint(main)  # 注册主蓝图（包含健康检查端点）
     app.register_blueprint(admin_bp)
-    app.register_blueprint(auth_bp)
     app.register_blueprint(student_main_bp)
     app.register_blueprint(teacher_main_bp)
+    
+    # 暂时移除认证蓝图的注册，保持系统简单
     
     # 设置错误处理器
     _setup_error_handlers(app)

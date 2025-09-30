@@ -153,8 +153,11 @@ class DatabaseService:
         """
         try:
             current_app.logger.info(f"Executing query: {query} with params: {params}")
-            with self.get_connection().cursor() as cursor:
+            connection = self.get_connection()
+            current_app.logger.info(f"Connected to database: {connection.host} as {connection.user}, database: {connection.db}")
+            with connection.cursor() as cursor:
                 cursor.execute(query, params or ())
+                current_app.logger.info(f"Rows found: {cursor.rowcount}")
                 if fetch_one:
                     result = cursor.fetchone()
                 else:
