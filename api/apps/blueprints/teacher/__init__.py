@@ -5,8 +5,8 @@ teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 # 导入教师相关路由
 from .students.student_management import get_teacher_students, get_teacher_student, update_teacher_student
-from .scores.score_management import create_score, update_score, delete_score, get_scores, get_exam_scores
-from .teacher_management import get_teacher_classes, get_teacher_profile, get_class_students, get_teacher
+from .scores.score_management import create_score, update_score, delete_score, get_scores
+from .teacher_management import get_teacher_classes, get_teacher_profile, get_class_students
 from .class_management import get_class_endpoint
 
 # 注册教师端点路由

@@ -112,27 +112,3 @@ def delete_score(teacher_id, score_id):
     except Exception as e:
         current_app.logger.error(f"Failed to delete score {score_id}: {str(e)}")
         return error_response("成绩删除失败", 500)
-
-
-def get_exam_scores(teacher_id, exam_id):
-    """
-    获取考试成绩列表
-    
-    Args:
-        teacher_id (string): 教师ID
-        exam_id (int): 考试ID
-        
-    Returns:
-        JSON: 考试成绩列表
-    """
-    try:
-        # 创建成绩服务实例并获取考试成绩列表
-        score_service = ScoreService()
-        scores_data = score_service.get_exam_scores(exam_id)
-        
-        current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
-        return success_response(scores_data, "获取考试成绩列表成功")
-    
-    except Exception as e:
-        current_app.logger.error(f"Failed to retrieve scores for exam {exam_id}: {str(e)}")
-        return error_response("获取考试成绩列表失败")
