@@ -28,6 +28,7 @@ class Config:
     # 应用配置
     TESTING = False
     DEBUG = True
+    HOST = '127.0.0.1'
     PORT = 5000
 
 
