@@ -23,7 +23,7 @@ def get_scores(teacher_id):
         
         # 创建成绩服务实例并获取成绩列表
         score_service = ScoreService()
-        scores_data = score_service.get_all_scores(page, per_page)
+        scores_data = score_service.get_teacher_scores(teacher_id, page, per_page)
         
         current_app.logger.info(f"Teacher {teacher_id} retrieved scores list")
         return success_response(scores_data, "获取成绩列表成功")
