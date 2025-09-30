@@ -22,13 +22,13 @@ class ScoreService:
             list: 成绩列表
         """
         query = """
-            SELECT s.score_id, s.score, s.exam_id, s.subject_id, s.student_id,
-                   e.exam_name, e.exam_date, sub.subject_name
+            SELECT s.score_id, s.score_value as score, s.exam_type_name as exam_name, 
+                   s.subject_name as subject_name, s.student_name
             FROM scores s
-            JOIN exams e ON s.exam_id = e.exam_id
-            JOIN subjects sub ON s.subject_id = sub.subject_id
-            WHERE s.student_id = %s
-            ORDER BY e.exam_date DESC
+            WHERE s.student_name = (
+                SELECT student_name FROM students WHERE student_id = %s
+            )
+            ORDER BY s.exam_type_name
         """
         return self.db_service.execute_query(query, (student_id,))
 
@@ -227,3 +227,26 @@ class ScoreService:
             ORDER BY st.student_number
         """
         return self.db_service.execute_query(query, (exam_id, class_id))
+
+    def get_student_exam_results(self, student_id):
+        """
+        获取学生考试结果列表
+        
+        Args:
+            student_id (str): 学生ID
+            
+        Returns:
+            list: 考试结果列表
+        """
+        query = """
+            SELECT er.exam_type as exam_name, er.student_name, 
+                   er.chinese, er.math, er.english, 
+                   er.physics, er.chemistry, er.politics,
+                   er.total_score, er.ranking
+            FROM exam_results er
+            WHERE er.student_name = (
+                SELECT student_name FROM students WHERE student_id = %s
+            )
+            ORDER BY er.exam_type
+        """
+        return self.db_service.execute_query(query, (student_id,))

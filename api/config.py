@@ -25,6 +25,11 @@ class Config:
     if not os.path.exists(LOGS_DIR):
         os.makedirs(LOGS_DIR)
     
+    # 测试配置
+    TEST_DIR = os.path.join(LOGS_DIR, 'test')
+    if not os.path.exists(TEST_DIR):
+        os.makedirs(TEST_DIR)
+    
     # 应用配置
     TESTING = False
     DEBUG = True

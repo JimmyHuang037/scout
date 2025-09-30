@@ -7,107 +7,19 @@ import os
 import sys
 import shlex
 import time
-from config.config import TestingConfig
+import pytest
+from config import Config
 
 
 class CurlTestBase:
     @classmethod
     def setup_class(cls):
         """测试类级别的设置"""
-        cls.base_url = f"http://127.0.0.1:{TestingConfig.PORT}"
-        cls.curl_commands_file = getattr(TestingConfig, 'CURL_TEST_DIR', '/tmp') + "/curl_commands.log"
+        cls.base_url = f"http://{Config.HOST}:{Config.PORT}"
+        cls.curl_commands_file = os.path.join(Config.TEST_DIR, "curl_commands.log")
         
         # 确保测试结果目录存在
-        test_results_dir = getattr(TestingConfig, 'CURL_TEST_DIR', '/tmp')
-        os.makedirs(test_results_dir, exist_ok=True)
-
-    def login_admin(self, base_url, cookie_file):
-        """管理员登录"""
-        print("登录管理员账户...")
-        sys.stdout.flush()  # 确保输出被立即刷新
-        login_url = f"{base_url}/api/auth/login"
-        login_data = {
-            "user_id": "admin",
-            "password": "admin"
-        }
-        
-        # 构建curl命令
-        curl_cmd = [
-            "curl", "-s", "-X", "POST", login_url,
-            "-H", "Content-Type: application/json",
-            "-d", json.dumps(login_data),
-            "-c", cookie_file
-        ]
-        
-        # 记录curl命令
-        with open(self.curl_commands_file, 'a') as f:
-            f.write(f"Login command: {' '.join(curl_cmd)}\n")
-        
-        try:
-            # 执行curl命令，增加超时时间到60秒
-            print(f"执行登录请求: {' '.join(curl_cmd)}")
-            sys.stdout.flush()
-            
-            start_time = time.time()
-            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=60)
-            end_time = time.time()
-            
-            # 打印登录结果
-            print(f"登录结果: returncode={result.returncode}, 耗时={end_time-start_time:.2f}秒, stdout={result.stdout}, stderr={result.stderr}")
-            sys.stdout.flush()  # 确保输出被立即刷新
-            
-            if result.returncode == 0:
-                try:
-                    response_data = json.loads(result.stdout)
-                    if response_data.get("success"):
-                        print("管理员登录成功")
-                        sys.stdout.flush()  # 确保输出被立即刷新
-                        return True
-                    else:
-                        print(f"管理员登录失败: {response_data.get('message', 'Unknown error')}")
-                        sys.stdout.flush()  # 确保输出被立即刷新
-                        return False
-                except json.JSONDecodeError:
-                    print(f"管理员登录失败，非JSON响应: {result.stdout}")
-                    sys.stdout.flush()  # 确保输出被立即刷新
-                    return False
-            else:
-                print(f"管理员登录失败，curl执行错误: {result.stderr}")
-                sys.stdout.flush()  # 确保输出被立即刷新
-                return False
-        except subprocess.TimeoutExpired:
-            print("管理员登录超时")
-            sys.stdout.flush()  # 确保输出被立即刷新
-            return False
-        except Exception as e:
-            print(f"管理员登录异常: {str(e)}")
-            sys.stdout.flush()  # 确保输出被立即刷新
-            return False
-
-    def logout(self, base_url, cookie_file):
-        """登出"""
-        print("登出账户...")
-        sys.stdout.flush()  # 确保输出被立即刷新
-        logout_url = f"{base_url}/api/auth/logout"
-        
-        curl_cmd = [
-            "curl", "-s", "-X", "POST", logout_url,
-            "-b", cookie_file
-        ]
-        
-        # 记录curl命令
-        with open(self.curl_commands_file, 'a') as f:
-            f.write(f"Logout command: {' '.join(curl_cmd)}\n")
-        
-        try:
-            result = subprocess.run(curl_cmd, capture_output=True, text=True, timeout=10)
-            print(f"登出结果: {result.stdout}")
-            sys.stdout.flush()  # 确保输出被立即刷新
-            return result.returncode == 0
-        except Exception as e:
-            print(f"登出异常: {str(e)}")
-            sys.stdout.flush()  # 确保输出被立即刷新
-            return False
+        os.makedirs(Config.TEST_DIR, exist_ok=True)
 
     def _record_curl_command(self, test_number, description, command):
         """记录curl命令到文件"""
@@ -144,7 +56,7 @@ class CurlTestBase:
 
             # 如果API返回错误
             if 'error' in json_data and json_data['error']:
-                error_msg = f"API返回错误 - {json_data['error']}"
+                error_msg = json_data.get('message', '未知错误')
                 if expect_error:
                     print(f"测试 {test_number} 完成（预期错误）: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
@@ -152,7 +64,7 @@ class CurlTestBase:
                 else:
                     print(f"测试 {test_number} 失败: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
-                    return False
+                    pytest.fail(error_msg, pytrace=False)
             elif not json_data.get('success', False):
                 error_msg = json_data.get('message', '未知错误')
                 if expect_error:
@@ -162,7 +74,7 @@ class CurlTestBase:
                 else:
                     print(f"测试 {test_number} 失败: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
-                    return False
+                    pytest.fail(error_msg, pytrace=False)
             else:
                 print(f"测试 {test_number} 完成")
                 sys.stdout.flush()  # 确保输出被立即刷新
@@ -179,8 +91,8 @@ class CurlTestBase:
             else:
                 print(f"测试 {test_number} 失败（非JSON响应）")
                 sys.stdout.flush()  # 确保输出被立即刷新
-                return False
+                pytest.fail("非JSON响应", pytrace=False)
         except Exception as e:
             print(f"测试 {test_number} 异常: {str(e)}")
             sys.stdout.flush()  # 确保输出被立即刷新
-            return False
+            pytest.fail(str(e), pytrace=False)

@@ -5,8 +5,8 @@
 使用 pytest 框架执行黑盒测试
 """
 
-from tests.test_curl.test_curl_base import CurlTestBase
-from config.config import TestingConfig
+from .test_curl_base import CurlTestBase
+from config import Config
 
 
 class TestTeacherEndpoints(CurlTestBase):
@@ -19,7 +19,7 @@ class TestTeacherEndpoints(CurlTestBase):
         super().setup_class()
         
         cls.cookie_file = "/tmp/test_cookie.txt"
-        cls.test_results_dir = TestingConfig.CURL_TEST_DIR
+        cls.test_results_dir = Config.TEST_DIR
         cls.curl_commands_file = os.path.join(cls.test_results_dir, "teacher_curl_commands.log")
         
         # 清理之前的cookie文件

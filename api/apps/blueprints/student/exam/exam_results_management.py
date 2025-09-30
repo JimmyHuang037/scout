@@ -4,12 +4,11 @@ from apps.services.score_service import ScoreService
 
 student_exam_results_bp = Blueprint('student_exam_results_bp', __name__)
 
-@student_exam_results_bp.route('/exam/results', methods=['GET'])
-def get_my_exam_results():
+@student_exam_results_bp.route('/<string:student_id>/exam/results', methods=['GET'])
+def get_my_exam_results(student_id):
     try:
         # 移除了认证检查装饰器，保持系统简单
-        # 暂时使用固定的学生ID进行测试
-        student_id = "20230001"
+        # 从URL路径参数中获取学生ID
         
         # 获取学生考试结果
         results = ScoreService().get_student_exam_results(student_id)

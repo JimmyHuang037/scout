@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-from tests.test_curl.test_curl_base import CurlTestBase
-from config.config import TestingConfig
+from .test_curl_base import CurlTestBase
+from config import Config
 
 
 class TestAdminEndpoints(CurlTestBase):
@@ -16,7 +16,7 @@ class TestAdminEndpoints(CurlTestBase):
         super().setup_class()
         
         cls.cookie_file = "/tmp/test_cookie.txt"
-        cls.test_results_dir = TestingConfig.CURL_TEST_DIR
+        cls.test_results_dir = Config.TEST_DIR
         cls.curl_commands_file = os.path.join(cls.test_results_dir, "admin_curl_commands.log")
         
         # 清理之前的cookie文件

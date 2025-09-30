@@ -9,6 +9,6 @@ from .profile.profile_management import get_my_profile
 from .scores.scores_management import get_my_scores
 
 # 注册路由
-student_bp.add_url_rule('/exam/results', view_func=get_my_exam_results, methods=['GET'])
-student_bp.add_url_rule('/profile', view_func=get_my_profile, methods=['GET'])
-student_bp.add_url_rule('/scores', view_func=get_my_scores, methods=['GET'])
+student_bp.add_url_rule('/<string:student_id>/exam_results', view_func=get_my_exam_results, methods=['GET'])
+student_bp.add_url_rule('/<string:student_id>/profile', view_func=get_my_profile, methods=['GET'])
+student_bp.add_url_rule('/<string:student_id>/scores', view_func=get_my_scores, methods=['GET'])

@@ -5,12 +5,11 @@ from apps.services.score_service import ScoreService
 
 student_scores_bp = Blueprint('student_scores_bp', __name__)
 
-@student_scores_bp.route('/scores', methods=['GET'])
-def get_my_scores():
+@student_scores_bp.route('/<string:student_id>/scores', methods=['GET'])
+def get_my_scores(student_id):
     try:
         # 移除了认证检查装饰器，保持系统简单
-        # 暂时使用固定的学生ID进行测试
-        student_id = "20230001"
+        # 从URL路径参数中获取学生ID
         
         # 获取学生成绩
         scores = ScoreService().get_student_scores(student_id)

@@ -28,14 +28,14 @@ class StudentService:
                 JOIN Classes c ON s.class_id = c.class_id
                 WHERE s.student_id = %s
             """
-            result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
-            return result
+            result = self.db_service.execute_query(query, (student_id,))
+            if result:
+                return result[0]  # 返回第一个结果（应该只有一个）
+            return None
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to get student profile for {student_id}: {str(e)}")
             raise
-        finally:
-            self.db_service.close()
 
     def get_teacher_students(self, teacher_id, class_id=None, page=1, per_page=10):
         """
@@ -83,8 +83,8 @@ class StudentService:
             params.extend([per_page, offset])
             
             # 获取总数
-            total_result = self.db_service.execute_query(count_query, count_params, fetch_one=True)
-            total = total_result['total'] if total_result else 0
+            total_result = self.db_service.execute_query(count_query, count_params)
+            total = total_result[0]['total'] if total_result else 0
             
             # 执行查询
             students = self.db_service.execute_query(base_query, params)
@@ -124,14 +124,14 @@ class StudentService:
                 JOIN Classes c ON s.class_id = c.class_id
                 WHERE s.student_id = %s
             """
-            result = self.db_service.execute_query(query, (student_id,), fetch_one=True)
-            return result
+            result = self.db_service.execute_query(query, (student_id,))
+            if result:
+                return result[0]  # 返回第一个结果（应该只有一个）
+            return None
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to get student by id {student_id}: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
             
     def get_all_students(self, page=1, per_page=1000):
         """
@@ -163,8 +163,8 @@ class StudentService:
             """
             
             # 获取总数
-            total_result = self.db_service.execute_query(count_query, fetch_one=True)
-            total = total_result['total'] if total_result else 0
+            total_result = self.db_service.execute_query(count_query)
+            total = total_result[0]['total'] if total_result else 0
             
             # 执行查询
             students = self.db_service.execute_query(base_query, (per_page, offset))
@@ -186,8 +186,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to get all students: {str(e)}")
             raise
-        finally:
-            self.db_service.close()
     
     def update_student_name(self, student_id, student_name):
         """
@@ -209,8 +207,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to update student name for {student_id}: {str(e)}")
             return False
-        finally:
-            self.db_service.close()
 
     def create_student(self, student_data):
         """
@@ -246,8 +242,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to create student: {str(e)}")
             raise
-        finally:
-            self.db_service.close()
 
     def update_student(self, student_id, update_data):
         """
@@ -284,8 +278,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to update student {student_id}: {str(e)}")
             return False
-        finally:
-            self.db_service.close()
 
     def delete_student(self, student_id):
         """
@@ -327,8 +319,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to delete student {student_id}: {str(e)}")
             return False
-        finally:
-            self.db_service.close()
 
     def get_student_scores(self, student_id):
         """
@@ -363,8 +353,6 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to get student scores for {student_id}: {str(e)}")
             raise
-        finally:
-            self.db_service.close()
 
     def get_student_exam_results(self, student_id, exam_id=None):
         """
@@ -409,5 +397,3 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to get student exam results for {student_id}: {str(e)}")
             raise
-        finally:
-            self.db_service.close()
