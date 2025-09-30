@@ -14,22 +14,19 @@ def get_exam_classes(teacher_id):
         # 这里我们直接使用数据库服务来获取教师相关的班级信息
         db_service = DatabaseService()
         
-        try:
-            query = """
-                SELECT DISTINCT c.class_id, c.class_name
-                FROM Classes c
-                JOIN TeacherClasses tc ON c.class_id = tc.class_id
-                WHERE tc.teacher_id = %s
-                ORDER BY c.class_id
-            """
-            classes = db_service.execute_query(query, (teacher_id,))
-            current_app.logger.info(f"Teacher {teacher_id} retrieved exam classes")
-            # 确保总是返回成功响应，即使没有数据
-            if classes is None:
-                classes = []
-            return success_response(classes)
-        finally:
-            db_service.close()
+        query = """
+            SELECT DISTINCT c.class_id, c.class_name
+            FROM Classes c
+            JOIN TeacherClasses tc ON c.class_id = tc.class_id
+            WHERE tc.teacher_id = %s
+            ORDER BY c.class_id
+        """
+        classes = db_service.execute_query(query, (teacher_id,))
+        current_app.logger.info(f"Teacher {teacher_id} retrieved exam classes")
+        # 确保总是返回成功响应，即使没有数据
+        if classes is None:
+            classes = []
+        return success_response(classes)
         
     except Exception as e:
         current_app.logger.error(f"Failed to fetch exam classes: {str(e)}")
