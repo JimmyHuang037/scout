@@ -58,7 +58,7 @@ class CurlTestBase:
             if 'error' in json_data and json_data['error']:
                 error_msg = json_data.get('message', '未知错误')
                 if expect_error:
-                    print(f"测试 {test_number} 完成（预期错误）: {error_msg}")
+                    print(f"测试 {test_number} 成功（预期错误）: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
                     return True
                 else:
@@ -68,7 +68,7 @@ class CurlTestBase:
             elif not json_data.get('success', False):
                 error_msg = json_data.get('message', '未知错误')
                 if expect_error:
-                    print(f"测试 {test_number} 完成（预期错误）: {error_msg}")
+                    print(f"测试 {test_number} 成功（预期错误）: {error_msg}")
                     sys.stdout.flush()  # 确保输出被立即刷新
                     return True
                 else:
@@ -76,7 +76,7 @@ class CurlTestBase:
                     sys.stdout.flush()  # 确保输出被立即刷新
                     pytest.fail(error_msg, pytrace=False)
             else:
-                print(f"测试 {test_number} 完成")
+                print(f"测试 {test_number} 成功")
                 sys.stdout.flush()  # 确保输出被立即刷新
                 return True
         except json.JSONDecodeError:
@@ -85,7 +85,7 @@ class CurlTestBase:
                 f.write(result.stdout)
             
             if expect_error:
-                print(f"测试 {test_number} 完成（预期错误，非JSON响应）")
+                print(f"测试 {test_number} 成功（预期错误，非JSON响应）")
                 sys.stdout.flush()  # 确保输出被立即刷新
                 return True
             else:

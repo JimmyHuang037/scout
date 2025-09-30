@@ -11,3 +11,4 @@
    - curl -s http://127.0.0.1:5000/api/student/S0101/profile | jq
    - curl -s http://127.0.0.1:5000/api/student/S0101/scores | jq
    - curl -s http://127.0.0.1:5000/api/student/S0101/exam_results | jq
+6. 所有curl命令测试应使用jq格式化输出，以提高可读性
