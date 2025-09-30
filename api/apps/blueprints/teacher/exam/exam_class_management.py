@@ -6,22 +6,17 @@ from apps.utils.database_service import DatabaseService
 from apps.services.score_service import ScoreService
 
 
-def get_exam_classes():
-    """获取教师相关的考试班级列表"""
-    try:
-        # 检查认证
-        auth_error = require_auth()
-        if auth_error:
-            return auth_error
-            
-        # 从session中获取当前教师ID
-        current_teacher_id = session.get('user_id')
-        if not current_teacher_id:
-            return error_response('User not authenticated'), 401
+def get_exam_classes(teacher_id):
+    """获取指定教师相关的考试班级列表
+    
+    Args:
+        teacher_id: 教师ID
         
-        # 使用成绩服务获取考试班级列表
-        score_service = ScoreService()
-        # 这里我们直接使用数据库服务来获取教师相关的班级信息
+    Returns:
+        JSON响应，包含班级列表
+    """
+    try:
+        # 直接使用数据库服务来获取教师相关的班级信息
         db_service = DatabaseService()
         
         try:
@@ -32,8 +27,8 @@ def get_exam_classes():
                 WHERE tc.teacher_id = %s
                 ORDER BY c.class_id
             """
-            classes = db_service.execute_query(query, (current_teacher_id,))
-            current_app.logger.info(f"Teacher {current_teacher_id} retrieved exam classes")
+            classes = db_service.execute_query(query, (teacher_id,))
+            current_app.logger.info(f"Teacher {teacher_id} retrieved exam classes")
             # 确保总是返回成功响应，即使没有数据
             if classes is None:
                 classes = []
