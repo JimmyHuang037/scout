@@ -5,6 +5,26 @@ from apps.utils.helpers import success_response, error_response
 
 teacher_class_bp = Blueprint('teacher_class_bp', __name__)
 
+def get_classes(teacher_id):
+    try:
+        # 获取教师班级列表
+        classes = ClassService().get_classes_by_teacher(teacher_id)
+        current_app.logger.info(f"Teacher {teacher_id} retrieved classes")
+        return success_response(classes)
+    except Exception as e:
+        current_app.logger.error(f'Failed to fetch classes: {str(e)}')
+        return error_response('Failed to fetch classes')
+
+def get_class_students(teacher_id, class_id):
+    try:
+        # 获取班级学生列表
+        students = ClassService().get_students_by_class(class_id, teacher_id)
+        current_app.logger.info(f"Teacher {teacher_id} retrieved students for class {class_id}")
+        return success_response(students)
+    except Exception as e:
+        current_app.logger.error(f'Failed to fetch class students: {str(e)}')
+        return error_response('Failed to fetch class students')
+
 @teacher_class_bp.route('/classes', methods=['GET'])
 def get_classes():
     try:

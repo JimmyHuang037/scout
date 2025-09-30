@@ -26,7 +26,14 @@ def get_teacher_students():
     try:
         # 从请求中获取教师ID
         teacher_id = _get_teacher_id()
-        
+        return get_teacher_students_helper(teacher_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+def get_teacher_students_helper(teacher_id):
+    """Helper function to get teacher's students"""
+    try:
         # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
@@ -35,9 +42,6 @@ def get_teacher_students():
         students_data = StudentService().get_students_by_teacher(teacher_id, page, per_page)
         current_app.logger.info(f"Teacher {teacher_id} retrieved students")
         return success_response(students_data)
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
     except Exception as e:
         current_app.logger.error(f'Failed to fetch students: {str(e)}')
         return error_response('Failed to fetch students', 500)
@@ -48,7 +52,14 @@ def get_teacher_student(student_id):
     try:
         # 从请求中获取教师ID
         teacher_id = _get_teacher_id()
-        
+        return get_teacher_student_helper(teacher_id, student_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+def get_teacher_student_helper(teacher_id, student_id):
+    """Helper function to get teacher's student details"""
+    try:
         # 获取学生详情
         student_data = StudentService().get_student_by_id(student_id, teacher_id)
         if not student_data:
@@ -56,9 +67,6 @@ def get_teacher_student(student_id):
             
         current_app.logger.info(f"Teacher {teacher_id} retrieved student {student_id}")
         return success_response(student_data)
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
     except Exception as e:
         current_app.logger.error(f'Failed to fetch student: {str(e)}')
         return error_response('Failed to fetch student', 500)
@@ -69,7 +77,14 @@ def update_teacher_student(student_id):
     try:
         # 从请求中获取教师ID
         teacher_id = _get_teacher_id()
-        
+        return update_teacher_student_helper(teacher_id, student_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+def update_teacher_student_helper(teacher_id, student_id):
+    """Helper function to update teacher's student information"""
+    try:
         # 获取请求数据
         data = request.get_json()
         if not data:
@@ -82,9 +97,6 @@ def update_teacher_student(student_id):
             
         current_app.logger.info(f"Teacher {teacher_id} updated student {student_id}")
         return success_response(student_data, 'Student updated successfully')
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
     except Exception as e:
         current_app.logger.error(f'Failed to update student: {str(e)}')
         return error_response('Failed to update student', 500)

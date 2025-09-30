@@ -34,4 +34,4 @@ def get_exam_classes(teacher_id):
     except Exception as e:
         current_app.logger.error(f"Failed to fetch exam classes: {str(e)}")
         # 确保总是返回有效的JSON响应
-        return error_response('Failed to fetch exam classes', status_code=500)
+        return error_response('Failed to fetch exam classes')

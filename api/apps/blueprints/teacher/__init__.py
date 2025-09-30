@@ -4,16 +4,17 @@ from flask import Blueprint
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 # 导入教师相关路由
-from .exam.exam_management import create_exam, get_exams, get_exam, update_exam, delete_exam
+from .exam.exam_management import create_exam, get_exams as get_exam_list, get_exam, update_exam, delete_exam
 from .exam.exam_class_management import get_exam_classes
 from .exam.exam_results_management import get_exam_results
 from .exam.performance_management import get_teacher_performance
 from .students.student_management import get_teacher_students, get_teacher_student, update_teacher_student
 from .scores.score_management import create_score, update_score, delete_score, get_scores, get_exam_scores
-from .teacher_management import get_teacher_classes as get_classes, get_teacher_exams as get_exams
-from .class_management import get_class_students
+from .teacher_management import get_teacher_classes, get_teacher_exams, get_teacher_profile
+from .class_management import get_classes, get_class_students
+teacher_bp.add_url_rule('/<string:teacher_id>/profile', view_func=get_teacher_profile, methods=['GET'])
 teacher_bp.add_url_rule('/<string:teacher_id>/exams', view_func=create_exam, methods=['POST'])
-teacher_bp.add_url_rule('/<string:teacher_id>/exams', view_func=get_exams, methods=['GET'])
+teacher_bp.add_url_rule('/<string:teacher_id>/exams', view_func=get_exam_list, methods=['GET'])
 teacher_bp.add_url_rule('/<string:teacher_id>/exams/<int:exam_id>', view_func=get_exam, methods=['GET'])
 teacher_bp.add_url_rule('/<string:teacher_id>/exams/<int:exam_id>', view_func=update_exam, methods=['PUT'])
 teacher_bp.add_url_rule('/<string:teacher_id>/exams/<int:exam_id>', view_func=delete_exam, methods=['DELETE'])
