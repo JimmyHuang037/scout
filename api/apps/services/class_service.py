@@ -80,11 +80,10 @@ class ClassService:
                 WHERE c.class_id = %s
                 GROUP BY c.class_id, c.class_name
             """
-            return self.db_service.execute_query(query, (class_id,), fetch_one=True)
+            result = self.db_service.execute_query(query, (class_id,))
+            return result[0] if result else None
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def create_class(self, class_data):
         """

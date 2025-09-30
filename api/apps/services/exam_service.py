@@ -24,10 +24,10 @@ class ExamService:
         query = """
             SELECT e.exam_id, e.exam_name, e.exam_date, e.subject_id, e.teacher_id, 
                    e.exam_type_id, s.subject_name, t.teacher_name, et.exam_type_name
-            FROM exams e
-            JOIN subjects s ON e.subject_id = s.subject_id
-            JOIN teachers t ON e.teacher_id = t.teacher_id
-            JOIN exam_types et ON e.exam_type_id = et.exam_type_id
+            FROM Exams e
+            JOIN Subjects s ON e.subject_id = s.subject_id
+            JOIN Teachers t ON e.teacher_id = t.teacher_id
+            JOIN ExamTypes et ON e.exam_type_id = et.exam_type_id
             WHERE e.exam_id = %s
         """
         result = self.db_service.execute_query(query, (exam_id,))
@@ -45,13 +45,13 @@ class ExamService:
         """
         # 插入新考试
         insert_query = """
-            INSERT INTO exams (exam_name, exam_date, subject_id, teacher_id, exam_type_id)
+            INSERT INTO Exams (exam_name, exam_date, subject_id, teacher_id, exam_type_id)
             VALUES (%s, %s, %s, %s, %s)
         """
         exam_id = self.db_service.execute_update(
             insert_query, 
-            (exam_data['exam_name'], exam_data['exam_date'], exam_data['subject_id'], 
-             exam_data['teacher_id'], exam_data['exam_type_id'])
+            (exam_data['name'], exam_data['date'], exam_data['subject_id'], 
+             exam_data['creator_id'], exam_data['exam_type_id'])
         )
         
         # 返回创建的考试信息
@@ -74,14 +74,14 @@ class ExamService:
             
         # 更新考试信息
         update_query = """
-            UPDATE exams 
+            UPDATE Exams 
             SET exam_name = %s, exam_date = %s, subject_id = %s, teacher_id = %s, exam_type_id = %s
             WHERE exam_id = %s
         """
         self.db_service.execute_update(
             update_query,
-            (exam_data['exam_name'], exam_data['exam_date'], exam_data['subject_id'], 
-             exam_data['teacher_id'], exam_data['exam_type_id'], exam_id)
+            (exam_data['name'], exam_data['date'], exam_data['subject_id'], 
+             exam_data['creator_id'], exam_data['exam_type_id'], exam_id)
         )
         
         # 返回更新后的考试信息
@@ -102,7 +102,7 @@ class ExamService:
             return False
             
         # 删除考试
-        delete_query = "DELETE FROM exams WHERE exam_id = %s"
+        delete_query = "DELETE FROM Exams WHERE exam_id = %s"
         self.db_service.execute_update(delete_query, (exam_id,))
         return True
 
@@ -120,10 +120,10 @@ class ExamService:
         query = """
             SELECT e.exam_id, e.exam_name, e.exam_date, e.subject_id, e.teacher_id, 
                    e.exam_type_id, s.subject_name, t.teacher_name, et.exam_type_name
-            FROM exams e
-            JOIN subjects s ON e.subject_id = s.subject_id
-            JOIN teachers t ON e.teacher_id = t.teacher_id
-            JOIN exam_types et ON e.exam_type_id = et.exam_type_id
+            FROM Exams e
+            JOIN Subjects s ON e.subject_id = s.subject_id
+            JOIN Teachers t ON e.teacher_id = t.teacher_id
+            JOIN ExamTypes et ON e.exam_type_id = et.exam_type_id
             WHERE e.class_id = %s AND e.subject_id = %s
             ORDER BY e.exam_date DESC
         """
@@ -151,7 +151,7 @@ class ExamService:
         # 计算平均分
         avg_query = """
             SELECT AVG(score) as average_score, COUNT(*) as total_students
-            FROM scores 
+            FROM Scores 
             WHERE exam_id = %s
         """
         avg_result = self.db_service.execute_query(avg_query, (exam_id,))
@@ -171,7 +171,7 @@ class ExamService:
         for range_info in grade_ranges:
             count_query = """
                 SELECT COUNT(*) as count
-                FROM scores 
+                FROM Scores 
                 WHERE exam_id = %s AND score >= %s AND score <= %s
             """
             count_result = self.db_service.execute_query(
@@ -190,7 +190,7 @@ class ExamService:
         # 获取最高分和最低分
         score_query = """
             SELECT MAX(score) as max_score, MIN(score) as min_score
-            FROM scores 
+            FROM Scores 
             WHERE exam_id = %s
         """
         score_result = self.db_service.execute_query(score_query, (exam_id,))

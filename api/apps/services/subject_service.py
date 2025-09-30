@@ -18,7 +18,7 @@ class SubjectService:
             list: 科目列表
         """
         try:
-            query = "SELECT subject_id, subject_name FROM subjects ORDER BY subject_id"
+            query = "SELECT subject_id, subject_name FROM Subjects ORDER BY subject_id"
             return self.db_service.execute_query(query)
         except Exception as e:
             current_app.logger.error(f"Failed to get all subjects: {str(e)}")
@@ -37,7 +37,7 @@ class SubjectService:
             dict: 科目信息
         """
         try:
-            query = "SELECT subject_id, subject_name FROM subjects WHERE subject_id = %s"
+            query = "SELECT subject_id, subject_name FROM Subjects WHERE subject_id = %s"
             result = self.db_service.execute_query(query, (subject_id,))
             return result[0] if result else None
         except Exception as e:
@@ -58,13 +58,13 @@ class SubjectService:
         """
         try:
             # 检查科目名称是否已存在
-            check_query = "SELECT subject_id FROM subjects WHERE subject_name = %s"
+            check_query = "SELECT subject_id FROM Subjects WHERE subject_name = %s"
             existing = self.db_service.execute_query(check_query, (subject_data['subject_name'],))
             if existing:
                 raise ValueError("Subject name already exists")
             
             # 插入新科目
-            insert_query = "INSERT INTO subjects (subject_name) VALUES (%s)"
+            insert_query = "INSERT INTO Subjects (subject_name) VALUES (%s)"
             subject_id = self.db_service.execute_update(insert_query, (subject_data['subject_name'],))
             
             # 返回创建的科目信息
@@ -92,7 +92,7 @@ class SubjectService:
                 return None
                 
             # 更新科目信息
-            update_query = "UPDATE subjects SET subject_name = %s WHERE subject_id = %s"
+            update_query = "UPDATE Subjects SET subject_name = %s WHERE subject_id = %s"
             self.db_service.execute_update(update_query, (subject_data['subject_name'], subject_id))
             
             # 返回更新后的科目信息

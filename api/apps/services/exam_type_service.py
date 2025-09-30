@@ -23,7 +23,7 @@ class ExamTypeService:
         """
         try:
             # 获取总数
-            count_query = "SELECT COUNT(*) as count FROM exam_types"
+            count_query = "SELECT COUNT(*) as count FROM ExamTypes"
             total_result = self.db_service.execute_query(count_query, (), fetch_one=True)
             total = total_result['count'] if total_result else 0
             
@@ -33,7 +33,7 @@ class ExamTypeService:
             # 获取考试类型列表
             query = """
                 SELECT exam_type_id, exam_type_name
-                FROM exam_types
+                FROM ExamTypes
                 ORDER BY exam_type_id
                 LIMIT %s OFFSET %s
             """
@@ -67,7 +67,7 @@ class ExamTypeService:
             dict: 考试类型信息
         """
         try:
-            query = "SELECT exam_type_id, exam_type_name FROM exam_types WHERE exam_type_id = %s"
+            query = "SELECT exam_type_id, exam_type_name FROM ExamTypes WHERE exam_type_id = %s"
             result = self.db_service.execute_query(query, (exam_type_id,))
             if not result:
                 current_app.logger.warning(f"Exam type {exam_type_id} does not exist")
@@ -91,14 +91,14 @@ class ExamTypeService:
         """
         try:
             # 检查是否已存在同名考试类型
-            check_query = "SELECT exam_type_id FROM exam_types WHERE exam_type_name = %s"
+            check_query = "SELECT exam_type_id FROM ExamTypes WHERE exam_type_name = %s"
             existing = self.db_service.execute_query(check_query, (exam_type_data.get('exam_type_name'),))
             if existing:
                 current_app.logger.warning(f"Exam type with name '{exam_type_data.get('exam_type_name')}' already exists")
                 raise ValueError("Exam type name already exists")
             
             # 插入新考试类型
-            insert_query = "INSERT INTO exam_types (exam_type_name) VALUES (%s)"
+            insert_query = "INSERT INTO ExamTypes (exam_type_name) VALUES (%s)"
             exam_type_id = self.db_service.execute_update(insert_query, (exam_type_data.get('exam_type_name'),))
             
             # 返回创建的考试类型信息
@@ -128,7 +128,7 @@ class ExamTypeService:
                 return None
             
             # 更新考试类型信息
-            update_query = "UPDATE exam_types SET exam_type_name = %s WHERE exam_type_id = %s"
+            update_query = "UPDATE ExamTypes SET exam_type_name = %s WHERE exam_type_id = %s"
             self.db_service.execute_update(update_query, (exam_type_data.get('exam_type_name'), exam_type_id))
             
             # 返回更新后的考试类型信息
@@ -161,7 +161,7 @@ class ExamTypeService:
             self.db_service.execute_update(delete_scores_query, (exam_type_id,))
             
             # 删除考试类型
-            delete_exam_type_query = "DELETE FROM exam_types WHERE exam_type_id = %s"
+            delete_exam_type_query = "DELETE FROM ExamTypes WHERE exam_type_id = %s"
             self.db_service.execute_update(delete_exam_type_query, (exam_type_id,))
             return True
         except Exception as e:

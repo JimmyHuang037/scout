@@ -17,13 +17,15 @@ def login():
         password = data.get('password')
         
         if not user_id or not password:
-            return error_response('Missing user_id or password'), 400
+            response = error_response('Missing user_id or password')
+            response.status_code = 400
+            return response
             
         # 查询数据库验证用户
         db_service = DatabaseService()
         query = """
             SELECT user_id, username, role, password 
-            FROM users 
+            FROM Users 
             WHERE user_id = %s AND password = %s
         """
         result = db_service.execute_query(query, (user_id, password))
@@ -35,17 +37,22 @@ def login():
             session['username'] = user['username']
             session['role'] = user['role']
             
-            return success_response({
+            response = success_response({
                 'user_id': user['user_id'],
                 'username': user['username'],
                 'role': user['role']
             }, 'Login successful')
+            return response
         else:
-            return error_response('Invalid credentials'), 401
+            response = error_response('Invalid credentials')
+            response.status_code = 401
+            return response
             
     except Exception as e:
         current_app.logger.error(f"Login error: {str(e)}")
-        return error_response('Login failed'), 500
+        response = error_response('Login failed')
+        response.status_code = 500
+        return response
 
 
 def logout():
@@ -61,7 +68,9 @@ def logout():
         return success_response(None, 'Logout successful')
     except Exception as e:
         current_app.logger.error(f"Logout error: {str(e)}")
-        return error_response('Logout failed'), 500
+        response = error_response('Logout failed')
+        response.status_code = 500
+        return response
 
 
 def get_current_user():
@@ -80,7 +89,11 @@ def get_current_user():
             }
             return success_response(user_info)
         else:
-            return error_response('Not logged in'), 401
+            response = error_response('Not logged in')
+            response.status_code = 401
+            return response
     except Exception as e:
         current_app.logger.error(f"Error getting current user: {str(e)}")
-        return error_response('Failed to get user info'), 500
+        response = error_response('Failed to get user info')
+        response.status_code = 500
+        return response

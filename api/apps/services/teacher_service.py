@@ -53,9 +53,7 @@ class TeacherService:
             if current_app:
                 current_app.logger.error(f"Failed to get all teachers: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
-    
+
     def get_teacher_by_id(self, teacher_id):
         """
         根据ID获取教师详情
@@ -79,8 +77,6 @@ class TeacherService:
             if current_app:
                 current_app.logger.error(f"Failed to get teacher by id {teacher_id}: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
 
     def create_teacher(self, teacher_data):
         """
@@ -108,9 +104,7 @@ class TeacherService:
             if current_app:
                 current_app.logger.error(f"Failed to create teacher: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
-    
+
     def update_teacher(self, teacher_id, teacher_data):
         """
         更新教师信息
@@ -201,5 +195,29 @@ class TeacherService:
             if current_app:
                 current_app.logger.error(f"Failed to delete teacher {teacher_id}: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
+
+    def get_teacher_classes(self, teacher_id):
+        """
+        获取教师授课班级列表
+        
+        Args:
+            teacher_id (str): 教师ID
+            
+        Returns:
+            list: 教师授课班级列表
+        """
+        try:
+            query = """
+                SELECT tc.teacher_id, tc.class_id,
+                       t.teacher_name, c.class_name
+                FROM TeacherClasses tc
+                JOIN Teachers t ON tc.teacher_id = t.teacher_id
+                JOIN Classes c ON tc.class_id = c.class_id
+                WHERE tc.teacher_id = %s
+                ORDER BY tc.teacher_id
+            """
+            return self.db_service.execute_query(query, (teacher_id,))
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get teacher classes for {teacher_id}: {str(e)}")
+            raise e

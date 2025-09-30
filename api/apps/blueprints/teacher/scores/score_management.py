@@ -26,7 +26,7 @@ def get_scores(teacher_id):
         scores_data = score_service.get_teacher_scores(teacher_id, page, per_page)
         
         current_app.logger.info(f"Teacher {teacher_id} retrieved scores list")
-        return success_response(scores_data, "获取成绩列表成功")
+        return success_response(scores_data)
     
     except Exception as e:
         current_app.logger.error(f"Failed to retrieve scores: {str(e)}")
@@ -47,18 +47,18 @@ def create_score(teacher_id):
         # 获取请求数据
         data = request.get_json()
         if not data:
-            return error_response("无效的请求数据"), 400
+            return error_response("无效的请求数据", 400)
         
         # 创建成绩服务实例并调用create_score方法
         score_service = ScoreService()
         score = score_service.create_score(data)
         
         current_app.logger.info(f"Teacher {teacher_id} created score: {score}")
-        return success_response({"score_id": score}, "成绩创建成功"), 201
+        return success_response({"score_id": score}), 201
     
     except Exception as e:
         current_app.logger.error(f"Failed to create score: {str(e)}")
-        return error_response("创建成绩失败")
+        return error_response("创建成绩失败", 500)
 
 
 def update_score(teacher_id, score_id):
@@ -76,18 +76,18 @@ def update_score(teacher_id, score_id):
         # 获取请求数据
         data = request.get_json()
         if not data:
-            return error_response("无效的请求数据"), 400
+            return error_response("无效的请求数据", 400)
         
         # 创建成绩服务实例并更新成绩
         score_service = ScoreService()
         result = score_service.update_score(score_id, data)
         
         current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
-        return success_response(result, "成绩更新成功")
+        return success_response(result)
     
     except Exception as e:
         current_app.logger.error(f"Failed to update score {score_id}: {str(e)}")
-        return error_response("成绩更新失败")
+        return error_response("成绩更新失败", 500)
 
 
 def delete_score(teacher_id, score_id):
@@ -107,11 +107,11 @@ def delete_score(teacher_id, score_id):
         result = score_service.delete_score(score_id)
         
         current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
-        return success_response(result, "成绩删除成功")
+        return success_response(result)
     
     except Exception as e:
         current_app.logger.error(f"Failed to delete score {score_id}: {str(e)}")
-        return error_response("成绩删除失败")
+        return error_response("成绩删除失败", 500)
 
 
 def get_exam_scores(teacher_id, exam_id):
@@ -128,7 +128,7 @@ def get_exam_scores(teacher_id, exam_id):
     try:
         # 创建成绩服务实例并获取考试成绩列表
         score_service = ScoreService()
-        scores_data = score_service.get_exam_scores(exam_id, teacher_id)
+        scores_data = score_service.get_exam_scores(exam_id)
         
         current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
         return success_response(scores_data, "获取考试成绩列表成功")

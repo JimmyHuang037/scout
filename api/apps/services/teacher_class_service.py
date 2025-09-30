@@ -24,10 +24,10 @@ class TeacherClassService:
         query = """
             SELECT tc.teacher_class_id, tc.teacher_id, tc.class_id, tc.subject_id,
                    t.teacher_name, c.class_name, s.subject_name
-            FROM teacher_classes tc
-            JOIN teachers t ON tc.teacher_id = t.teacher_id
-            JOIN classes c ON tc.class_id = c.class_id
-            JOIN subjects s ON tc.subject_id = s.subject_id
+            FROM TeacherClasses tc
+            JOIN Teachers t ON tc.teacher_id = t.teacher_id
+            JOIN Classes c ON tc.class_id = c.class_id
+            JOIN Subjects s ON tc.subject_id = s.subject_id
             WHERE tc.teacher_id = %s
             ORDER BY tc.teacher_class_id
         """
@@ -46,10 +46,10 @@ class TeacherClassService:
         query = """
             SELECT tc.teacher_class_id, tc.teacher_id, tc.class_id, tc.subject_id,
                    t.teacher_name, c.class_name, s.subject_name
-            FROM teacher_classes tc
-            JOIN teachers t ON tc.teacher_id = t.teacher_id
-            JOIN classes c ON tc.class_id = c.class_id
-            JOIN subjects s ON tc.subject_id = s.subject_id
+            FROM TeacherClasses tc
+            JOIN Teachers t ON tc.teacher_id = t.teacher_id
+            JOIN Classes c ON tc.class_id = c.class_id
+            JOIN Subjects s ON tc.subject_id = s.subject_id
             WHERE tc.class_id = %s
             ORDER BY tc.teacher_class_id
         """
@@ -67,7 +67,7 @@ class TeacherClassService:
         """
         # 检查关联是否已存在
         check_query = """
-            SELECT teacher_class_id FROM teacher_classes 
+            SELECT teacher_class_id FROM TeacherClasses 
             WHERE teacher_id = %s AND class_id = %s AND subject_id = %s
         """
         existing = self.db_service.execute_query(
@@ -79,7 +79,7 @@ class TeacherClassService:
         
         # 插入新关联
         insert_query = """
-            INSERT INTO teacher_classes (teacher_id, class_id, subject_id)
+            INSERT INTO TeacherClasses (teacher_id, class_id, subject_id)
             VALUES (%s, %s, %s)
         """
         teacher_class_id = self.db_service.execute_update(
@@ -103,10 +103,10 @@ class TeacherClassService:
         query = """
             SELECT tc.teacher_class_id, tc.teacher_id, tc.class_id, tc.subject_id,
                    t.teacher_name, c.class_name, s.subject_name
-            FROM teacher_classes tc
-            JOIN teachers t ON tc.teacher_id = t.teacher_id
-            JOIN classes c ON tc.class_id = c.class_id
-            JOIN subjects s ON tc.subject_id = s.subject_id
+            FROM TeacherClasses tc
+            JOIN Teachers t ON tc.teacher_id = t.teacher_id
+            JOIN Classes c ON tc.class_id = c.class_id
+            JOIN Subjects s ON tc.subject_id = s.subject_id
             WHERE tc.teacher_class_id = %s
         """
         result = self.db_service.execute_query(query, (teacher_class_id,))
@@ -129,7 +129,7 @@ class TeacherClassService:
             
         # 更新关联信息
         update_query = """
-            UPDATE teacher_classes 
+            UPDATE TeacherClasses 
             SET teacher_id = %s, class_id = %s, subject_id = %s
             WHERE teacher_class_id = %s
         """
@@ -157,6 +157,6 @@ class TeacherClassService:
             return False
             
         # 删除关联
-        delete_query = "DELETE FROM teacher_classes WHERE teacher_class_id = %s"
+        delete_query = "DELETE FROM TeacherClasses WHERE teacher_class_id = %s"
         self.db_service.execute_update(delete_query, (teacher_class_id,))
         return True

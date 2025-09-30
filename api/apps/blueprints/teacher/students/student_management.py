@@ -1,6 +1,5 @@
 """教师学生管理模块，处理教师查看学生信息相关操作"""
 from flask import Blueprint, request, jsonify, current_app
-from apps.utils.auth import role_required
 from apps.utils.helpers import success_response, error_response
 from apps.services.student_service import StudentService
 
@@ -21,12 +20,25 @@ def _get_teacher_id():
     raise ValueError("Teacher ID is required")
 
 @teacher_student_bp.route('/students', methods=['GET'])
-@role_required('teacher')
-def get_teacher_students():
+def get_teacher_students(teacher_id):
     try:
-        # 从请求中获取教师ID
-        teacher_id = _get_teacher_id()
         return get_teacher_students_helper(teacher_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+@teacher_student_bp.route('/students/<string:student_id>', methods=['GET'])
+def get_teacher_student(teacher_id, student_id):
+    try:
+        return get_teacher_student_helper(teacher_id, student_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+@teacher_student_bp.route('/students/<string:student_id>', methods=['PUT'])
+def update_teacher_student(teacher_id, student_id):
+    try:
+        return update_teacher_student_helper(teacher_id, student_id)
     except ValueError as e:
         current_app.logger.warning(f'Missing teacher ID: {str(e)}')
         return error_response('Teacher ID is required', 400)
@@ -39,29 +51,18 @@ def get_teacher_students_helper(teacher_id):
         per_page = request.args.get('per_page', 10, type=int)
         
         # 获取教师学生列表
-        students_data = StudentService().get_students_by_teacher(teacher_id, page, per_page)
+        students_data = StudentService().get_teacher_students(teacher_id, None, page, per_page)
         current_app.logger.info(f"Teacher {teacher_id} retrieved students")
         return success_response(students_data)
     except Exception as e:
         current_app.logger.error(f'Failed to fetch students: {str(e)}')
         return error_response('Failed to fetch students', 500)
 
-@teacher_student_bp.route('/students/<int:student_id>', methods=['GET'])
-@role_required('teacher')
-def get_teacher_student(student_id):
-    try:
-        # 从请求中获取教师ID
-        teacher_id = _get_teacher_id()
-        return get_teacher_student_helper(teacher_id, student_id)
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
-
 def get_teacher_student_helper(teacher_id, student_id):
     """Helper function to get teacher's student details"""
     try:
         # 获取学生详情
-        student_data = StudentService().get_student_by_id(student_id, teacher_id)
+        student_data = StudentService().get_student_by_id(student_id)
         if not student_data:
             return error_response('Student not found'), 404
             
@@ -70,17 +71,6 @@ def get_teacher_student_helper(teacher_id, student_id):
     except Exception as e:
         current_app.logger.error(f'Failed to fetch student: {str(e)}')
         return error_response('Failed to fetch student', 500)
-
-@teacher_student_bp.route('/students/<int:student_id>', methods=['PUT'])
-@role_required('teacher')
-def update_teacher_student(student_id):
-    try:
-        # 从请求中获取教师ID
-        teacher_id = _get_teacher_id()
-        return update_teacher_student_helper(teacher_id, student_id)
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
 
 def update_teacher_student_helper(teacher_id, student_id):
     """Helper function to update teacher's student information"""
@@ -91,7 +81,7 @@ def update_teacher_student_helper(teacher_id, student_id):
             return error_response('No data provided'), 400
             
         # 更新学生信息
-        student_data = StudentService().update_student(student_id, data, teacher_id)
+        student_data = StudentService().update_student(student_id, data)
         if not student_data:
             return error_response('Student not found or access denied'), 404
             
