@@ -1,8 +1,8 @@
 """教师考试表现管理模块"""
 from flask import Blueprint, request, jsonify, current_app, session
-from utils.auth import role_required
-from utils.helpers import success_response, error_response
-from services.score_service import ScoreService
+from apps.utils.auth import role_required
+from apps.utils.helpers import success_response, error_response
+from apps.services.score_service import ScoreService
 
 teacher_performance_bp = Blueprint('teacher_performance_bp', __name__)
 

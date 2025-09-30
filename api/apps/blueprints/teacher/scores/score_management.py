@@ -1,174 +1,165 @@
 """成绩管理模块，处理成绩相关的所有操作"""
 from flask import Blueprint, request, jsonify, current_app, session
-from utils.auth import role_required
-from utils.helpers import success_response, error_response
-from services.score_service import ScoreService
+from apps.utils.auth import role_required
+from apps.utils.helpers import success_response, error_response
+from apps.services import ScoreService
 
-teacher_scores_bp = Blueprint('teacher_scores_bp', __name__)
+teacher_score_bp = Blueprint('teacher_score_bp', __name__)
 
 
-@teacher_scores_bp.route('/scores', methods=['GET'])
+@teacher_score_bp.route('/scores', methods=['GET'])
 @role_required('teacher')
 def get_scores():
+    """
+    获取成绩列表
+    
+    Returns:
+        JSON: 成绩列表
+    """
     try:
         # 获取当前教师ID
-        teacher_id = session.get('user_id')
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response("未授权访问", 401)
         
         # 获取查询参数
-        exam_id = request.args.get('exam_id', type=int)
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
         
-        # 创建成绩服务实例
+        # 创建成绩服务实例并获取成绩列表
         score_service = ScoreService()
+        scores_data = score_service.get_all_scores(page, per_page)
         
-        # 获取成绩列表
-        if exam_id:
-            scores = score_service.get_exam_scores(exam_id, teacher_id)
-        else:
-            scores = score_service.get_teacher_scores(teacher_id)
-            
-        if scores is not None:
-            current_app.logger.info(f"Teacher {teacher_id} retrieved scores")
-            return success_response(scores)
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to retrieve scores")
-            return error_response('Failed to retrieve scores', 404)
+        current_app.logger.info(f"Teacher {current_teacher_id} retrieved scores list")
+        return success_response(scores_data, "获取成绩列表成功")
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to fetch scores: {str(e)}')
-        return error_response('Failed to fetch scores', 500)
+        current_app.logger.error(f"Failed to retrieve scores: {str(e)}")
+        return error_response("获取成绩列表失败", 500)
 
 
-@teacher_scores_bp.route('/scores', methods=['POST'])
+@teacher_score_bp.route('/scores', methods=['POST'])
 @role_required('teacher')
 def create_score():
+    """
+    创建成绩记录
+    
+    Returns:
+        JSON: 创建结果
+    """
     try:
         # 获取当前教师ID
-        teacher_id = session.get('user_id')
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response("未授权访问", 401)
         
         # 获取请求数据
         data = request.get_json()
-        student_id = data.get('student_id')
-        subject_id = data.get('subject_id')
-        exam_type_id = data.get('exam_type_id')
-        score = data.get('score')
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        # 验证必填字段
-        if not all([student_id, subject_id, exam_type_id, score]):
-            return error_response('Missing required fields', 400)
-        
-        # 记录请求参数
-        current_app.logger.info(f"Creating score with params: student_id={student_id}, subject_id={subject_id}, exam_type_id={exam_type_id}, score={score}, teacher_id={teacher_id}")
-        
-        # 创建成绩服务实例
+        # 创建成绩服务实例并调用create_score方法
         score_service = ScoreService()
+        score = score_service.create_score(data)
         
-        # 创建成绩（包含权限验证）
-        new_score = score_service.create_score(student_id, subject_id, exam_type_id, score, teacher_id)
-        if new_score:
-            current_app.logger.info(f"Teacher {teacher_id} created score for student {student_id}")
-            return success_response({'message': 'Score created successfully'}, 201)
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to create score for student {student_id} (unauthorized or invalid data)")
-            return error_response('Failed to create score', 400)
+        current_app.logger.info(f"Teacher {current_teacher_id} created score: {score}")
+        return success_response({"score_id": score}, "成绩创建成功"), 201
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to create score: {str(e)}')
-        return error_response(f'Failed to create score: {str(e)}', 500)
+        current_app.logger.error(f"Failed to create score: {str(e)}")
+        return error_response("创建成绩失败", 500)
 
 
-@teacher_scores_bp.route('/scores/<int:score_id>', methods=['PUT'])
+@teacher_score_bp.route('/scores/<int:score_id>', methods=['PUT'])
 @role_required('teacher')
 def update_score(score_id):
+    """
+    更新成绩记录
+    
+    Args:
+        score_id (int): 成绩ID
+        
+    Returns:
+        JSON: 更新结果
+    """
     try:
         # 获取当前教师ID
-        teacher_id = session.get('user_id')
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response("未授权访问", 401)
         
         # 获取请求数据
         data = request.get_json()
-        score = data.get('score')
+        if not data:
+            return error_response("无效的请求数据", 400)
         
-        # 创建成绩服务实例
+        # 创建成绩服务实例并更新成绩
         score_service = ScoreService()
+        result = score_service.update_score(score_id, data)
         
-        # 更新成绩（包含权限验证）
-        updated_score = score_service.update_score(score_id, score, teacher_id)
-        if updated_score:
-            current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
-            return success_response(updated_score)
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to update score {score_id} (not found or unauthorized)")
-            return error_response('Failed to update score', 404)
+        current_app.logger.info(f"Teacher {current_teacher_id} updated score {score_id}")
+        return success_response(result, "成绩更新成功")
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to update score {score_id}: {str(e)}')
-        return error_response('Failed to update score', 500)
+        current_app.logger.error(f"Failed to update score {score_id}: {str(e)}")
+        return error_response("成绩更新失败", 500)
 
 
-@teacher_scores_bp.route('/scores/<int:score_id>', methods=['DELETE'])
+@teacher_score_bp.route('/scores/<int:score_id>', methods=['DELETE'])
 @role_required('teacher')
 def delete_score(score_id):
+    """
+    删除成绩记录
+    
+    Args:
+        score_id (int): 成绩ID
+        
+    Returns:
+        JSON: 删除结果
+    """
     try:
         # 获取当前教师ID
-        teacher_id = session.get('user_id')
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response("未授权访问", 401)
         
-        # 创建成绩服务实例
+        # 创建成绩服务实例并删除成绩
         score_service = ScoreService()
+        result = score_service.delete_score(score_id)
         
-        # 删除成绩（包含权限验证）
-        result = score_service.delete_score(score_id, teacher_id)
-        if result:
-            current_app.logger.info(f"Teacher {teacher_id} deleted score {score_id}")
-            return success_response({'message': 'Score deleted successfully'})
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to delete score {score_id} (not found or unauthorized)")
-            return error_response('Failed to delete score', 404)
+        current_app.logger.info(f"Teacher {current_teacher_id} deleted score {score_id}")
+        return success_response(result, "成绩删除成功")
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to delete score {score_id}: {str(e)}')
-        return error_response('Failed to delete score', 500)
+        current_app.logger.error(f"Failed to delete score {score_id}: {str(e)}")
+        return error_response("成绩删除失败", 500)
 
 
-@teacher_scores_bp.route('/scores/exam/<int:exam_id>', methods=['GET'])
+@teacher_score_bp.route('/exams/<int:exam_id>/scores', methods=['GET'])
 @role_required('teacher')
 def get_exam_scores(exam_id):
+    """
+    获取考试成绩列表
+    
+    Args:
+        exam_id (int): 考试ID
+        
+    Returns:
+        JSON: 考试成绩列表
+    """
     try:
         # 获取当前教师ID
-        teacher_id = session.get('user_id')
+        current_teacher_id = session.get('user_id')
+        if not current_teacher_id:
+            return error_response("未授权访问", 401)
         
-        # 创建成绩服务实例
+        # 创建成绩服务实例并获取考试成绩列表
         score_service = ScoreService()
+        scores_data = score_service.get_exam_scores(exam_id, current_teacher_id)
         
-        # 获取考试成绩
-        scores = score_service.get_exam_scores(exam_id, teacher_id)
-        if scores is not None:
-            current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
-            return success_response(scores)
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} attempted to access scores for exam {exam_id} (not found or unauthorized)")
-            return error_response('Exam scores not found or access denied', 404)
+        current_app.logger.info(f"Teacher {current_teacher_id} retrieved scores for exam {exam_id}")
+        return success_response(scores_data, "获取考试成绩列表成功")
+    
     except Exception as e:
-        current_app.logger.error(f'Failed to fetch exam scores for exam {exam_id}: {str(e)}')
-        return error_response('Failed to fetch exam scores', 500)
-
-
-@teacher_scores_bp.route('/scores/exam/<int:exam_id>', methods=['PUT'])
-@role_required('teacher')
-def update_exam_scores(exam_id):
-    try:
-        # 获取当前教师ID
-        teacher_id = session.get('user_id')
-        
-        # 获取请求数据
-        data = request.get_json()
-        scores_data = data.get('scores', [])
-        
-        # 创建成绩服务实例
-        score_service = ScoreService()
-        
-        # 更新考试成绩
-        updated_scores = score_service.update_exam_scores(exam_id, scores_data, teacher_id)
-        if updated_scores is not None:
-            current_app.logger.info(f"Teacher {teacher_id} updated scores for exam {exam_id}")
-            return success_response(updated_scores)
-        else:
-            current_app.logger.warning(f"Teacher {teacher_id} failed to update scores for exam {exam_id} (not found or unauthorized)")
-            return error_response('Failed to update exam scores', 404)
-    except Exception as e:
-        current_app.logger.error(f'Failed to update exam scores for exam {exam_id}: {str(e)}')
-        return error_response('Failed to update exam scores', 500)
+        current_app.logger.error(f"Failed to retrieve scores for exam {exam_id}: {str(e)}")
+        return error_response("获取考试成绩列表失败", 500)

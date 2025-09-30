@@ -1,7 +1,7 @@
 """教师班级关联管理模块，处理教师和班级关联相关的所有操作"""
 from flask import jsonify, request, session, current_app
-from services import TeacherClassService
-from utils.helpers import success_response, error_response, auth_required, role_required
+from apps.services import TeacherClassService
+from apps.utils.helpers import success_response, error_response, auth_required, role_required
 
 
 @auth_required
@@ -73,7 +73,7 @@ def get_teacher_class(teacher_class_id):
     获取特定教师班级关联信息
     
     Args:
-        teacher_class_id (int): 教师班级关联ID（此处应为teacher_id）
+        teacher_class_id (int): 教师班级关联ID
         
     Returns:
         JSON: 教师班级关联信息或错误信息
@@ -101,7 +101,7 @@ def update_teacher_class(teacher_class_id):
     更新教师班级关联信息
     
     Args:
-        teacher_class_id (int): 教师班级关联ID（此处应为teacher_id）
+        teacher_class_id (int): 教师班级关联ID
         
     Returns:
         JSON: 更新结果
@@ -138,7 +138,7 @@ def delete_teacher_class(teacher_class_id):
     删除教师班级关联
     
     Args:
-        teacher_class_id (int): 教师班级关联ID（此处应为teacher_id）
+        teacher_class_id (int): 教师班级关联ID
         
     Returns:
         JSON: 删除结果

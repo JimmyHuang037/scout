@@ -1,9 +1,9 @@
 """考试班级管理模块，处理考试班级相关操作"""
 from flask import jsonify, request, session, current_app
-from utils.helpers import success_response, error_response
-from utils.auth import require_auth, require_role
-from utils import database_service
-from services.score_service import ScoreService
+from apps.utils.helpers import success_response, error_response
+from apps.utils.auth import require_auth, require_role
+from apps.utils.database_service import DatabaseService
+from apps.services.score_service import ScoreService
 
 
 def get_exam_classes():
@@ -22,7 +22,6 @@ def get_exam_classes():
         # 使用成绩服务获取考试班级列表
         score_service = ScoreService()
         # 这里我们直接使用数据库服务来获取教师相关的班级信息
-        from utils.database_service import DatabaseService
         db_service = DatabaseService()
         
         try:

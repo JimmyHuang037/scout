@@ -1,7 +1,7 @@
 """考试管理模块，处理考试相关的所有操作"""
 from flask import jsonify, request, session, current_app
-from services import ExamService
-from utils.helpers import success_response, error_response, auth_required, role_required
+from apps.services import ExamService
+from apps.utils.helpers import success_response, error_response, auth_required, role_required
 
 
 @auth_required

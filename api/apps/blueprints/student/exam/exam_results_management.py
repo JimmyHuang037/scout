@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
-from utils.helpers import success_response, error_response
-from services.score_service import ScoreService
+from apps.utils.helpers import success_response, error_response
+from apps.services.score_service import ScoreService
 
 student_exam_results_bp = Blueprint('student_exam_results_bp', __name__)
 

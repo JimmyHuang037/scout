@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, current_app
-from utils.helpers import success_response, error_response
-from services.student_service import StudentService
+from apps.utils.helpers import success_response, error_response
+from apps.services.student_service import StudentService
 
 student_profile_bp = Blueprint('student_profile_bp', __name__)
 
