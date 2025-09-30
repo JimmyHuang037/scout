@@ -7,16 +7,11 @@ from apps.services.score_service import ScoreService
 
 
 def get_exam_classes(teacher_id):
-    """获取指定教师相关的考试班级列表
-    
-    Args:
-        teacher_id: 教师ID
-        
-    Returns:
-        JSON响应，包含班级列表
-    """
+    """获取教师相关的考试班级列表"""
     try:
-        # 直接使用数据库服务来获取教师相关的班级信息
+        # 使用成绩服务获取考试班级列表
+        score_service = ScoreService()
+        # 这里我们直接使用数据库服务来获取教师相关的班级信息
         db_service = DatabaseService()
         
         try:
@@ -39,4 +34,4 @@ def get_exam_classes(teacher_id):
     except Exception as e:
         current_app.logger.error(f"Failed to fetch exam classes: {str(e)}")
         # 确保总是返回有效的JSON响应
-        return error_response('Failed to fetch exam classes'), 500
+        return error_response('Failed to fetch exam classes', status_code=500)
