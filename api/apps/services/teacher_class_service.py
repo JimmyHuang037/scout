@@ -1,6 +1,5 @@
 """教师班级关联服务类"""
 
-import logging
 from flask import current_app
 from apps.utils.database_service import DatabaseService
 

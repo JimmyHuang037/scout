@@ -1,6 +1,5 @@
 """成绩服务模块，处理与成绩相关的业务逻辑"""
 
-import logging
 from flask import current_app
 from apps.utils.database_service import DatabaseService
 
