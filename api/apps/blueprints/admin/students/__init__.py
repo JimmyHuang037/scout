@@ -1,14 +1,14 @@
-from .student_management import get_students, create_student, get_student, update_student, delete_student
 from flask import Blueprint
-"""学生管理蓝图模块"""
 
-student_bp = Blueprint('students', __name__)
+# 创建学生管理蓝图
+admin_students_bp = Blueprint('admin_students', __name__)
 
-# 导入学生管理相关路由
+# 导入管理函数
+from . import student_management
 
 # 注册路由
-student_bp.add_url_rule('/students', view_func=get_students, methods=['GET'])
-student_bp.add_url_rule('/students', view_func=create_student, methods=['POST'])
-student_bp.add_url_rule('/students/<string:student_id>', view_func=get_student, methods=['GET'])
-student_bp.add_url_rule('/students/<string:student_id>', view_func=update_student, methods=['PUT'])
-student_bp.add_url_rule('/students/<string:student_id>', view_func=delete_student, methods=['DELETE'])
+admin_students_bp.add_url_rule('/', methods=['GET'], view_func=student_management.get_students)
+admin_students_bp.add_url_rule('/', methods=['POST'], view_func=student_management.create_student)
+admin_students_bp.add_url_rule('/<string:student_id>', methods=['GET'], view_func=student_management.get_student)
+admin_students_bp.add_url_rule('/<string:student_id>', methods=['PUT'], view_func=student_management.update_student)
+admin_students_bp.add_url_rule('/<string:student_id>', methods=['DELETE'], view_func=student_management.delete_student)

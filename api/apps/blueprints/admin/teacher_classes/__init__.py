@@ -1,14 +1,14 @@
-from .teacher_class_management import get_teacher_classes, create_teacher_class, get_teacher_class, update_teacher_class, delete_teacher_class
 from flask import Blueprint
-"""教师班级关联管理蓝图模块"""
 
-teacher_class_bp = Blueprint('teacher_classes', __name__)
+# 创建教师班级关联管理蓝图
+admin_teacher_classes_bp = Blueprint('admin_teacher_classes', __name__)
 
-# 导入教师班级关联管理相关路由
+# 导入管理函数
+from . import teacher_class_management
 
 # 注册路由
-teacher_class_bp.add_url_rule('/teacher-classes', view_func=get_teacher_classes, methods=['GET'])
-teacher_class_bp.add_url_rule('/teacher-classes', view_func=create_teacher_class, methods=['POST'])
-teacher_class_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=get_teacher_class, methods=['GET'])
-teacher_class_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=update_teacher_class, methods=['PUT'])
-teacher_class_bp.add_url_rule('/teacher-classes/<int:teacher_class_id>', view_func=delete_teacher_class, methods=['DELETE'])
+admin_teacher_classes_bp.add_url_rule('/', methods=['POST'], view_func=teacher_class_management.create_teacher_class)
+admin_teacher_classes_bp.add_url_rule('/', methods=['GET'], view_func=teacher_class_management.get_teacher_classes)
+admin_teacher_classes_bp.add_url_rule('/<int:teacher_class_id>', methods=['GET'], view_func=teacher_class_management.get_teacher_class)
+admin_teacher_classes_bp.add_url_rule('/<int:teacher_class_id>', methods=['PUT'], view_func=teacher_class_management.update_teacher_class)
+admin_teacher_classes_bp.add_url_rule('/<int:teacher_class_id>', methods=['DELETE'], view_func=teacher_class_management.delete_teacher_class)

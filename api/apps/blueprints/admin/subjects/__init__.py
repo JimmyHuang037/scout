@@ -3,14 +3,14 @@ from flask import Blueprint
 """科目管理蓝图模块"""
 
 # 创建科目管理蓝图
-admin_subjects_bp = Blueprint('admin_subjects', __name__, url_prefix='/api/admin/subjects')
+admin_subjects_bp = Blueprint('admin_subjects', __name__)
 
 # 导入管理函数
 from . import subject_management
 
 # 注册路由
-admin_subjects_bp.add_url_rule('/', methods=['POST'], view_func=subject_management.create_subject)
 admin_subjects_bp.add_url_rule('/', methods=['GET'], view_func=subject_management.get_subjects)
+admin_subjects_bp.add_url_rule('/', methods=['POST'], view_func=subject_management.create_subject)
 admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['GET'], view_func=subject_management.get_subject)
 admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['PUT'], view_func=subject_management.update_subject)
 admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['DELETE'], view_func=subject_management.delete_subject)

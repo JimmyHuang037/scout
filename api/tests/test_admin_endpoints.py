@@ -1,12 +1,12 @@
-        import json
+import json
 import os
 from .test_curl_base import CurlTestBase
 from config import Config
+
 """
 管理员端点测试
 使用 pytest 框架执行黑盒测试
 """
-
 
 
 class TestAdminEndpoints(CurlTestBase):

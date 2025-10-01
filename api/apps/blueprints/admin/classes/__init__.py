@@ -1,14 +1,14 @@
-from .class_management import get_classes, create_class, get_class, update_class, delete_class
 from flask import Blueprint
-"""班级管理蓝图模块"""
 
-class_bp = Blueprint('classes', __name__)
+# 创建班级管理蓝图
+admin_classes_bp = Blueprint('admin_classes', __name__)
 
-# 导入班级管理相关路由
+# 导入管理函数
+from . import class_management
 
 # 注册路由
-class_bp.add_url_rule('/classes', view_func=get_classes, methods=['GET'])
-class_bp.add_url_rule('/classes', view_func=create_class, methods=['POST'])
-class_bp.add_url_rule('/classes/<int:class_id>', view_func=get_class, methods=['GET'])
-class_bp.add_url_rule('/classes/<int:class_id>', view_func=update_class, methods=['PUT'])
-class_bp.add_url_rule('/classes/<int:class_id>', view_func=delete_class, methods=['DELETE'])
+admin_classes_bp.add_url_rule('/', methods=['GET'], view_func=class_management.get_classes)
+admin_classes_bp.add_url_rule('/', methods=['POST'], view_func=class_management.create_class)
+admin_classes_bp.add_url_rule('/<int:class_id>', methods=['GET'], view_func=class_management.get_class)
+admin_classes_bp.add_url_rule('/<int:class_id>', methods=['PUT'], view_func=class_management.update_class)
+admin_classes_bp.add_url_rule('/<int:class_id>', methods=['DELETE'], view_func=class_management.delete_class)
