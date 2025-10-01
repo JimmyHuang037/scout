@@ -1,5 +1,5 @@
 """教师班级关联管理模块，处理教师和班级关联相关的所有操作"""
-from flask import jsonify, request, session, current_app
+from flask import jsonify, request, current_app
 from apps.services import TeacherClassService
 from apps.utils.helpers import success_response, error_response
 

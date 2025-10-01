@@ -1,5 +1,5 @@
 """考试类型管理模块，处理考试类型相关的所有操作"""
-from flask import jsonify, request, current_app
+from flask import request, current_app
 from apps.services import ExamTypeService
 from apps.utils.helpers import success_response, error_response
 
@@ -61,7 +61,7 @@ def get_exam_types():
     
     except Exception as e:
         current_app.logger.error(f'Failed to retrieve exam types: {str(e)}')
-        return error_response("获取考试类型列表失败")
+        return error_response("获取考试类型列表失败", 500)
 
 
 def get_exam_type(exam_type_id):
@@ -86,7 +86,7 @@ def get_exam_type(exam_type_id):
     
     except Exception as e:
         current_app.logger.error(f'Failed to retrieve exam type {exam_type_id}: {str(e)}')
-        return error_response("获取考试类型详情失败")
+        return error_response("获取考试类型详情失败", 500)
 
 
 def update_exam_type(exam_type_id):
@@ -125,7 +125,7 @@ def update_exam_type(exam_type_id):
     
     except Exception as e:
         current_app.logger.error(f'Failed to update exam type {exam_type_id}: {str(e)}')
-        return error_response("更新考试类型失败")
+        return error_response("更新考试类型失败", 500)
 
 
 def delete_exam_type(exam_type_id):

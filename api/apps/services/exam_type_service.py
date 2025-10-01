@@ -53,8 +53,6 @@ class ExamTypeService:
             if current_app:
                 current_app.logger.error(f"Failed to get all exam types: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
     
     def get_exam_type_by_id(self, exam_type_id):
         """
@@ -76,8 +74,6 @@ class ExamTypeService:
             if current_app:
                 current_app.logger.error(f"Failed to get exam type by id {exam_type_id}: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
     
     def create_exam_type(self, exam_type_data):
         """
@@ -87,7 +83,7 @@ class ExamTypeService:
             exam_type_data (dict): 考试类型信息
             
         Returns:
-            dict: 创建的考试类型信息
+            int: 创建的考试类型ID
         """
         try:
             # 检查是否已存在同名考试类型
@@ -101,14 +97,11 @@ class ExamTypeService:
             insert_query = "INSERT INTO ExamTypes (exam_type_name) VALUES (%s)"
             exam_type_id = self.db_service.execute_update(insert_query, (exam_type_data.get('exam_type_name'),))
             
-            # 返回创建的考试类型信息
-            return self.get_exam_type_by_id(exam_type_id)
+            return exam_type_id
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to create exam type: {str(e)}")
             raise e
-        finally:
-            self.db_service.close()
     
     def update_exam_type(self, exam_type_id, exam_type_data):
         """
@@ -125,20 +118,17 @@ class ExamTypeService:
             # 检查考试类型是否存在
             if not self.get_exam_type_by_id(exam_type_id):
                 current_app.logger.warning(f"Exam type {exam_type_id} does not exist")
-                return None
+                return False
             
             # 更新考试类型信息
             update_query = "UPDATE ExamTypes SET exam_type_name = %s WHERE exam_type_id = %s"
             self.db_service.execute_update(update_query, (exam_type_data.get('exam_type_name'), exam_type_id))
             
-            # 返回更新后的考试类型信息
-            return self.get_exam_type_by_id(exam_type_id)
+            return True
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to update exam type {exam_type_id}: {str(e)}")
-            raise e
-        finally:
-            self.db_service.close()
+            return False
     
     def delete_exam_type(self, exam_type_id):
         """
@@ -156,20 +146,17 @@ class ExamTypeService:
                 current_app.logger.warning(f"Exam type {exam_type_id} does not exist")
                 return False
             
-            # 删除与该考试类型相关的成绩
-            delete_scores_query = "DELETE FROM Scores WHERE exam_type_id = %s"
-            self.db_service.execute_update(delete_scores_query, (exam_type_id,))
+            # 删除相关的成绩记录
+            scores_query = "DELETE FROM Scores WHERE exam_type_id = %s"
+            scores_deleted = self.db_service.execute_update(scores_query, (exam_type_id,))
+            current_app.logger.info(f"Deleted {scores_deleted} scores for exam type {exam_type_id}")
             
             # 删除考试类型
-            delete_exam_type_query = "DELETE FROM ExamTypes WHERE exam_type_id = %s"
-            self.db_service.execute_update(delete_exam_type_query, (exam_type_id,))
+            exam_type_query = "DELETE FROM ExamTypes WHERE exam_type_id = %s"
+            self.db_service.execute_update(exam_type_query, (exam_type_id,))
+            
             return True
         except Exception as e:
-            # 如果我们启动了事务，则回滚它
-            if transaction_started_here and self.db_service.transaction_active:
-                self.db_service.rollback()
             if current_app:
                 current_app.logger.error(f"Failed to delete exam type {exam_type_id}: {str(e)}")
-            raise e
-        finally:
-            self.db_service.close()
+            return False

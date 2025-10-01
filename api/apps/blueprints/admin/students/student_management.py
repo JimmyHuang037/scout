@@ -1,8 +1,7 @@
 """学生管理模块，处理学生相关的所有操作"""
-from flask import jsonify, request, current_app
+from flask import request, current_app
 from apps.services import StudentService
 from apps.utils.helpers import success_response, error_response
-
 
 
 def get_students():

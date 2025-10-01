@@ -187,7 +187,7 @@ class TeacherService:
             params = (
                 teacher_data.get('teacher_name'),
                 teacher_data.get('subject_id'),
-                teacher_data.get('password')
+                teacher_data.get('password', 'pass123')  # 默认密码为pass123
             )
             self.db_service.execute_update(query, params)
             return True

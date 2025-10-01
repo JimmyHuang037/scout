@@ -219,15 +219,16 @@ class StudentService:
             dict: 创建的学生信息
         """
         try:
-            # 先插入学生信息到students表
+            # 先插入学生信息到Students表
             student_query = """
-                INSERT INTO Students (student_id, student_name, class_id)
-                VALUES (%s, %s, %s)
+                INSERT INTO Students (student_id, student_name, class_id, password)
+                VALUES (%s, %s, %s, %s)
             """
             student_params = (
                 student_data['student_id'],
                 student_data['student_name'],
-                student_data['class_id']
+                student_data['class_id'],
+                student_data.get('password', 'pass123')  # 默认密码为pass123
             )
             
             self.db_service.execute_update(student_query, student_params)
