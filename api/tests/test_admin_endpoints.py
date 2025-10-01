@@ -1,5 +1,6 @@
 import json
 import os
+import pytest
 from .test_curl_base import CurlTestBase
 from config import Config
 
@@ -9,6 +10,7 @@ from config import Config
 """
 
 
+@pytest.mark.order("last")
 class TestAdminEndpoints(CurlTestBase):
     """管理员端点测试类 - 无需登录和会话的测试"""
     
