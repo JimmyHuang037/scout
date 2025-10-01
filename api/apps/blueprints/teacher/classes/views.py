@@ -1,10 +1,7 @@
 from apps.services.class_service import ClassService
 from apps.services.teacher_service import TeacherService
 from apps.utils.helpers import success_response, error_response
-from flask import Blueprint, current_app
-"""教师班级管理模块"""
-
-teacher_class_bp = Blueprint('teacher_class_bp', __name__)
+from flask import current_app
 
 def get_classes(teacher_id):
     try:
