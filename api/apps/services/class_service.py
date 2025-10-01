@@ -58,8 +58,6 @@ class ClassService:
             
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def get_class_by_id(self, class_id):
         """
@@ -113,8 +111,6 @@ class ClassService:
             return class_info
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def update_class(self, class_id, class_data):
         """
@@ -146,8 +142,6 @@ class ClassService:
             return True
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def delete_class(self, class_id):
         """
@@ -175,8 +169,6 @@ class ClassService:
             return True
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
     
     def get_class_students(self, class_id):
         """
@@ -202,8 +194,6 @@ class ClassService:
             }
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
             
     def get_students_by_class(self, class_id, teacher_id):
         """
@@ -231,5 +221,3 @@ class ClassService:
             }
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()

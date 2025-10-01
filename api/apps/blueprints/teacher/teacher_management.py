@@ -65,7 +65,30 @@ def get_teacher_classes(teacher_id=None):
         return error_response('Failed to get teacher classes', 500)
 
 
-
+@teacher_bp.route('/classes/students', methods=['GET'])
+@teacher_bp.route('/<string:teacher_id>/classes/students', methods=['GET'])
+def get_teacher_all_classes_students(teacher_id=None):
+    """
+    获取教师所有班级的学生列表
+    
+    Args:
+        teacher_id (str, optional): 教师ID
+        
+    Returns:
+        JSON: 教师所有班级的学生列表
+    """
+    try:
+        # 检查是否提供了teacher_id
+        if teacher_id is None:
+            return error_response('Teacher ID is required', 400)
+            
+        teacher_service = TeacherService()
+        students_data = teacher_service.get_all_classes_students(teacher_id)
+        
+        return success_response(students_data)
+    except Exception as e:
+        current_app.logger.error(f"Error getting teacher all classes students: {str(e)}")
+        return error_response('Failed to get students'), 500
 
 
 @teacher_bp.route('/classes/<int:class_id>/students', methods=['GET'])

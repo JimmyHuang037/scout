@@ -1,7 +1,6 @@
-"""教师服务类"""
-
-from flask import current_app
+"""教师服务模块，处理与教师相关的业务逻辑"""
 from apps.utils.database_service import DatabaseService
+from apps.services.class_service import ClassService
 
 
 class TeacherService:
@@ -10,6 +9,98 @@ class TeacherService:
     def __init__(self):
         """初始化教师服务"""
         self.db_service = DatabaseService()
+        self.class_service = ClassService()
+
+    def get_teacher_profile(self, teacher_id):
+        """
+        获取教师个人资料
+        
+        Args:
+            teacher_id (str): 教师ID
+            
+        Returns:
+            dict: 教师个人资料
+        """
+        try:
+            query = """
+                SELECT teacher_id, teacher_name, email, phone
+                FROM Teachers 
+                WHERE teacher_id = %s
+            """
+            result = self.db_service.execute_query(query, (teacher_id,))
+            return result[0] if result else None
+        except Exception as e:
+            raise e
+
+    def get_teacher_classes(self, teacher_id):
+        """
+        获取教师授课班级列表
+        
+        Args:
+            teacher_id (str): 教师ID
+            
+        Returns:
+            list: 班级列表
+        """
+        try:
+            query = """
+                SELECT c.class_id, c.class_name
+                FROM Classes c
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+                ORDER BY c.class_id
+            """
+            classes = self.db_service.execute_query(query, (teacher_id,))
+            return {
+                'classes': classes
+            }
+        except Exception as e:
+            raise e
+
+    def get_all_classes_students(self, teacher_id):
+        """
+        获取教师所有班级的学生列表
+        
+        Args:
+            teacher_id (str): 教师ID
+            
+        Returns:
+            dict: 所有班级的学生列表
+        """
+        try:
+            query = """
+                SELECT s.student_id, s.student_name, c.class_name, c.class_id
+                FROM Students s
+                JOIN Classes c ON s.class_id = c.class_id
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+                ORDER BY c.class_id, s.student_id
+            """
+            students = self.db_service.execute_query(query, (teacher_id,))
+            
+            # 按班级组织学生数据
+            class_students = {}
+            for student in students:
+                class_id = student['class_id']
+                if class_id not in class_students:
+                    class_students[class_id] = {
+                        'class_id': class_id,
+                        'class_name': student['class_name'],
+                        'students': []
+                    }
+                class_students[class_id]['students'].append({
+                    'student_id': student['student_id'],
+                    'student_name': student['student_name']
+                })
+            
+            # 转换为列表格式
+            result = list(class_students.values())
+            
+            return {
+                'classes': result
+            }
+        except Exception as e:
+            raise e
 
     def get_all_teachers(self, page=1, per_page=10):
         """
@@ -194,30 +285,4 @@ class TeacherService:
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to delete teacher {teacher_id}: {str(e)}")
-            raise e
-
-    def get_teacher_classes(self, teacher_id):
-        """
-        获取教师授课班级列表
-        
-        Args:
-            teacher_id (str): 教师ID
-            
-        Returns:
-            list: 教师授课班级列表
-        """
-        try:
-            query = """
-                SELECT tc.teacher_id, tc.class_id,
-                       t.teacher_name, c.class_name
-                FROM TeacherClasses tc
-                JOIN Teachers t ON tc.teacher_id = t.teacher_id
-                JOIN Classes c ON tc.class_id = c.class_id
-                WHERE tc.teacher_id = %s
-                ORDER BY tc.teacher_id
-            """
-            return self.db_service.execute_query(query, (teacher_id,))
-        except Exception as e:
-            if current_app:
-                current_app.logger.error(f"Failed to get teacher classes for {teacher_id}: {str(e)}")
             raise e

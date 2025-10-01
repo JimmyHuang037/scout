@@ -360,5 +360,3 @@ class ScoreService:
             }
         except Exception as e:
             raise e
-        finally:
-            self.db_service.close()
