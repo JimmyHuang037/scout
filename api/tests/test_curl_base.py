@@ -5,7 +5,10 @@ import sys
 import time
 import pytest
 import shlex
+import tempfile
 from config import Config
+
+
 class CurlTestBase:
     @classmethod
     def setup_class(cls):
@@ -90,4 +93,80 @@ class CurlTestBase:
         except Exception as e:
             print(f"测试 {test_number} 异常: {str(e)}")
             sys.stdout.flush()  # 确保输出被立即刷新
+            pytest.fail(str(e), pytrace=False)
+
+    def run_session_api_test(self, test_number, description, command, output_file, test_setup, session_file=None):
+        """
+        运行需要会话的API测试
+        
+        Args:
+            test_number: 测试编号
+            description: 测试描述
+            command: 命令数组
+            output_file: 输出文件名
+            test_setup: 测试设置
+            session_file: 会话文件路径（用于读取或保存cookie）
+        """
+        print(f"\n{test_number}. {description}")
+        print(f"执行命令: {' '.join(command)}")
+        sys.stdout.flush()  # 确保输出被立即刷新
+        
+        # 记录curl命令
+        self._record_curl_command(test_number, description, command)
+        
+        # 构建带cookie jar的curl命令
+        if session_file:
+            # 如果提供了会话文件，则使用它
+            cookie_args = ['-b', session_file, '-c', session_file]
+            cookie_command = command[:1] + cookie_args + command[1:]
+        else:
+            # 如果没有提供会话文件，则不使用cookie
+            cookie_command = command
+
+        # 使用shlex.join来正确处理命令参数中的引号
+        if '|' not in ' '.join(cookie_command):
+            # 如果命令中没有管道符，添加jq处理
+            full_command = shlex.join(cookie_command) + ' | jq'
+        else:
+            # 如果已经有管道符，直接使用原命令
+            full_command = shlex.join(cookie_command)
+        
+        # 执行测试命令
+        result = subprocess.run(full_command, shell=True, capture_output=True, text=True)
+        
+        # 保存结果
+        output_path = os.path.join(test_setup['result_dir'], output_file)
+        try:
+            # 尝试解析为JSON
+            json_data = json.loads(result.stdout)
+            with open(output_path, 'w') as f:
+                json.dump(json_data, f, indent=2, ensure_ascii=False)
+            
+            # 检查结果
+            if 'error' in json_data and json_data['error']:
+                error_msg = json_data.get('message', '未知错误')
+                print(f"测试 {test_number} 失败: {error_msg}")
+                sys.stdout.flush()
+                pytest.fail(error_msg, pytrace=False)
+            elif not json_data.get('success', False):
+                error_msg = json_data.get('message', '未知错误')
+                print(f"测试 {test_number} 失败: {error_msg}")
+                sys.stdout.flush()
+                pytest.fail(error_msg, pytrace=False)
+            else:
+                print(f"测试 {test_number} 成功")
+                sys.stdout.flush()
+                return True
+                
+        except json.JSONDecodeError:
+            # 如果不是JSON格式，直接保存原始输出
+            with open(output_path, 'w') as f:
+                f.write(result.stdout)
+            print(f"测试 {test_number} 成功（非JSON响应）")
+            sys.stdout.flush()
+            return True
+            
+        except Exception as e:
+            print(f"测试 {test_number} 异常: {str(e)}")
+            sys.stdout.flush()
             pytest.fail(str(e), pytrace=False)

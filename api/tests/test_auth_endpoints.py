@@ -1,10 +1,12 @@
 import os
+import pytest
 from .test_curl_base import CurlTestBase
 from config import Config
 
 
+@pytest.mark.order("first")
 class TestAuthEndpoints(CurlTestBase):
-    """认证端点测试类 - 无需登录和会话的测试"""
+    """认证端点测试类 - 会话保持测试"""
 
     @classmethod
     def setup_class(cls):
@@ -21,36 +23,38 @@ class TestAuthEndpoints(CurlTestBase):
             'curl_commands_file': cls.curl_commands_file,
             'result_dir': cls.test_results_dir
         }
+        
+        # 定义会话文件路径
+        cls.session_file = os.path.join(cls.test_results_dir, "auth_session.cookie")
 
-    def test_01_auth_login(self):
-        """测试用例1: 用户登录（无需登录和会话）"""
-        self.run_api_test(
-            1, "用户登录",
+    def test_01_auth_login_with_session(self):
+        """测试用例1: 用户登录并保存会话"""
+        self.run_session_api_test(
+            1, "用户登录并保存会话",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/login',
              '-H', 'Content-Type: application/json',
              '-d', '{"user_id": "S0101", "password": "pass123"}',
-             '|', 'jq'],
-            "auth_1_login.json", self.test_setup
+             '-c', self.session_file],
+            "auth_1_login_with_session.json",
+            self.test_setup
         )
-
-    def test_02_auth_get_current_user(self):
-        """测试用例2: 获取当前用户信息（无需登录和会话）"""
-        # 注意：此测试可能会返回未登录错误，因为没有会话
-        self.run_api_test(
-            2, "获取当前用户信息",
+        
+    def test_02_auth_get_current_user_with_session(self):
+        """测试用例2: 使用会话获取当前用户信息"""
+        self.run_session_api_test(
+            2, "使用会话获取当前用户信息",
             ['curl', '-s', '-X', 'GET', f'{self.base_url}/api/auth/me',
-             '|', 'jq'],
-            "auth_2_get_current_user.json", self.test_setup,
-            expect_error=True  # 期望返回错误，因为没有会话
+             '-b', self.session_file],
+            "auth_2_get_current_user_with_session.json",
+            self.test_setup
         )
-
-    def test_03_auth_logout(self):
-        """测试用例3: 用户登出（无需登录和会话）"""
-        # 注意：此测试可能会返回错误，因为没有活动会话
-        self.run_api_test(
-            3, "用户登出",
+        
+    def test_03_auth_logout_with_session(self):
+        """测试用例3: 使用会话登出"""
+        self.run_session_api_test(
+            3, "使用会话登出",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/auth/logout',
-             '|', 'jq'],
-            "auth_3_logout.json", self.test_setup,
-            expect_error=True  # 期望返回错误，因为没有会话
+             '-b', self.session_file],
+            "auth_3_logout_with_session.json",
+            self.test_setup
         )
