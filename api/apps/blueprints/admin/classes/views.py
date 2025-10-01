@@ -1,14 +1,7 @@
 from apps.services import ClassService
 from apps.utils.helpers import success_response, error_response
-from flask import request, current_app, Blueprint
+from flask import request, current_app
 
-# 创建班级管理蓝图
-admin_classes_bp = Blueprint('admin_classes', __name__, url_prefix='/classes')
-
-"""班级管理模块，处理班级相关的所有操作"""
-
-
-@admin_classes_bp.route('/', methods=['GET'])
 def get_classes():
     """
     获取所有班级列表
@@ -17,11 +10,12 @@ def get_classes():
         JSON: 班级列表
     """
     try:
-        # 调用服务获取班级列表
-        class_service = ClassService()
+        # 获取查询参数
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         
+        # 调用服务获取班级列表
+        class_service = ClassService()
         classes_data = class_service.get_all_classes(page, per_page)
         
         # 记录成功日志
@@ -35,7 +29,6 @@ def get_classes():
         return error_response("获取班级列表失败", 500)
 
 
-@admin_classes_bp.route('/', methods=['POST'])
 def create_class():
     """
     创建班级
@@ -50,6 +43,8 @@ def create_class():
             return error_response("请求数据不能为空", 400)
         
         class_name = data.get('class_name')
+        
+        # 检查必填字段
         if not class_name:
             return error_response("班级名称不能为空", 400)
         
@@ -73,7 +68,6 @@ def create_class():
         return error_response("创建班级失败", 500)
 
 
-@admin_classes_bp.route('/<int:class_id>', methods=['GET'])
 def get_class(class_id):
     """
     根据ID获取班级信息
@@ -105,7 +99,6 @@ def get_class(class_id):
         return error_response("获取班级信息失败", 500)
 
 
-@admin_classes_bp.route('/<int:class_id>', methods=['PUT'])
 def update_class(class_id):
     """
     更新班级信息
@@ -122,18 +115,14 @@ def update_class(class_id):
         if not data:
             return error_response("请求数据不能为空", 400)
         
-        class_name = data.get('class_name')
-        if not class_name:
-            return error_response("班级名称不能为空", 400)
-        
-        # 准备班级数据字典
-        class_data = {
-            'class_name': class_name
-        }
+        # 准备更新数据字典
+        update_data = {}
+        if 'class_name' in data:
+            update_data['class_name'] = data['class_name']
         
         # 调用服务更新班级
         class_service = ClassService()
-        result = class_service.update_class(class_id, class_data)
+        result = class_service.update_class(class_id, update_data)
         
         if not result:
             # 记录警告日志
@@ -151,7 +140,6 @@ def update_class(class_id):
         return error_response("更新班级信息失败", 500)
 
 
-@admin_classes_bp.route('/<int:class_id>', methods=['DELETE'])
 def delete_class(class_id):
     """
     删除班级

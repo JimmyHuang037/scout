@@ -1,7 +1,7 @@
-from .profile.profile_bp import teacher_profile_bp
-from .classes.classes_bp import teacher_classes_bp
-from .students.students_bp import teacher_students_bp
-from .scores.scores_bp import teacher_scores_bp
+from .profile import teacher_profile_bp
+from .classes import teacher_classes_bp
+from .students import teacher_students_bp
+from .scores import teacher_scores_bp
 from flask import Blueprint
 """教师蓝图模块"""
 

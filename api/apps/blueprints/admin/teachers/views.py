@@ -1,14 +1,7 @@
 from apps.services import TeacherService
 from apps.utils.helpers import success_response, error_response
-from flask import request, current_app, Blueprint
+from flask import request, current_app
 
-# 创建教师管理蓝图
-admin_teachers_bp = Blueprint('admin_teachers', __name__, url_prefix='/teachers')
-
-"""教师管理模块，处理教师相关的所有操作"""
-
-
-@admin_teachers_bp.route('/', methods=['GET'])
 def get_teachers():
     """
     获取所有教师列表
@@ -36,7 +29,6 @@ def get_teachers():
         return error_response("获取教师列表失败", 500)
 
 
-@admin_teachers_bp.route('/', methods=['POST'])
 def create_teacher():
     """
     创建教师
@@ -50,18 +42,18 @@ def create_teacher():
         if not data:
             return error_response("请求数据不能为空", 400)
         
+        teacher_id = data.get('teacher_id')
         teacher_name = data.get('teacher_name')
-        subject_id = data.get('subject_id')
         password = data.get('password')
         
         # 检查必填字段
-        if not teacher_name or not subject_id:
-            return error_response("教师姓名和科目ID不能为空", 400)
+        if not teacher_id or not teacher_name:
+            return error_response("教师ID和教师姓名不能为空", 400)
         
         # 准备教师数据字典
         teacher_data = {
+            'teacher_id': teacher_id,
             'teacher_name': teacher_name,
-            'subject_id': subject_id,
             'password': password
         }
         
@@ -72,7 +64,7 @@ def create_teacher():
         # 记录成功日志
         current_app.logger.info(f"成功创建教师: {teacher_name}")
         
-        return success_response({"message": "教师创建成功"}, 201)
+        return success_response(result, 201)
         
     except Exception as e:
         # 记录错误日志
@@ -80,7 +72,6 @@ def create_teacher():
         return error_response("创建教师失败", 500)
 
 
-@admin_teachers_bp.route('/<int:teacher_id>', methods=['GET'])
 def get_teacher(teacher_id):
     """
     根据ID获取教师信息
@@ -112,7 +103,6 @@ def get_teacher(teacher_id):
         return error_response("获取教师信息失败", 500)
 
 
-@admin_teachers_bp.route('/<int:teacher_id>', methods=['PUT'])
 def update_teacher(teacher_id):
     """
     更新教师信息
@@ -129,18 +119,16 @@ def update_teacher(teacher_id):
         if not data:
             return error_response("请求数据不能为空", 400)
         
-        # 准备教师数据字典
-        teacher_data = {}
+        # 准备更新数据字典
+        update_data = {}
         if 'teacher_name' in data:
-            teacher_data['teacher_name'] = data['teacher_name']
-        if 'subject_id' in data:
-            teacher_data['subject_id'] = data['subject_id']
+            update_data['teacher_name'] = data['teacher_name']
         if 'password' in data:
-            teacher_data['password'] = data['password']
+            update_data['password'] = data['password']
         
         # 调用服务更新教师
         teacher_service = TeacherService()
-        result = teacher_service.update_teacher(teacher_id, teacher_data)
+        result = teacher_service.update_teacher(teacher_id, update_data)
         
         if not result:
             # 记录警告日志
@@ -158,7 +146,6 @@ def update_teacher(teacher_id):
         return error_response("更新教师信息失败", 500)
 
 
-@admin_teachers_bp.route('/<int:teacher_id>', methods=['DELETE'])
 def delete_teacher(teacher_id):
     """
     删除教师

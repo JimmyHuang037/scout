@@ -1,14 +1,7 @@
 from apps.services import StudentService
 from apps.utils.helpers import success_response, error_response
-from flask import request, current_app, Blueprint
+from flask import request, current_app
 
-# 创建学生管理蓝图
-admin_students_bp = Blueprint('admin_students', __name__, url_prefix='/students')
-
-"""学生管理模块，处理学生相关的所有操作"""
-
-
-@admin_students_bp.route('/', methods=['GET'])
 def get_students():
     """
     获取所有学生列表
@@ -36,7 +29,6 @@ def get_students():
         return error_response("获取学生列表失败", 500)
 
 
-@admin_students_bp.route('/', methods=['POST'])
 def create_student():
     """
     创建学生
@@ -82,7 +74,6 @@ def create_student():
         return error_response("创建学生失败", 500)
 
 
-@admin_students_bp.route('/<string:student_id>', methods=['GET'])
 def get_student(student_id):
     """
     根据ID获取学生信息
@@ -114,7 +105,6 @@ def get_student(student_id):
         return error_response("获取学生信息失败", 500)
 
 
-@admin_students_bp.route('/<string:student_id>', methods=['PUT'])
 def update_student(student_id):
     """
     更新学生信息
@@ -160,7 +150,6 @@ def update_student(student_id):
         return error_response("更新学生信息失败", 500)
 
 
-@admin_students_bp.route('/<string:student_id>', methods=['DELETE'])
 def delete_student(student_id):
     """
     删除学生
