@@ -12,11 +12,14 @@ def health_check():
         'status': 'healthy',
         'method': request.method
     }), 200
-from flask import Blueprint
-from .views import index, health_check
+
 
 """公共蓝图模块"""
 
+from flask import Blueprint
+from .views import index, health_check
+
+# 创建公共蓝图
 common_bp = Blueprint('common', __name__)
 
 # 注册路由
