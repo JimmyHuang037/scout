@@ -1,4 +1,4 @@
-from .common_routes import index, health_check
+from .common_bp import index, health_check
 from flask import Blueprint
 """公共蓝图模块"""
 

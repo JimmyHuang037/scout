@@ -1,6 +1,6 @@
-from .exam.exam_results_management import get_my_exam_results
-from .profile.profile_management import get_my_profile
-from .scores.scores_management import get_my_scores
+from .exam.exam_results_bp import get_my_exam_results
+from .profile.profile_bp import get_my_profile
+from .scores.scores_bp import get_my_scores
 from flask import Blueprint
 """学生蓝图模块"""
 
