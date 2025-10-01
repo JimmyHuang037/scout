@@ -33,34 +33,6 @@ def get_scores(teacher_id):
         return error_response("获取成绩列表失败")
 
 
-def create_score(teacher_id):
-    """
-    创建成绩记录
-    
-    Args:
-        teacher_id (string): 教师ID
-        
-    Returns:
-        JSON: 创建结果
-    """
-    try:
-        # 获取请求数据
-        data = request.get_json()
-        if not data:
-            return error_response("无效的请求数据", 400)
-        
-        # 创建成绩服务实例并调用create_score方法
-        score_service = ScoreService()
-        score = score_service.create_score(data)
-        
-        current_app.logger.info(f"Teacher {teacher_id} created score: {score}")
-        return success_response({"score_id": score}), 201
-    
-    except Exception as e:
-        current_app.logger.error(f"Failed to create score: {str(e)}")
-        return error_response("创建成绩失败", 500)
-
-
 def update_score(teacher_id, score_id):
     """
     更新成绩记录

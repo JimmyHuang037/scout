@@ -22,13 +22,11 @@ class ScoreService:
             list: 成绩列表
         """
         query = """
-            SELECT s.score_id, s.score_value as score, s.exam_type_name as exam_name, 
-                   s.subject_name as subject_name, s.student_name
+            SELECT s.score_id, s.score as score, s.exam_type_id as exam_name, 
+                   s.subject_id as subject_name, s.student_id as student_name
             FROM Scores s
-            WHERE s.student_name = (
-                SELECT student_name FROM Students WHERE student_id = %s
-            )
-            ORDER BY s.exam_type_name
+            WHERE s.student_id = %s
+            ORDER BY s.exam_type_id
         """
         return self.db_service.execute_query(query, (student_id,))
 
@@ -44,8 +42,8 @@ class ScoreService:
             dict: 成绩信息
         """
         query = """
-            SELECT s.score_id, s.score_value as score, e.exam_name, 
-                   sub.subject_name, st.student_name
+            SELECT s.score_id, s.score, e.exam_id as exam_name, 
+                   sub.subject_id as subject_name, st.student_id as student_name
             FROM Scores s
             JOIN Exams e ON s.exam_id = e.exam_id
             JOIN Subjects sub ON s.subject_id = sub.subject_id
@@ -244,7 +242,7 @@ class ScoreService:
                    er.chinese, er.math, er.english, 
                    er.physics, er.chemistry, er.politics,
                    er.total_score, er.ranking
-            FROM ExamResults er
+            FROM exam_results er
             WHERE er.student_name = (
                 SELECT student_name FROM Students WHERE student_id = %s
             )
@@ -300,18 +298,18 @@ class ScoreService:
         """
         try:
             # 删除成绩
-            delete_query = "DELETE FROM Scores WHERE score_id = %s"
-            affected_rows = self.db_service.execute_update(delete_query, (score_id,))
-            
-            # 如果影响的行数大于0，表示删除成功
-            return affected_rows > 0
+            query = "DELETE FROM Scores WHERE score_id = %s"
+            self.db_service.execute_update(query, (score_id,))
+            return True
         except Exception as e:
-            current_app.logger.error(f"Failed to delete score {score_id}: {str(e)}")
+            current_app.logger.error(f"Failed to delete score: {str(e)}")
             raise
+        finally:
+            self.db_service.close()
 
     def get_teacher_scores(self, teacher_id, page=1, per_page=10):
         """
-        获取教师相关的成绩列表
+        获取教师相关的成绩列表（带分页）
         
         Args:
             teacher_id (str): 教师ID
@@ -321,41 +319,46 @@ class ScoreService:
         Returns:
             dict: 成绩列表和分页信息
         """
-        # 计算偏移量
-        offset = (page - 1) * per_page
-        
-        # 获取教师相关的成绩总数
-        count_query = """
-            SELECT COUNT(*) as total
-            FROM Scores s
-            JOIN Students st ON s.student_id = st.student_id
-            JOIN TeacherClasses tc ON st.class_id = tc.class_id
-            WHERE tc.teacher_id = %s
-        """
-        count_result = self.db_service.execute_query(count_query, (teacher_id,))
-        total = count_result[0]['total'] if count_result else 0
-        
-        # 获取教师相关的成绩列表
-        scores_query = """
-            SELECT s.score_id, s.score, s.exam_type_id, s.subject_id, s.student_id,
-                   et.exam_type_name as exam_name, sub.subject_name, st.student_name, st.student_id as student_number
-            FROM Scores s
-            JOIN Students st ON s.student_id = st.student_id
-            JOIN Subjects sub ON s.subject_id = sub.subject_id
-            JOIN ExamTypes et ON s.exam_type_id = et.exam_type_id
-            JOIN TeacherClasses tc ON st.class_id = tc.class_id
-            WHERE tc.teacher_id = %s
-            ORDER BY et.exam_type_name, st.student_id
-            LIMIT %s OFFSET %s
-        """
-        scores = self.db_service.execute_query(scores_query, (teacher_id, per_page, offset))
-        
-        return {
-            'scores': scores,
-            'pagination': {
-                'page': page,
-                'per_page': per_page,
-                'total': total,
-                'pages': (total + per_page - 1) // per_page
+        try:
+            offset = (page - 1) * per_page
+            
+            # 获取总数
+            count_query = """
+                SELECT COUNT(*) as count
+                FROM Scores s
+                JOIN Students st ON s.student_id = st.student_id
+                JOIN TeacherClasses tc ON st.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+            """
+            total_result = self.db_service.execute_query(count_query, (teacher_id,))
+            total = total_result[0]['count'] if total_result else 0
+            
+            # 获取成绩列表
+            query = """
+                SELECT s.score_id, s.score, s.exam_type_id, s.subject_id, s.student_id,
+                       et.exam_type_name as exam_name, sub.subject_name, 
+                       st.student_name, st.student_id as student_number
+                FROM Scores s
+                JOIN Students st ON s.student_id = st.student_id
+                JOIN Subjects sub ON s.subject_id = sub.subject_id
+                JOIN ExamTypes et ON s.exam_type_id = et.exam_type_id
+                JOIN TeacherClasses tc ON st.class_id = tc.class_id
+                WHERE tc.teacher_id = %s
+                ORDER BY s.score_id DESC
+                LIMIT %s OFFSET %s
+            """
+            scores = self.db_service.execute_query(query, (teacher_id, per_page, offset))
+            
+            return {
+                'scores': scores,
+                'pagination': {
+                    'page': page,
+                    'per_page': per_page,
+                    'total': total,
+                    'pages': (total + per_page - 1) // per_page
+                }
             }
-        }
+        except Exception as e:
+            raise e
+        finally:
+            self.db_service.close()

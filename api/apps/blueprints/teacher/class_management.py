@@ -1,5 +1,5 @@
 """教师班级管理模块"""
-from flask import Blueprint, request, jsonify, current_app, session
+from flask import Blueprint, current_app
 from apps.services.class_service import ClassService
 from apps.utils.helpers import success_response, error_response
 
@@ -44,9 +44,5 @@ def get_class(teacher_id, class_id):
 
 @teacher_class_bp.route('/<string:teacher_id>/classes/<int:class_id>', methods=['GET'])
 def get_class_endpoint(teacher_id, class_id):
-    try:
-        # 获取班级信息
-        return get_class(teacher_id, class_id)
-    except Exception as e:
-        current_app.logger.error(f'Failed to fetch class: {str(e)}')
-        return error_response('Failed to fetch class'), 500
+    # 获取班级信息
+    return get_class(teacher_id, class_id)

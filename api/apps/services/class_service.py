@@ -204,3 +204,32 @@ class ClassService:
             raise e
         finally:
             self.db_service.close()
+            
+    def get_students_by_class(self, class_id, teacher_id):
+        """
+        获取班级学生列表（教师权限验证版本）
+        
+        Args:
+            class_id (int): 班级ID
+            teacher_id (str): 教师ID
+            
+        Returns:
+            dict: 学生列表
+        """
+        try:
+            query = """
+                SELECT s.student_id, s.student_name, c.class_name
+                FROM Students s
+                JOIN Classes c ON s.class_id = c.class_id
+                JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                WHERE s.class_id = %s AND tc.teacher_id = %s
+                ORDER BY s.student_id
+            """
+            students = self.db_service.execute_query(query, (class_id, teacher_id))
+            return {
+                'students': students
+            }
+        except Exception as e:
+            raise e
+        finally:
+            self.db_service.close()

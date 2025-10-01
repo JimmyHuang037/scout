@@ -35,14 +35,6 @@ def get_teacher_student(teacher_id, student_id):
         current_app.logger.warning(f'Missing teacher ID: {str(e)}')
         return error_response('Teacher ID is required', 400)
 
-@teacher_student_bp.route('/students/<string:student_id>', methods=['PUT'])
-def update_teacher_student(teacher_id, student_id):
-    try:
-        return update_teacher_student_helper(teacher_id, student_id)
-    except ValueError as e:
-        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
-        return error_response('Teacher ID is required', 400)
-
 def get_teacher_students_helper(teacher_id):
     """Helper function to get teacher's students"""
     try:
@@ -71,22 +63,3 @@ def get_teacher_student_helper(teacher_id, student_id):
     except Exception as e:
         current_app.logger.error(f'Failed to fetch student: {str(e)}')
         return error_response('Failed to fetch student', 500)
-
-def update_teacher_student_helper(teacher_id, student_id):
-    """Helper function to update teacher's student information"""
-    try:
-        # 获取请求数据
-        data = request.get_json()
-        if not data:
-            return error_response('No data provided'), 400
-            
-        # 更新学生信息
-        student_data = StudentService().update_student(student_id, data)
-        if not student_data:
-            return error_response('Student not found or access denied'), 404
-            
-        current_app.logger.info(f"Teacher {teacher_id} updated student {student_id}")
-        return success_response(student_data, 'Student updated successfully')
-    except Exception as e:
-        current_app.logger.error(f'Failed to update student: {str(e)}')
-        return error_response('Failed to update student', 500)

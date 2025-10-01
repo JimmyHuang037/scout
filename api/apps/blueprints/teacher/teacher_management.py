@@ -1,6 +1,6 @@
 """教师蓝图模块，处理教师相关的所有操作"""
 from flask import Blueprint, jsonify, request, current_app, session
-from apps.services import TeacherService, ClassService, SubjectService, ScoreService
+from apps.services import TeacherService, ClassService
 from apps.utils.helpers import success_response, error_response, get_current_user
 
 # 创建教师蓝图
