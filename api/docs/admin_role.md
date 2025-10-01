@@ -6,6 +6,11 @@
 
 ## API端点
 
+1. 不需要登录的测试 (no login test)
+2. 不需要会话的测试 (no session needed)
+4. 测试方法：直接访问API端点，不附加任何认证信息
+6. 所有curl命令测试应使用jq格式化输出，以提高可读性
+
 ### 学生管理 (`/api/admin/students`)
 
 #### 获取学生列表
