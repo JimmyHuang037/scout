@@ -1,5 +1,6 @@
-from .auth_bp import login, logout, get_current_user
 from flask import Blueprint
+from .views import login, logout, get_current_user
+
 """认证蓝图模块"""
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')

@@ -1,9 +1,6 @@
 from apps.services.student_service import StudentService
 from apps.utils.helpers import success_response, error_response
-from flask import Blueprint, request, current_app
-
-# 创建学生个人资料管理蓝图
-student_profile_bp = Blueprint('student_profile', __name__)
+from flask import current_app
 
 def get_my_profile(student_id):
     try:

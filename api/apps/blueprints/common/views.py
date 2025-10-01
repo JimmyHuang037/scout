@@ -1,5 +1,4 @@
 from flask import jsonify
-"""公共路由模块"""
 
 
 def index():

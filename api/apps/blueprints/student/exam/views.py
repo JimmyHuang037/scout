@@ -1,9 +1,6 @@
 from apps.services.score_service import ScoreService
 from apps.utils.helpers import success_response, error_response
-from flask import Blueprint, request, current_app
-
-"""学生考试结果管理模块"""
-exam_results_bp = Blueprint('exam_results_bp', __name__)
+from flask import current_app
 
 def get_my_exam_results(student_id):
     """获取指定学生的考试结果"""
