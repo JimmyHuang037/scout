@@ -162,8 +162,8 @@ class TeacherService:
                 LEFT JOIN Subjects s ON t.subject_id = s.subject_id
                 WHERE t.teacher_id = %s
             """
-            result = self.db_service.execute_query(query, (teacher_id,), fetch_one=True)
-            return result
+            result = self.db_service.execute_query(query, (teacher_id,))
+            return result[0] if result else None
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to get teacher by id {teacher_id}: {str(e)}")
@@ -274,11 +274,22 @@ class TeacherService:
         try:
             # 先检查教师是否存在
             check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
-            check_result = self.db_service.execute_query(check_query, (teacher_id,), fetch_one=True)
+            check_result = self.db_service.execute_query(check_query, (teacher_id,))
+            check_result = check_result[0] if check_result else None
             if not check_result or check_result['count'] == 0:
                 current_app.logger.warning(f"Teacher {teacher_id} does not exist")
                 return False
             
+            # 按正确的顺序删除相关的外键约束记录
+            # 先删除exams表中的相关记录
+            delete_exams_query = "DELETE FROM exams WHERE teacher_id = %s"
+            self.db_service.execute_update(delete_exams_query, (teacher_id,))
+            
+            # 再删除TeacherClasses表中的相关记录
+            delete_tc_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
+            self.db_service.execute_update(delete_tc_query, (teacher_id,))
+            
+            # 最后删除Teachers表中的记录
             query = "DELETE FROM Teachers WHERE teacher_id = %s"
             affected_rows = self.db_service.execute_update(query, (teacher_id,))
             return affected_rows > 0
