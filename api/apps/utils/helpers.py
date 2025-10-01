@@ -1,6 +1,7 @@
 from datetime import datetime
 from functools import wraps
 import os
+import time
 from flask import jsonify, request, current_app, session
 """助手函数模块，包含各种通用工具函数"""
 
@@ -95,6 +96,38 @@ def get_current_user():
         'username': session.get('username'),
         'role': session.get('user_role')
     }
+
+
+def handle_exceptions(f):
+    """
+    全局异常处理装饰器，统一处理视图函数中的异常
+    
+    Args:
+        f: 被装饰的函数
+        
+    Returns:
+        function: 装饰后的函数
+    """
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        start_time = time.time()
+        request_id = f"{int(start_time * 1000000) % 1000000:06d}"
+        
+        # 记录请求信息
+        current_app.logger.info(f"[{request_id}] {request.method} {request.path} - "
+                               f"Args: {args}, Kwargs: {kwargs}")
+        
+        try:
+            result = f(*args, **kwargs)
+            execution_time = time.time() - start_time
+            current_app.logger.info(f"[{request_id}] Request completed in {execution_time:.2f}s")
+            return result
+        except Exception as e:
+            execution_time = time.time() - start_time
+            error_msg = f"[{request_id}] {type(e).__name__}: {str(e)} - Execution time: {execution_time:.2f}s"
+            current_app.logger.error(error_msg)
+            return error_response('Internal server error', 500)
+    return decorated_function
 
 
 

@@ -1,5 +1,5 @@
-from flask import jsonify
-
+from flask import jsonify, request
+from apps.utils.helpers import handle_exceptions
 
 def index():
     """首页路由"""
@@ -15,3 +15,10 @@ def health_check():
         'status': 'healthy',
         'message': 'API server is running'
     })
+
+
+@handle_exceptions
+def test_error():
+    """测试错误处理的路由"""
+    # 故意引发一个异常来测试错误处理
+    raise Exception("This is a test error for exception handling")

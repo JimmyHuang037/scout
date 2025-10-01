@@ -1,7 +1,7 @@
 import logging
 import os
-
-from flask import Flask
+import time
+from flask import Flask, request
 from flask_cors import CORS
 
 from apps.blueprints.admin import admin_bp
@@ -54,13 +54,34 @@ class AppFactory:
         app.logger.info('Flask application starting...')
         app.logger.info(f"Database: {app.config['MYSQL_USER']}@{app.config['MYSQL_HOST']}/{app.config['MYSQL_DB']}")
         
+        # 注册全局请求日志记录
+        @app.before_request
+        def log_request_info():
+            request.start_time = time.time()
+            request.request_id = f"{int(request.start_time * 1000000) % 1000000:06d}"
+            app.logger.info(f"[{request.request_id}] {request.method} {request.path} - "
+                           f"Args: {request.args.to_dict()}, Form: {request.form.to_dict()}, "
+                           f"JSON: {request.get_json(silent=True)}")
+
+        @app.after_request
+        def log_response_info(response):
+            if hasattr(request, 'start_time') and hasattr(request, 'request_id'):
+                execution_time = time.time() - request.start_time
+                app.logger.info(f"[{request.request_id}] Response: {response.status_code} - "
+                               f"Execution time: {execution_time:.2f}s")
+            return response
+        
         # 注册错误处理器
         @app.errorhandler(404)
         def not_found(error):
+            if hasattr(request, 'request_id'):
+                app.logger.warning(f"[{request.request_id}] 404 Not Found: {request.path}")
             return {'error': 'Not found'}, 404
             
         @app.errorhandler(500)
         def internal_error(error):
+            if hasattr(request, 'request_id'):
+                app.logger.error(f"[{request.request_id}] 500 Internal Server Error: {str(error)}")
             return {'error': 'Internal server error'}, 500
             
         return app
@@ -71,7 +92,7 @@ app = AppFactory.create_app()
 
 if __name__ == '__main__':
     app.run(
-        host=app.config.get('HOST', '127.0.0.1'),
+        host=app.config.get('HOST', '0.0.0.0'),
         port=app.config.get('PORT', 5000),
         debug=app.config.get('DEBUG', False)
     )
