@@ -205,17 +205,36 @@ class ClassService:
             
         Returns:
             dict: 学生列表
+            
+        Raises:
+            ClassNotFoundError: 如果教师没有权限访问该班级或班级不存在
         """
         try:
+            # 首先检查班级是否存在
+            class_check_query = "SELECT class_id FROM Classes WHERE class_id = %s"
+            class_exists = self.db_service.execute_query(class_check_query, (class_id,))
+            if not class_exists:
+                raise ClassNotFoundError("Class not found")
+            
+            # 检查教师是否有权限访问该班级
+            permission_query = """
+                SELECT 1
+                FROM TeacherClasses
+                WHERE class_id = %s AND teacher_id = %s
+            """
+            has_permission = self.db_service.execute_query(permission_query, (class_id, teacher_id))
+            if not has_permission:
+                raise ClassNotFoundError("Teacher does not have permission to access this class")
+            
+            # 获取班级学生列表
             query = """
                 SELECT s.student_id, s.student_name, c.class_name
                 FROM Students s
                 JOIN Classes c ON s.class_id = c.class_id
-                JOIN TeacherClasses tc ON c.class_id = tc.class_id
-                WHERE s.class_id = %s AND tc.teacher_id = %s
+                WHERE s.class_id = %s
                 ORDER BY s.student_id
             """
-            students = self.db_service.execute_query(query, (class_id, teacher_id))
+            students = self.db_service.execute_query(query, (class_id,))
             return {
                 'students': students
             }

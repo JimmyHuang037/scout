@@ -133,19 +133,29 @@ class TestTeacherEndpoints(CurlTestBase):
         )
     
     def test_11_get_class_students(self):
-        """测试用例11: 教师获取班级学生列表"""
+        """测试用例11: 教师获取班级学生列表（无权限访问的班级）"""
         self.run_api_test(
-            11, "教师获取班级学生列表",
+            11, "教师获取班级学生列表（无权限访问的班级）",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1/students', '|', 'jq'],
             "teacher_11_get_class_students.json",
+            self.test_setup,
+            expect_error=True
+        )
+    
+    def test_12_get_class_6_students(self):
+        """测试用例12: 教师获取班级6学生列表（有权限访问的班级）"""
+        self.run_api_test(
+            12, "教师获取班级6学生列表（有权限访问的班级）",
+            ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/6/students', '|', 'jq'],
+            "teacher_12_get_class_6_students.json",
             self.test_setup
         )
     
-    def test_12_get_all_classes_students(self):
-        """测试用例12: 教师获取所有班级学生列表"""
+    def test_13_get_all_classes_students(self):
+        """测试用例13: 教师获取所有班级学生列表"""
         self.run_api_test(
-            12, "教师获取所有班级学生列表",
+            13, "教师获取所有班级学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/students', '|', 'jq'],
-            "teacher_12_get_all_classes_students.json",
+            "teacher_13_get_all_classes_students.json",
             self.test_setup
         )

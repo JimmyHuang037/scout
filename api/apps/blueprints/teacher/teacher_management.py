@@ -1,6 +1,7 @@
 """教师蓝图模块，处理教师相关的所有操作"""
 from flask import Blueprint, jsonify, request, current_app, session
 from apps.services import TeacherService, ClassService
+from apps.services.class_service import ClassNotFoundError
 from apps.utils.helpers import success_response, error_response, get_current_user
 
 # 创建教师蓝图
@@ -88,7 +89,7 @@ def get_teacher_all_classes_students(teacher_id=None):
         return success_response(students_data)
     except Exception as e:
         current_app.logger.error(f"Error getting teacher all classes students: {str(e)}")
-        return error_response('Failed to get students'), 500
+        return error_response('Failed to get students', 500)
 
 
 @teacher_bp.route('/classes/<int:class_id>/students', methods=['GET'])
@@ -114,6 +115,8 @@ def get_class_students(class_id, teacher_id=None):
         students_data = class_service.get_students_by_class(class_id, teacher_id)
         
         return success_response(students_data)
+    except ClassNotFoundError as e:
+        return error_response(str(e), 404)
     except Exception as e:
         current_app.logger.error(f"Error getting class students: {str(e)}")
         return error_response('Failed to get class students'), 500
