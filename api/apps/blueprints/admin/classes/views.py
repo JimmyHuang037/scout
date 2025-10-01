@@ -68,7 +68,7 @@ def create_class():
         return error_response("创建班级失败", 500)
 
 
-def get_class(class_id):
+def get_class(class_id: int):
     """
     根据ID获取班级信息
     
@@ -99,7 +99,7 @@ def get_class(class_id):
         return error_response("获取班级信息失败", 500)
 
 
-def update_class(class_id):
+def update_class(class_id: int):
     """
     更新班级信息
     
@@ -140,7 +140,7 @@ def update_class(class_id):
         return error_response("更新班级信息失败", 500)
 
 
-def delete_class(class_id):
+def delete_class(class_id: int):
     """
     删除班级
     

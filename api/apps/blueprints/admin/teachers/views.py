@@ -42,18 +42,18 @@ def create_teacher():
         if not data:
             return error_response("请求数据不能为空", 400)
         
-        teacher_id = data.get('teacher_id')
         teacher_name = data.get('teacher_name')
+        subject_id = data.get('subject_id')
         password = data.get('password')
         
         # 检查必填字段
-        if not teacher_id or not teacher_name:
-            return error_response("教师ID和教师姓名不能为空", 400)
+        if not teacher_name:
+            return error_response("教师姓名不能为空", 400)
         
         # 准备教师数据字典
         teacher_data = {
-            'teacher_id': teacher_id,
             'teacher_name': teacher_name,
+            'subject_id': subject_id,
             'password': password
         }
         
@@ -72,7 +72,7 @@ def create_teacher():
         return error_response("创建教师失败", 500)
 
 
-def get_teacher(teacher_id):
+def get_teacher(teacher_id: int):
     """
     根据ID获取教师信息
     
@@ -103,7 +103,7 @@ def get_teacher(teacher_id):
         return error_response("获取教师信息失败", 500)
 
 
-def update_teacher(teacher_id):
+def update_teacher(teacher_id: int):
     """
     更新教师信息
     
@@ -123,6 +123,8 @@ def update_teacher(teacher_id):
         update_data = {}
         if 'teacher_name' in data:
             update_data['teacher_name'] = data['teacher_name']
+        if 'subject_id' in data:
+            update_data['subject_id'] = data['subject_id']
         if 'password' in data:
             update_data['password'] = data['password']
         
@@ -146,7 +148,7 @@ def update_teacher(teacher_id):
         return error_response("更新教师信息失败", 500)
 
 
-def delete_teacher(teacher_id):
+def delete_teacher(teacher_id: int):
     """
     删除教师
     

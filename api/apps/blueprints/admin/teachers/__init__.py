@@ -2,7 +2,7 @@ from flask import Blueprint
 from .views import get_teachers, create_teacher, get_teacher, update_teacher, delete_teacher
 
 # 教师管理蓝图
-admin_teachers_bp = Blueprint('admin_teachers', __name__)
+admin_teachers_bp = Blueprint('admin_teachers', __name__, url_prefix='/teachers')
 
 # 注册路由
 admin_teachers_bp.add_url_rule('/', methods=['GET'], view_func=get_teachers)

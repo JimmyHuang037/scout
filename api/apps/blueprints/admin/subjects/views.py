@@ -68,7 +68,7 @@ def create_subject():
         return error_response("创建科目失败", 500)
 
 
-def get_subject(subject_id):
+def get_subject(subject_id: int):
     """
     根据ID获取科目信息
     
@@ -99,7 +99,7 @@ def get_subject(subject_id):
         return error_response("获取科目信息失败", 500)
 
 
-def update_subject(subject_id):
+def update_subject(subject_id: int):
     """
     更新科目信息
     
@@ -140,7 +140,7 @@ def update_subject(subject_id):
         return error_response("更新科目信息失败", 500)
 
 
-def delete_subject(subject_id):
+def delete_subject(subject_id: int):
     """
     删除科目
     

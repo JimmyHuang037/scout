@@ -2,7 +2,7 @@ from flask import Blueprint
 from .views import create_subject, get_subjects, get_subject, update_subject, delete_subject
 
 # 科目管理蓝图模块
-admin_subjects_bp = Blueprint('admin_subjects', __name__)
+admin_subjects_bp = Blueprint('admin_subjects', __name__, url_prefix='/subjects')
 
 # 注册路由
 admin_subjects_bp.add_url_rule('/', methods=['POST'], view_func=create_subject)

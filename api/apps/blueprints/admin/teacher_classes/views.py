@@ -44,25 +44,17 @@ def create_teacher_class():
         
         teacher_id = data.get('teacher_id')
         class_id = data.get('class_id')
-        subject_id = data.get('subject_id')
         
         # 检查必填字段
-        if not teacher_id or not class_id or not subject_id:
-            return error_response("教师ID、班级ID和科目ID不能为空", 400)
-        
-        # 准备教师班级关联数据字典
-        teacher_class_data = {
-            'teacher_id': teacher_id,
-            'class_id': class_id,
-            'subject_id': subject_id
-        }
+        if not teacher_id or not class_id:
+            return error_response("教师ID和班级ID不能为空", 400)
         
         # 调用服务创建教师班级关联
         teacher_class_service = TeacherClassService()
-        result = teacher_class_service.create_teacher_class(teacher_class_data)
+        result = teacher_class_service.create_teacher_class(teacher_id, class_id)
         
         # 记录成功日志
-        current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}-科目{subject_id}")
+        current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}")
         
         return success_response(result, 201)
         
@@ -72,7 +64,7 @@ def create_teacher_class():
         return error_response("创建教师班级关联失败", 500)
 
 
-def get_teacher_class(teacher_id, class_id):
+def get_teacher_class(teacher_id: int, class_id: int):
     """
     根据教师ID和班级ID获取教师班级关联信息
     
@@ -86,7 +78,7 @@ def get_teacher_class(teacher_id, class_id):
     try:
         # 调用服务获取教师班级关联信息
         teacher_class_service = TeacherClassService()
-        teacher_class_data = teacher_class_service.get_teacher_class_by_id(teacher_id, class_id)
+        teacher_class_data = teacher_class_service.get_teacher_class(teacher_id, class_id)
         
         if not teacher_class_data:
             # 记录警告日志
@@ -104,7 +96,7 @@ def get_teacher_class(teacher_id, class_id):
         return error_response("获取教师班级关联信息失败", 500)
 
 
-def update_teacher_class(teacher_id, class_id):
+def update_teacher_class(teacher_id: int, class_id: int):
     """
     更新教师班级关联信息
     
@@ -128,7 +120,7 @@ def update_teacher_class(teacher_id, class_id):
         
         # 调用服务更新教师班级关联
         teacher_class_service = TeacherClassService()
-        result = teacher_class_service.update_teacher_class(teacher_id, class_id, update_data)
+        result = teacher_class_service.update_teacher_class(teacher_id, class_id, update_data.get('new_teacher_id'))
         
         if not result:
             # 记录警告日志
@@ -146,7 +138,7 @@ def update_teacher_class(teacher_id, class_id):
         return error_response("更新教师班级关联信息失败", 500)
 
 
-def delete_teacher_class(teacher_id, class_id):
+def delete_teacher_class(teacher_id: int, class_id: int):
     """
     删除教师班级关联
     

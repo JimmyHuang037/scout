@@ -68,7 +68,7 @@ def create_exam_type():
         return error_response("创建考试类型失败", 500)
 
 
-def get_exam_type(exam_type_id):
+def get_exam_type(exam_type_id: int):
     """
     根据ID获取考试类型信息
     
@@ -99,7 +99,7 @@ def get_exam_type(exam_type_id):
         return error_response("获取考试类型信息失败", 500)
 
 
-def update_exam_type(exam_type_id):
+def update_exam_type(exam_type_id: int):
     """
     更新考试类型信息
     
@@ -140,7 +140,7 @@ def update_exam_type(exam_type_id):
         return error_response("更新考试类型信息失败", 500)
 
 
-def delete_exam_type(exam_type_id):
+def delete_exam_type(exam_type_id: int):
     """
     删除考试类型
     

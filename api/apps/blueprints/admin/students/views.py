@@ -74,7 +74,7 @@ def create_student():
         return error_response("创建学生失败", 500)
 
 
-def get_student(student_id):
+def get_student(student_id: str):
     """
     根据ID获取学生信息
     
@@ -105,7 +105,7 @@ def get_student(student_id):
         return error_response("获取学生信息失败", 500)
 
 
-def update_student(student_id):
+def update_student(student_id: str):
     """
     更新学生信息
     
@@ -150,7 +150,7 @@ def update_student(student_id):
         return error_response("更新学生信息失败", 500)
 
 
-def delete_student(student_id):
+def delete_student(student_id: str):
     """
     删除学生
     
