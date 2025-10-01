@@ -1,7 +1,7 @@
-"""班级服务模块，处理与班级相关的业务逻辑"""
 import logging
-from flask import current_app
 from apps.utils.database_service import DatabaseService
+from flask import current_app
+"""班级服务模块，处理与班级相关的业务逻辑"""
 
 
 class ClassNotFoundError(Exception):
@@ -32,7 +32,8 @@ class ClassService:
             
             # 获取总数
             count_query = "SELECT COUNT(*) as count FROM Classes"
-            total = self.db_service.get_count(count_query)
+            total_result = self.db_service.execute_query(count_query)
+            total = total_result[0]['count'] if total_result else 0
             
             # 获取班级列表
             query = """

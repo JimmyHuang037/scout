@@ -1,16 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import subprocess
 import json
 import os
+import subprocess
 import sys
-import shlex
 import time
 import pytest
+import shlex
 from config import Config
-
-
 class CurlTestBase:
     @classmethod
     def setup_class(cls):

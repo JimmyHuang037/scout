@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
+import os
+from flask import current_app
+import pymysql
 """
 数据库服务模块"""
-import pymysql
-from flask import current_app
-import os
 
 def get_db_connection():
     """

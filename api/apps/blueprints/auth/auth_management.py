@@ -1,7 +1,7 @@
-"""认证管理模块"""
-from flask import jsonify, request, session, current_app
 from apps.utils.database_service import DatabaseService
 from apps.utils.helpers import success_response, error_response
+from flask import jsonify, request, session, current_app
+"""认证管理模块"""
 
 
 def login():

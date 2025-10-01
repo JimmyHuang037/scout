@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
+import glob
+import os
+import subprocess
+import pytest
 """
 test_curl测试模块的配置文件
 只保留数据库恢复功能
 """
 
-import pytest
-import subprocess
-import os
-import glob
 
 
 @pytest.fixture(scope="session", autouse=True)

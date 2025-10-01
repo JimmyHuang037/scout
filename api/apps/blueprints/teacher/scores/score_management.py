@@ -1,7 +1,7 @@
-"""成绩管理模块，处理成绩相关的所有操作"""
-from flask import Blueprint, request, jsonify, current_app, session
-from apps.utils.helpers import success_response, error_response
 from apps.services import ScoreService
+from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, jsonify, current_app, session
+"""成绩管理模块，处理成绩相关的所有操作"""
 
 teacher_score_bp = Blueprint('teacher_score_bp', __name__)
 

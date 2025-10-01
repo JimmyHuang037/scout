@@ -1,14 +1,16 @@
-"""考试类型管理蓝图模块"""
 from flask import Blueprint
 
-exam_type_bp = Blueprint('exam_types', __name__)
+"""考试类型管理蓝图模块"""
 
-# 导入考试类型管理相关路由
-from .exam_type_management import get_exam_types, create_exam_type, get_exam_type, update_exam_type, delete_exam_type
+# 创建考试类型管理蓝图
+admin_exam_types_bp = Blueprint('admin_exam_types', __name__, url_prefix='/api/admin/exam-types')
+
+# 导入管理函数
+from . import exam_type_management
 
 # 注册路由
-exam_type_bp.add_url_rule('/exam-types', view_func=create_exam_type, methods=['POST'])
-exam_type_bp.add_url_rule('/exam-types', view_func=get_exam_types, methods=['GET'])
-exam_type_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=get_exam_type, methods=['GET'])
-exam_type_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=update_exam_type, methods=['PUT'])
-exam_type_bp.add_url_rule('/exam-types/<int:exam_type_id>', view_func=delete_exam_type, methods=['DELETE'])
+admin_exam_types_bp.add_url_rule('/', methods=['POST'], view_func=exam_type_management.create_exam_type)
+admin_exam_types_bp.add_url_rule('/', methods=['GET'], view_func=exam_type_management.get_exam_types)
+admin_exam_types_bp.add_url_rule('/<int:exam_type_id>', methods=['GET'], view_func=exam_type_management.get_exam_type)
+admin_exam_types_bp.add_url_rule('/<int:exam_type_id>', methods=['PUT'], view_func=exam_type_management.update_exam_type)
+admin_exam_types_bp.add_url_rule('/<int:exam_type_id>', methods=['DELETE'], view_func=exam_type_management.delete_exam_type)

@@ -1,7 +1,6 @@
-from flask import Blueprint, request, jsonify, current_app
-from apps.utils.helpers import success_response, error_response
 from apps.services.student_service import StudentService
-
+from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, jsonify, current_app
 student_profile_bp = Blueprint('student_profile_bp', __name__)
 
 @student_profile_bp.route('/<string:student_id>/profile', methods=['GET'])

@@ -1,7 +1,7 @@
-"""学生管理模块，处理学生相关的所有操作"""
-from flask import request, current_app
 from apps.services import StudentService
 from apps.utils.helpers import success_response, error_response
+from flask import request, current_app
+"""学生管理模块，处理学生相关的所有操作"""
 
 
 def get_students():

@@ -1,13 +1,13 @@
-"""教师蓝图模块"""
+from .class_management import get_class_endpoint
+from .scores.score_management import update_score, get_scores
+from .students.student_management import get_teacher_students, get_teacher_student
+from .teacher_management import get_teacher_classes, get_teacher_profile, get_class_students, get_teacher_all_classes_students
 from flask import Blueprint
+"""教师蓝图模块"""
 
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 # 导入教师相关路由
-from .students.student_management import get_teacher_students, get_teacher_student
-from .scores.score_management import update_score, get_scores
-from .teacher_management import get_teacher_classes, get_teacher_profile, get_class_students, get_teacher_all_classes_students
-from .class_management import get_class_endpoint
 
 # 注册教师端点路由
 teacher_bp.add_url_rule('/<string:teacher_id>/profile', view_func=get_teacher_profile, methods=['GET'])

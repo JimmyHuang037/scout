@@ -1,13 +1,11 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+import os
+from .test_curl_base import CurlTestBase
+from config import Config
 """
 教师端点测试
 使用 pytest 框架执行黑盒测试
 """
 
-from .test_curl_base import CurlTestBase
-from config import Config
-import os
 
 
 class TestTeacherEndpoints(CurlTestBase):

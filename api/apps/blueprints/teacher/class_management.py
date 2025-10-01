@@ -1,7 +1,7 @@
-"""教师班级管理模块"""
-from flask import Blueprint, current_app
 from apps.services.class_service import ClassService
 from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, current_app
+"""教师班级管理模块"""
 
 teacher_class_bp = Blueprint('teacher_class_bp', __name__)
 

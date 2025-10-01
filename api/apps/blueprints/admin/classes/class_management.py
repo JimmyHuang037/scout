@@ -1,7 +1,7 @@
-"""班级管理模块，处理班级相关的所有操作"""
-from flask import request, current_app
 from apps.services import ClassService
 from apps.utils.helpers import success_response, error_response
+from flask import request, current_app
+"""班级管理模块，处理班级相关的所有操作"""
 
 
 def get_classes():

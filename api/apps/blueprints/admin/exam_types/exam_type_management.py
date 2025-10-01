@@ -27,13 +27,16 @@ def create_exam_type():
         # 创建考试类型
         exam_type_service = ExamTypeService()
         exam_type_data = {'exam_type_name': name}
-        exam_type = exam_type_service.create_exam_type(exam_type_data)
+        exam_type_id = exam_type_service.create_exam_type(exam_type_data)
         
-        if not exam_type:
+        if not exam_type_id:
             return error_response("创建考试类型失败", 400)
         
-        current_app.logger.info(f'Admin created exam type: {exam_type["exam_type_id"]}')
-        return success_response(exam_type, "考试类型创建成功", 201)
+        # 获取新创建的考试类型信息
+        new_exam_type = exam_type_service.get_exam_type_by_id(exam_type_id)
+        
+        current_app.logger.info(f'Admin created exam type: {exam_type_id}')
+        return success_response(new_exam_type, "考试类型创建成功", 201)
     
     except Exception as e:
         current_app.logger.error(f'Failed to create exam type: {str(e)}')

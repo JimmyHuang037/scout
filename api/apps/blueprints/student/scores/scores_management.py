@@ -1,7 +1,7 @@
-"""学生成绩管理模块"""
-from flask import Blueprint, request, jsonify, current_app
-from apps.utils.helpers import success_response, error_response
 from apps.services.score_service import ScoreService
+from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, jsonify, current_app
+"""学生成绩管理模块"""
 
 student_scores_bp = Blueprint('student_scores_bp', __name__)
 

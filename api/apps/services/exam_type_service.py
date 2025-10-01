@@ -1,6 +1,6 @@
-"""考试类型服务模块，处理与考试类型相关的业务逻辑"""
-from flask import current_app
 from apps.utils.database_service import DatabaseService
+from flask import current_app
+"""考试类型服务模块，处理与考试类型相关的业务逻辑"""
 
 
 class ExamTypeService:
@@ -24,8 +24,8 @@ class ExamTypeService:
         try:
             # 获取总数
             count_query = "SELECT COUNT(*) as count FROM ExamTypes"
-            total_result = self.db_service.execute_query(count_query, (), fetch_one=True)
-            total = total_result['count'] if total_result else 0
+            total_result = self.db_service.execute_query(count_query, ())
+            total = total_result[0]['count'] if total_result else 0
             
             # 计算偏移量
             offset = (page - 1) * per_page

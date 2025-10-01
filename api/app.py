@@ -1,18 +1,20 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""应用工厂模块"""
-
 import logging
 import os
+
 from flask import Flask
 from flask_cors import CORS
 
-# 导入蓝图
-from apps.blueprints.common import common_bp
 from apps.blueprints.admin import admin_bp
+from apps.blueprints.auth import auth_bp
+from apps.blueprints.common import common_bp
 from apps.blueprints.student import student_bp as student_main_bp
 from apps.blueprints.teacher import teacher_bp as teacher_main_bp
-from apps.blueprints.auth import auth_bp
+from config import config
+
+"""应用工厂模块"""
+
+
+# 导入蓝图
 
 
 class AppFactory:
@@ -24,7 +26,6 @@ class AppFactory:
         app = Flask(__name__)
         
         # 加载配置
-        from config import config
         app.config.from_object(config[config_name])
         
         # 初始化Flask扩展
@@ -70,7 +71,7 @@ app = AppFactory.create_app()
 
 if __name__ == '__main__':
     app.run(
-        host='0.0.0.0',
+        host=app.config.get('HOST', '127.0.0.1'),
         port=app.config.get('PORT', 5000),
         debug=app.config.get('DEBUG', False)
     )

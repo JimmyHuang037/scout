@@ -1,7 +1,7 @@
-"""学生蓝图模块，处理学生相关的所有操作"""
-from flask import Blueprint, jsonify, request, current_app, session
 from apps.services import StudentService
 from apps.utils.helpers import success_response, error_response, auth_required, role_required, get_current_user
+from flask import Blueprint, jsonify, request, current_app, session
+"""学生蓝图模块，处理学生相关的所有操作"""
 
 # 创建学生蓝图
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')

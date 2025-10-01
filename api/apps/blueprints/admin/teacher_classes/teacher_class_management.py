@@ -1,7 +1,7 @@
-"""教师班级关联管理模块，处理教师和班级关联相关的所有操作"""
-from flask import jsonify, request, current_app
 from apps.services import TeacherClassService
 from apps.utils.helpers import success_response, error_response
+from flask import jsonify, request, current_app
+"""教师班级关联管理模块，处理教师和班级关联相关的所有操作"""
 
 
 def create_teacher_class():
@@ -24,9 +24,9 @@ def create_teacher_class():
         # 创建教师班级关联
         teacher_class_service = TeacherClassService()
         try:
-            teacher_class = teacher_class_service.create_teacher_class(teacher_id=teacher_id, class_id=class_id)
+            teacher_class_service.create_teacher_class(teacher_id=teacher_id, class_id=class_id)
             current_app.logger.info(f'Admin created teacher-class association: {teacher_id}:{class_id}')
-            return success_response({"teacher_class_id": teacher_class}, "教师班级关联创建成功", 201)
+            return success_response({"teacher_id": teacher_id, "class_id": class_id}, "教师班级关联创建成功", 201)
         except Exception as e:
             if "Duplicate entry" in str(e):
                 return error_response("教师班级关联已存在", 409)

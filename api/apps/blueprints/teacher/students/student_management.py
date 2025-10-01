@@ -1,7 +1,7 @@
-"""教师学生管理模块，处理教师查看学生信息相关操作"""
-from flask import Blueprint, request, jsonify, current_app
-from apps.utils.helpers import success_response, error_response
 from apps.services.student_service import StudentService
+from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, jsonify, current_app
+"""教师学生管理模块，处理教师查看学生信息相关操作"""
 
 teacher_student_bp = Blueprint('teacher_student_bp', __name__)
 

@@ -1,14 +1,16 @@
-"""科目管理蓝图模块"""
 from flask import Blueprint
 
-subject_bp = Blueprint('subjects', __name__)
+"""科目管理蓝图模块"""
 
-# 导入科目管理相关路由
-from .subject_management import get_subjects, create_subject, get_subject, update_subject, delete_subject
+# 创建科目管理蓝图
+admin_subjects_bp = Blueprint('admin_subjects', __name__, url_prefix='/api/admin/subjects')
+
+# 导入管理函数
+from . import subject_management
 
 # 注册路由
-subject_bp.add_url_rule('/subjects', view_func=get_subjects, methods=['GET'])
-subject_bp.add_url_rule('/subjects', view_func=create_subject, methods=['POST'])
-subject_bp.add_url_rule('/subjects/<int:subject_id>', view_func=get_subject, methods=['GET'])
-subject_bp.add_url_rule('/subjects/<int:subject_id>', view_func=update_subject, methods=['PUT'])
-subject_bp.add_url_rule('/subjects/<int:subject_id>', view_func=delete_subject, methods=['DELETE'])
+admin_subjects_bp.add_url_rule('/', methods=['POST'], view_func=subject_management.create_subject)
+admin_subjects_bp.add_url_rule('/', methods=['GET'], view_func=subject_management.get_subjects)
+admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['GET'], view_func=subject_management.get_subject)
+admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['PUT'], view_func=subject_management.update_subject)
+admin_subjects_bp.add_url_rule('/<int:subject_id>', methods=['DELETE'], view_func=subject_management.delete_subject)

@@ -1,7 +1,7 @@
+from apps.utils.database_service import DatabaseService
+from flask import current_app
 """学生服务类"""
 
-from flask import current_app
-from apps.utils.database_service import DatabaseService
 
 
 class StudentService:

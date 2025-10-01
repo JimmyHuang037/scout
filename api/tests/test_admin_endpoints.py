@@ -1,13 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+        import json
+import os
+from .test_curl_base import CurlTestBase
+from config import Config
 """
 管理员端点测试
 使用 pytest 框架执行黑盒测试
 """
 
-from .test_curl_base import CurlTestBase
-from config import Config
-import os
 
 
 class TestAdminEndpoints(CurlTestBase):
@@ -208,7 +207,6 @@ class TestAdminEndpoints(CurlTestBase):
     def test_18_get_subject(self):
         """测试用例18: 获取特定科目"""
         # 先读取测试17创建的科目结果，获取科目ID
-        import json
         result_file = os.path.join(self.test_results_dir, "admin_17_create_subject.json")
         if os.path.exists(result_file):
             with open(result_file, 'r') as f:
@@ -227,7 +225,6 @@ class TestAdminEndpoints(CurlTestBase):
     def test_19_update_subject(self):
         """测试用例19: 更新科目信息"""
         # 先读取测试17创建的科目结果，获取科目ID
-        import json
         result_file = os.path.join(self.test_results_dir, "admin_17_create_subject.json")
         if os.path.exists(result_file):
             with open(result_file, 'r') as f:
@@ -249,7 +246,6 @@ class TestAdminEndpoints(CurlTestBase):
     def test_20_delete_subject(self):
         """测试用例20: 删除科目"""
         # 先读取测试17创建的科目结果，获取科目ID
-        import json
         result_file = os.path.join(self.test_results_dir, "admin_17_create_subject.json")
         if os.path.exists(result_file):
             with open(result_file, 'r') as f:

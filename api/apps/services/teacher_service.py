@@ -1,6 +1,6 @@
-"""教师服务模块，处理与教师相关的业务逻辑"""
-from apps.utils.database_service import DatabaseService
 from apps.services.class_service import ClassService
+from apps.utils.database_service import DatabaseService
+"""教师服务模块，处理与教师相关的业务逻辑"""
 
 
 class TeacherService:
@@ -118,7 +118,8 @@ class TeacherService:
             
             # 获取总数
             count_query = "SELECT COUNT(*) as count FROM Teachers"
-            total = self.db_service.get_count(count_query)
+            total_result = self.db_service.execute_query(count_query)
+            total = total_result[0]['count'] if total_result else 0
             
             # 获取教师列表
             query = """
@@ -139,7 +140,6 @@ class TeacherService:
                     'pages': (total + per_page - 1) // per_page
                 }
             }
-            
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to get all teachers: {str(e)}")

@@ -1,7 +1,7 @@
-"""教师管理模块，处理教师相关的所有操作"""
-from flask import request, current_app
 from apps.services import TeacherService
 from apps.utils.helpers import success_response, error_response
+from flask import request, current_app
+"""教师管理模块，处理教师相关的所有操作"""
 
 
 def get_teachers():

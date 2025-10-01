@@ -1,6 +1,6 @@
-"""科目服务模块，处理与科目相关的业务逻辑"""
-from flask import current_app
 from apps.utils.database_service import DatabaseService
+from flask import current_app
+"""科目服务模块，处理与科目相关的业务逻辑"""
 
 
 class SubjectService:

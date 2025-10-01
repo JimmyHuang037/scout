@@ -1,7 +1,6 @@
-from flask import Blueprint, request, current_app
-from apps.utils.helpers import success_response, error_response
 from apps.services.score_service import ScoreService
-
+from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, current_app
 student_exam_results_bp = Blueprint('student_exam_results_bp', __name__)
 
 @student_exam_results_bp.route('/<string:student_id>/exam_results', methods=['GET'])

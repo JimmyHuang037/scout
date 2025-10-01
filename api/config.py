@@ -1,6 +1,4 @@
 import os
-
-
 class Config:
     """应用基础配置"""
     
