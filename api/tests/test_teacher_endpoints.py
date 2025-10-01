@@ -36,7 +36,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             1, "教师获取学生成绩列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/scores', '|', 'jq'],
-            "1_get_scores.json",
+            "teacher_01_get_scores.json",
             self.test_setup
         )
     
@@ -48,7 +48,7 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"score": 92}',
              '|', 'jq'],
-            "2_update_score_success.json",
+            "teacher_02_update_score_success.json",
             self.test_setup
         )
     
@@ -60,7 +60,7 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"score": 85}',
              '|', 'jq'],
-            "3_update_score_not_found.json",
+            "teacher_03_update_score_not_found.json",
             self.test_setup
         )
     
@@ -72,7 +72,7 @@ class TestTeacherEndpoints(CurlTestBase):
              '-H', 'Content-Type: application/json',
              '-d', '{"score": 150}',
              '|', 'jq'],
-            "4_update_score_invalid_range.json",
+            "teacher_04_update_score_invalid_range.json",
             self.test_setup
         )
     
@@ -81,7 +81,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             5, "获取班级列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes', '|', 'jq'],
-            "5_get_classes.json",
+            "teacher_05_get_classes.json",
             self.test_setup
         )
     
@@ -90,7 +90,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             6, "根据ID获取班级",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1', '|', 'jq'],
-            "6_get_class_by_id.json",
+            "teacher_06_get_class_by_id.json",
             self.test_setup
         )
     
@@ -99,7 +99,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             7, "获取不存在的班级",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/999', '|', 'jq'],
-            "7_get_class_not_found.json",
+            "teacher_07_get_class_not_found.json",
             self.test_setup,
             expect_error=True
         )
@@ -109,7 +109,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             8, "教师获取学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students', '|', 'jq'],
-            "8_get_students.json",
+            "teacher_08_get_students.json",
             self.test_setup
         )
     
@@ -118,7 +118,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             9, "教师根据ID获取学生",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students/S0601', '|', 'jq'],
-            "9_get_student_by_id.json",
+            "teacher_09_get_student_by_id.json",
             self.test_setup
         )
     
@@ -127,7 +127,7 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             10, "教师获取不存在的学生",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students/NOTEXIST', '|', 'jq'],
-            "10_get_student_not_found.json",
+            "teacher_10_get_student_not_found.json",
             self.test_setup,
             expect_error=True
         )
@@ -137,6 +137,15 @@ class TestTeacherEndpoints(CurlTestBase):
         self.run_api_test(
             11, "教师获取班级学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1/students', '|', 'jq'],
-            "11_get_class_students.json",
+            "teacher_11_get_class_students.json",
+            self.test_setup
+        )
+    
+    def test_12_get_all_classes_students(self):
+        """测试用例12: 教师获取所有班级学生列表"""
+        self.run_api_test(
+            12, "教师获取所有班级学生列表",
+            ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/students', '|', 'jq'],
+            "teacher_12_get_all_classes_students.json",
             self.test_setup
         )

@@ -56,7 +56,7 @@ def get_teacher_student_helper(teacher_id, student_id):
         # 获取学生详情
         student_data = StudentService().get_student_by_id(student_id)
         if not student_data:
-            return error_response('Student not found'), 404
+            return error_response('Student not found', 404)
             
         current_app.logger.info(f"Teacher {teacher_id} retrieved student {student_id}")
         return success_response(student_data)
