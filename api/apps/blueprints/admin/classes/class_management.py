@@ -1,9 +1,14 @@
 from apps.services import ClassService
 from apps.utils.helpers import success_response, error_response
-from flask import request, current_app
+from flask import request, current_app, Blueprint
+
+# 创建班级管理蓝图
+admin_classes_bp = Blueprint('admin_classes', __name__, url_prefix='/classes')
+
 """班级管理模块，处理班级相关的所有操作"""
 
 
+@admin_classes_bp.route('/', methods=['GET'])
 def get_classes():
     """
     获取所有班级列表
@@ -23,6 +28,7 @@ def get_classes():
         return error_response('Failed to get classes', 500)
 
 
+@admin_classes_bp.route('/', methods=['POST'])
 def create_class():
     """
     创建新班级
@@ -52,6 +58,7 @@ def create_class():
         return error_response('Failed to create class', 500)
 
 
+@admin_classes_bp.route('/<int:class_id>', methods=['GET'])
 def get_class(class_id):
     """
     获取指定班级信息
@@ -78,6 +85,7 @@ def get_class(class_id):
         return error_response('Failed to get class', 500)
 
 
+@admin_classes_bp.route('/<int:class_id>', methods=['PUT'])
 def update_class(class_id):
     """
     更新班级信息
@@ -104,12 +112,13 @@ def update_class(class_id):
             return error_response('Class not found', 404)
             
         current_app.logger.info(f"Admin updated class {class_id}")
-        return success_response(result, 'Class updated successfully')
+        return success_response({"class_id": class_id}, "Class updated successfully")
     except Exception as e:
         current_app.logger.error(f"Error updating class {class_id}: {str(e)}")
         return error_response('Failed to update class', 500)
 
 
+@admin_classes_bp.route('/<int:class_id>', methods=['DELETE'])
 def delete_class(class_id):
     """
     删除班级
@@ -130,7 +139,7 @@ def delete_class(class_id):
             return error_response('Class not found', 404)
             
         current_app.logger.info(f"Admin deleted class {class_id}")
-        return success_response(None, 'Class deleted successfully')
+        return success_response({"class_id": class_id}, "Class deleted successfully")
     except Exception as e:
         current_app.logger.error(f"Error deleting class {class_id}: {str(e)}")
         return error_response('Failed to delete class', 500)

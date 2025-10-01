@@ -58,6 +58,7 @@ class ClassService:
             }
             
         except Exception as e:
+            current_app.logger.error(f"Error getting all classes: {str(e)}")
             raise e
     
     def get_class_by_id(self, class_id):
@@ -82,6 +83,7 @@ class ClassService:
             result = self.db_service.execute_query(query, (class_id,))
             return result[0] if result else None
         except Exception as e:
+            current_app.logger.error(f"Error getting class by id {class_id}: {str(e)}")
             raise e
     
     def create_class(self, class_data):
@@ -108,9 +110,11 @@ class ClassService:
                 LIMIT 1
             """
             select_params = (class_data.get('class_name'),)
-            class_info = self.db_service.execute_query(select_query, select_params, fetch_one=True)
+            result = self.db_service.execute_query(select_query, select_params)
+            class_info = result[0] if result else None
             return class_info
         except Exception as e:
+            current_app.logger.error(f"Error creating class: {str(e)}")
             raise e
     
     def update_class(self, class_id, class_data):
@@ -142,6 +146,7 @@ class ClassService:
             self.db_service.execute_update(query, params)
             return True
         except Exception as e:
+            current_app.logger.error(f"Error updating class {class_id}: {str(e)}")
             raise e
     
     def delete_class(self, class_id):
@@ -169,6 +174,7 @@ class ClassService:
 
             return True
         except Exception as e:
+            current_app.logger.error(f"Error deleting class {class_id}: {str(e)}")
             raise e
     
     def get_class_students(self, class_id):
@@ -194,6 +200,7 @@ class ClassService:
                 'students': students
             }
         except Exception as e:
+            current_app.logger.error(f"Error getting class students for class {class_id}: {str(e)}")
             raise e
             
     def get_students_by_class(self, class_id, teacher_id):
@@ -240,4 +247,5 @@ class ClassService:
                 'students': students
             }
         except Exception as e:
+            current_app.logger.error(f"Error getting students by class {class_id} for teacher {teacher_id}: {str(e)}")
             raise e

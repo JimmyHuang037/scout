@@ -293,7 +293,7 @@ class StudentService:
         try:
             # 首先检查学生是否存在
             check_query = "SELECT student_id FROM Students WHERE student_id = %s"
-            student_exists = self.db_service.execute_query(check_query, (student_id,), fetch_one=True)
+            student_exists = self.db_service.execute_query(check_query, (student_id,))
             
             if not student_exists:
                 if current_app:
