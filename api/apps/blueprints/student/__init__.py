@@ -1,14 +1,16 @@
-from .exam.exam_results_bp import get_my_exam_results
-from .profile.profile_bp import get_my_profile
-from .scores.scores_bp import get_my_scores
+from .profile.profile_bp import student_profile_bp
+from .scores.scores_bp import student_scores_bp
+from .exam.exam_results_bp import student_exam_results_bp
 from flask import Blueprint
 """学生蓝图模块"""
 
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 
-# 导入学生考试结果相关路由
+# 注册学生个人资料管理路由
+student_bp.register_blueprint(student_profile_bp)
 
-# 注册路由
-student_bp.add_url_rule('/<string:student_id>/exam_results', view_func=get_my_exam_results, methods=['GET'])
-student_bp.add_url_rule('/<string:student_id>/profile', view_func=get_my_profile, methods=['GET'])
-student_bp.add_url_rule('/<string:student_id>/scores', view_func=get_my_scores, methods=['GET'])
+# 注册学生成绩管理路由
+student_bp.register_blueprint(student_scores_bp)
+
+# 注册学生考试结果管理路由
+student_bp.register_blueprint(student_exam_results_bp)
