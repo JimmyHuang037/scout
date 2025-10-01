@@ -1,11 +1,9 @@
 """考试类型管理模块，处理考试类型相关的所有操作"""
 from flask import jsonify, request, current_app
 from apps.services import ExamTypeService
-from apps.utils.helpers import success_response, error_response, auth_required, role_required
+from apps.utils.helpers import success_response, error_response
 
 
-@auth_required
-@role_required('admin')
 def create_exam_type():
     """
     创建考试类型
@@ -42,8 +40,6 @@ def create_exam_type():
         return error_response("创建考试类型失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def get_exam_types():
     """
     获取所有考试类型列表
@@ -68,8 +64,6 @@ def get_exam_types():
         return error_response("获取考试类型列表失败")
 
 
-@auth_required
-@role_required('admin')
 def get_exam_type(exam_type_id):
     """
     获取考试类型详情
@@ -95,8 +89,6 @@ def get_exam_type(exam_type_id):
         return error_response("获取考试类型详情失败")
 
 
-@auth_required
-@role_required('admin')
 def update_exam_type(exam_type_id):
     """
     更新考试类型
@@ -136,8 +128,6 @@ def update_exam_type(exam_type_id):
         return error_response("更新考试类型失败")
 
 
-@auth_required
-@role_required('admin')
 def delete_exam_type(exam_type_id):
     """
     删除考试类型

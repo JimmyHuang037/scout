@@ -1,7 +1,7 @@
 """学生管理模块，处理学生相关的所有操作"""
 from flask import jsonify, request, current_app
 from apps.services import StudentService
-from apps.utils.helpers import success_response, error_response, auth_required, role_required
+from apps.utils.helpers import success_response, error_response
 
 
 
@@ -28,8 +28,6 @@ def get_students():
         return error_response("获取学生列表失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def create_student():
     """
     创建学生

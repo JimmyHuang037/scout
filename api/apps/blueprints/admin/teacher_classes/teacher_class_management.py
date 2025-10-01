@@ -1,11 +1,9 @@
 """教师班级关联管理模块，处理教师和班级关联相关的所有操作"""
 from flask import jsonify, request, session, current_app
 from apps.services import TeacherClassService
-from apps.utils.helpers import success_response, error_response, auth_required, role_required
+from apps.utils.helpers import success_response, error_response
 
 
-@auth_required
-@role_required('admin')
 def create_teacher_class():
     """
     创建教师班级关联
@@ -40,8 +38,6 @@ def create_teacher_class():
         return error_response("创建教师班级关联失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def get_teacher_classes():
     """
     获取所有教师班级关联列表
@@ -66,8 +62,6 @@ def get_teacher_classes():
         return error_response("获取教师班级关联列表失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def get_teacher_class(teacher_class_id):
     """
     获取特定教师班级关联信息
@@ -94,8 +88,6 @@ def get_teacher_class(teacher_class_id):
         return error_response("获取教师班级关联信息失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def update_teacher_class(teacher_class_id):
     """
     更新教师班级关联信息
@@ -131,8 +123,6 @@ def update_teacher_class(teacher_class_id):
         return error_response("更新教师班级关联失败", 500)
 
 
-@auth_required
-@role_required('admin')
 def delete_teacher_class(teacher_class_id):
     """
     删除教师班级关联

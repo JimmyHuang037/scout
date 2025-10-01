@@ -1,11 +1,9 @@
 """班级管理模块，处理班级相关的所有操作"""
 from flask import request, current_app
 from apps.services import ClassService
-from apps.utils.helpers import success_response, error_response, auth_required, role_required
+from apps.utils.helpers import success_response, error_response
 
 
-@auth_required
-@role_required('admin')
 def get_classes():
     """
     获取所有班级列表
@@ -22,11 +20,9 @@ def get_classes():
         return success_response(classes_data)
     except Exception as e:
         current_app.logger.error(f"Error getting classes: {str(e)}")
-        return error_response('Failed to get classes'), 500
+        return error_response('Failed to get classes', 500)
 
 
-@auth_required
-@role_required('admin')
 def create_class():
     """
     创建新班级
@@ -39,7 +35,7 @@ def create_class():
         data = request.get_json()
         if not data:
             current_app.logger.warning("Create class attempt with missing required fields")
-            return error_response('No data provided'), 400
+            return error_response('No data provided', 400)
             
         # 调用服务创建班级
         class_service = ClassService()
@@ -50,14 +46,12 @@ def create_class():
             return success_response(result, 'Class created successfully'), 201
         else:
             current_app.logger.error("Failed to create class")
-            return error_response('Failed to create class'), 400
+            return error_response('Failed to create class', 400)
     except Exception as e:
         current_app.logger.error(f"Error creating class: {str(e)}")
-        return error_response('Failed to create class'), 500
+        return error_response('Failed to create class', 500)
 
 
-@auth_required
-@role_required('admin')
 def get_class(class_id):
     """
     获取指定班级信息
@@ -75,17 +69,15 @@ def get_class(class_id):
         
         if not class_data:
             current_app.logger.warning(f"Class {class_id} not found")
-            return error_response('Class not found'), 404
+            return error_response('Class not found', 404)
             
         current_app.logger.info(f"Admin retrieved class {class_id}")
         return success_response(class_data)
     except Exception as e:
         current_app.logger.error(f"Error getting class {class_id}: {str(e)}")
-        return error_response('Failed to get class'), 500
+        return error_response('Failed to get class', 500)
 
 
-@auth_required
-@role_required('admin')
 def update_class(class_id):
     """
     更新班级信息
@@ -101,7 +93,7 @@ def update_class(class_id):
         data = request.get_json()
         if not data:
             current_app.logger.warning("Update class attempt with missing required fields")
-            return error_response('No data provided'), 400
+            return error_response('No data provided', 400)
             
         # 调用服务更新班级信息
         class_service = ClassService()
@@ -109,17 +101,15 @@ def update_class(class_id):
         
         if not result:
             current_app.logger.warning(f"Class {class_id} not found for update")
-            return error_response('Class not found'), 404
+            return error_response('Class not found', 404)
             
         current_app.logger.info(f"Admin updated class {class_id}")
         return success_response(result, 'Class updated successfully')
     except Exception as e:
         current_app.logger.error(f"Error updating class {class_id}: {str(e)}")
-        return error_response('Failed to update class'), 500
+        return error_response('Failed to update class', 500)
 
 
-@auth_required
-@role_required('admin')
 def delete_class(class_id):
     """
     删除班级
@@ -137,10 +127,10 @@ def delete_class(class_id):
         
         if not result:
             current_app.logger.warning(f"Class {class_id} not found for deletion")
-            return error_response('Class not found'), 404
+            return error_response('Class not found', 404)
             
         current_app.logger.info(f"Admin deleted class {class_id}")
         return success_response(None, 'Class deleted successfully')
     except Exception as e:
         current_app.logger.error(f"Error deleting class {class_id}: {str(e)}")
-        return error_response('Failed to delete class'), 500
+        return error_response('Failed to delete class', 500)

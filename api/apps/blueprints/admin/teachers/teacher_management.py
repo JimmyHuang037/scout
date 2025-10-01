@@ -1,7 +1,7 @@
 """教师管理模块，处理教师相关的所有操作"""
 from flask import jsonify, request, current_app
 from apps.services import TeacherService
-from apps.utils.helpers import success_response, error_response, auth_required, role_required
+from apps.utils.helpers import success_response, error_response
 
 
 def get_teachers():
@@ -23,7 +23,7 @@ def get_teachers():
         return success_response(teachers_data)
     except Exception as e:
         current_app.logger.error(f"Error getting teachers: {str(e)}")
-        return error_response('Failed to get teachers'), 500
+        return error_response('Failed to get teachers', 500)
 
 
 def create_teacher():
@@ -37,16 +37,16 @@ def create_teacher():
         # 获取请求数据
         data = request.get_json()
         if not data:
-            return error_response('No data provided'), 400
+            return error_response('No data provided', 400)
             
         # 调用服务创建教师
         teacher_service = TeacherService()
         result = teacher_service.create_teacher(data)
         
-        return success_response(result, 'Teacher created successfully'), 201
+        return success_response(result, 'Teacher created successfully', 201)
     except Exception as e:
         current_app.logger.error(f"Error creating teacher: {str(e)}")
-        return error_response('Failed to create teacher'), 500
+        return error_response('Failed to create teacher', 500)
 
 
 def get_teacher(teacher_id):
@@ -65,12 +65,12 @@ def get_teacher(teacher_id):
         teacher_data = teacher_service.get_teacher_by_id(teacher_id)
         
         if not teacher_data:
-            return error_response('Teacher not found'), 404
+            return error_response('Teacher not found', 404)
             
         return success_response(teacher_data)
     except Exception as e:
         current_app.logger.error(f"Error getting teacher {teacher_id}: {str(e)}")
-        return error_response('Failed to get teacher'), 500
+        return error_response('Failed to get teacher', 500)
 
 
 def update_teacher(teacher_id):
@@ -87,19 +87,19 @@ def update_teacher(teacher_id):
         # 获取请求数据
         data = request.get_json()
         if not data:
-            return error_response('No data provided'), 400
+            return error_response('No data provided', 400)
             
         # 调用服务更新教师信息
         teacher_service = TeacherService()
         result = teacher_service.update_teacher(teacher_id, data)
         
         if not result:
-            return error_response('Teacher not found'), 404
+            return error_response('Teacher not found', 404)
             
         return success_response(result, 'Teacher updated successfully')
     except Exception as e:
         current_app.logger.error(f"Error updating teacher {teacher_id}: {str(e)}")
-        return error_response('Failed to update teacher'), 500
+        return error_response('Failed to update teacher', 500)
 
 
 def delete_teacher(teacher_id):
@@ -118,9 +118,9 @@ def delete_teacher(teacher_id):
         result = teacher_service.delete_teacher(teacher_id)
         
         if not result:
-            return error_response('Teacher not found'), 404
+            return error_response('Teacher not found', 404)
             
         return success_response(None, 'Teacher deleted successfully')
     except Exception as e:
         current_app.logger.error(f"Error deleting teacher {teacher_id}: {str(e)}")
-        return error_response('Failed to delete teacher'), 500
+        return error_response('Failed to delete teacher', 500)

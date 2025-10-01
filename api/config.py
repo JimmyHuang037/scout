@@ -13,9 +13,6 @@ class Config:
     MYSQL_PASSWORD = 'Newuser1'
     MYSQL_DB = 'school_management'
     
-    # 数据库连接URI
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}?charset=utf8mb4"
-    
     # 日志配置
     LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs'))
     LOG_FILE_PATH = os.path.join(LOGS_DIR, 'app.log')

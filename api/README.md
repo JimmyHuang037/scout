@@ -9,7 +9,6 @@ Scout 是一个基于 Flask 的成绩管理系统，采用 Python 开发。该�
 - **后端框架**: Flask 2.3.2
 - **编程语言**: Python 3.8+
 - **数据库**: MySQL
-- **ORM**: SQLAlchemy 2.0.15
 - **跨域支持**: Flask-Cors 4.0.0
 - **会话管理**: Flask-Session 0.5.0
 - **环境配置**: python-dotenv 1.0.0
