@@ -20,6 +20,22 @@ def _get_teacher_id():
     raise ValueError("Teacher ID is required")
 
 @teacher_student_bp.route('/students', methods=['GET'])
+def get_teacher_students():
+    try:
+        teacher_id = _get_teacher_id()
+        return get_teacher_students(teacher_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
+@teacher_student_bp.route('/students/<string:student_id>', methods=['GET'])
+def get_teacher_student(student_id):
+    try:
+        teacher_id = _get_teacher_id()
+        return get_teacher_student(teacher_id, student_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
 def get_teacher_students(teacher_id):
     try:
         return get_teacher_students_helper(teacher_id)
@@ -27,7 +43,19 @@ def get_teacher_students(teacher_id):
         current_app.logger.warning(f'Missing teacher ID: {str(e)}')
         return error_response('Teacher ID is required', 400)
 
-@teacher_student_bp.route('/students/<string:student_id>', methods=['GET'])
+def get_teacher_student(teacher_id, student_id):
+    try:
+        return get_teacher_student_helper(teacher_id, student_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+def get_teacher_students(teacher_id):
+    try:
+        return get_teacher_students_helper(teacher_id)
+    except ValueError as e:
+        current_app.logger.warning(f'Missing teacher ID: {str(e)}')
+        return error_response('Teacher ID is required', 400)
+
 def get_teacher_student(teacher_id, student_id):
     try:
         return get_teacher_student_helper(teacher_id, student_id)

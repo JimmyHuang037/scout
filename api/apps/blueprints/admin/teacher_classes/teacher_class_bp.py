@@ -87,7 +87,7 @@ def get_teacher_class(teacher_id, class_id):
     try:
         # 调用服务获取教师班级关联信息
         teacher_class_service = TeacherClassService()
-        teacher_class_data = teacher_class_service.get_teacher_class_by_id(teacher_id, class_id)
+        teacher_class_data = teacher_class_service.get_teacher_class(teacher_id, class_id)
         
         if not teacher_class_data:
             # 记录警告日志
