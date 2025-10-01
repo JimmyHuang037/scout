@@ -27,19 +27,21 @@ class TestTeacherEndpoints(CurlTestBase):
             'result_dir': cls.test_results_dir
         }
 
-
+    # ==================== 个人资料相关测试 ====================
     
-    def test_01_get_teacher_profile(self):
-        """测试用例1: 教师获取个人资料"""
+    def test_profile_01_get_teacher_profile(self):
+        """教师获取个人资料"""
         self.run_api_test(
             1, "教师获取个人资料",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/profile', '|', 'jq'],
             "teacher_01_get_profile.json",
             self.test_setup
         )
+
+    # ==================== 成绩管理相关测试 ====================
     
-    def test_02_get_scores(self):
-        """测试用例2: 教师获取学生成绩列表"""
+    def test_scores_01_get_scores(self):
+        """教师获取学生成绩列表"""
         self.run_api_test(
             2, "教师获取学生成绩列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/scores', '|', 'jq'],
@@ -47,8 +49,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_03_update_score_success(self):
-        """测试用例3: 教师更新学生成绩 - 正常情况"""
+    def test_scores_02_update_score_success(self):
+        """教师更新学生成绩 - 正常情况"""
         self.run_api_test(
             3, "教师更新学生成绩 - 正常情况",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/teacher/1/scores/1',
@@ -59,8 +61,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_04_update_score_not_found(self):
-        """测试用例4: 教师更新学生成绩 - 更新不存在的成绩"""
+    def test_scores_03_update_score_not_found(self):
+        """教师更新学生成绩 - 更新不存在的成绩"""
         self.run_api_test(
             4, "教师更新学生成绩 - 更新不存在的成绩",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/teacher/1/scores/999',
@@ -71,8 +73,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_05_update_score_invalid_range(self):
-        """测试用例5: 教师更新学生成绩 - 分数超出范围"""
+    def test_scores_04_update_score_invalid_range(self):
+        """教师更新学生成绩 - 分数超出范围"""
         self.run_api_test(
             5, "教师更新学生成绩 - 分数超出范围",
             ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/teacher/1/scores/1',
@@ -82,9 +84,11 @@ class TestTeacherEndpoints(CurlTestBase):
             "teacher_05_update_score_invalid_range.json",
             self.test_setup
         )
+
+    # ==================== 班级管理相关测试 ====================
     
-    def test_06_get_classes(self):
-        """测试用例6: 获取班级列表"""
+    def test_classes_01_get_classes(self):
+        """获取班级列表"""
         self.run_api_test(
             6, "获取班级列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes', '|', 'jq'],
@@ -92,8 +96,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_07_get_class_by_id(self):
-        """测试用例7: 根据ID获取班级"""
+    def test_classes_02_get_class_by_id(self):
+        """根据ID获取班级"""
         self.run_api_test(
             7, "根据ID获取班级",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1', '|', 'jq'],
@@ -101,8 +105,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_08_get_class_not_found(self):
-        """测试用例8: 获取不存在的班级"""
+    def test_classes_03_get_class_not_found(self):
+        """获取不存在的班级"""
         self.run_api_test(
             8, "获取不存在的班级",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/999', '|', 'jq'],
@@ -110,9 +114,11 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup,
             expect_error=True
         )
+
+    # ==================== 学生管理相关测试 ====================
     
-    def test_09_get_students(self):
-        """测试用例9: 教师获取学生列表"""
+    def test_students_01_get_students(self):
+        """教师获取学生列表"""
         self.run_api_test(
             9, "教师获取学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students', '|', 'jq'],
@@ -120,8 +126,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_10_get_student_by_id(self):
-        """测试用例10: 教师根据ID获取学生"""
+    def test_students_02_get_student_by_id(self):
+        """教师根据ID获取学生"""
         self.run_api_test(
             10, "教师根据ID获取学生",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students/S0601', '|', 'jq'],
@@ -129,8 +135,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_11_get_student_not_found(self):
-        """测试用例11: 教师获取不存在的学生"""
+    def test_students_03_get_student_not_found(self):
+        """教师获取不存在的学生"""
         self.run_api_test(
             11, "教师获取不存在的学生",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/students/NOTEXIST', '|', 'jq'],
@@ -139,8 +145,8 @@ class TestTeacherEndpoints(CurlTestBase):
             expect_error=True
         )
     
-    def test_12_get_class_students(self):
-        """测试用例12: 教师获取班级学生列表（无权限访问的班级）"""
+    def test_students_04_get_class_students(self):
+        """教师获取班级学生列表（无权限访问的班级）"""
         self.run_api_test(
             12, "教师获取班级学生列表（无权限访问的班级）",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1/students', '|', 'jq'],
@@ -149,8 +155,8 @@ class TestTeacherEndpoints(CurlTestBase):
             expect_error=True
         )
     
-    def test_13_get_class_6_students(self):
-        """测试用例13: 教师获取班级6学生列表（有权限访问的班级）"""
+    def test_students_05_get_class_6_students(self):
+        """教师获取班级6学生列表（有权限访问的班级）"""
         self.run_api_test(
             13, "教师获取班级6学生列表（有权限访问的班级）",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/6/students', '|', 'jq'],
@@ -158,8 +164,8 @@ class TestTeacherEndpoints(CurlTestBase):
             self.test_setup
         )
     
-    def test_14_get_all_classes_students(self):
-        """测试用例14: 教师获取所有班级学生列表"""
+    def test_students_06_get_all_classes_students(self):
+        """教师获取所有班级学生列表"""
         self.run_api_test(
             14, "教师获取所有班级学生列表",
             ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/students', '|', 'jq'],

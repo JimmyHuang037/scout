@@ -61,13 +61,13 @@ def create_teacher():
         return error_response('Failed to create teacher', 500)
 
 
-@admin_teachers_bp.route('/<string:teacher_id>', methods=['GET'])
+@admin_teachers_bp.route('/<int:teacher_id>', methods=['GET'])
 def get_teacher(teacher_id):
     """
     获取单个教师信息
     
     Args:
-        teacher_id (str): 教师ID
+        teacher_id (int): 教师ID
         
     Returns:
         JSON: 教师信息
@@ -87,13 +87,13 @@ def get_teacher(teacher_id):
         return error_response('Failed to get teacher', 500)
 
 
-@admin_teachers_bp.route('/<string:teacher_id>', methods=['PUT'])
+@admin_teachers_bp.route('/<int:teacher_id>', methods=['PUT'])
 def update_teacher(teacher_id):
     """
     更新教师信息
     
     Args:
-        teacher_id (str): 教师ID
+        teacher_id (int): 教师ID
         
     Returns:
         JSON: 更新结果
@@ -118,13 +118,13 @@ def update_teacher(teacher_id):
         return error_response('Failed to update teacher', 500)
 
 
-@admin_teachers_bp.route('/<string:teacher_id>', methods=['DELETE'])
+@admin_teachers_bp.route('/<int:teacher_id>', methods=['DELETE'])
 def delete_teacher(teacher_id):
     """
     删除教师
     
     Args:
-        teacher_id (str): 教师ID
+        teacher_id (int): 教师ID
         
     Returns:
         JSON: 删除结果

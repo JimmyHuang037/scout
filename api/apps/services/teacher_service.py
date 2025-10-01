@@ -23,7 +23,7 @@ class TeacherService:
         """
         try:
             query = """
-                SELECT teacher_id, teacher_name, email, phone
+                SELECT teacher_id, teacher_name
                 FROM Teachers 
                 WHERE teacher_id = %s
             """
