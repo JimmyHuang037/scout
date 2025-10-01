@@ -113,14 +113,12 @@ def update_teacher_class(teacher_id: int, class_id: int):
         if not data:
             return error_response("请求数据不能为空", 400)
         
-        # 准备更新数据字典
-        update_data = {}
-        if 'subject_id' in data:
-            update_data['subject_id'] = data['subject_id']
+        # 获取新的教师ID
+        new_teacher_id = data.get('new_teacher_id')
         
         # 调用服务更新教师班级关联
         teacher_class_service = TeacherClassService()
-        result = teacher_class_service.update_teacher_class(teacher_id, class_id, update_data.get('new_teacher_id'))
+        result = teacher_class_service.update_teacher_class(teacher_id, class_id, new_teacher_id)
         
         if not result:
             # 记录警告日志

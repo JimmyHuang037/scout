@@ -496,9 +496,9 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_04: 更新教师班级关联"""
         self.run_api_test(
             "teacher_class_04", "更新教师班级关联",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/4/6',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/2/5',
              '-H', 'Content-Type: application/json',
-             '-d', '{"teacher_id": 2}',
+             '-d', '{"new_teacher_id": 3}',
              '|', 'jq'],
             "admin_teacher_class_04_update_teacher_class.json",
             self.test_setup
@@ -508,9 +508,8 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_05: 删除教师班级关联"""
         self.run_api_test(
             "teacher_class_05", "删除教师班级关联",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher_classes/4/8', 
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher_classes/2/3', 
              '-H', 'Content-Type: application/json',
-             '-d', '{"class_id": 1}',
              '|', 'jq'],
             "admin_teacher_class_05_delete_teacher_class.json",
             self.test_setup
@@ -520,7 +519,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_06: 获取不存在的教师班级关联"""
         self.run_api_test(
             "teacher_class_06", "获取不存在的教师班级关联",
-            ['curl', '-s', f'{self.base_url}/api/admin/teacher_classes/9999', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/admin/teacher_classes/999/999', '|', 'jq'],
             "admin_teacher_class_06_get_teacher_class_not_found.json",
             self.test_setup,
             expect_error=True
@@ -530,9 +529,9 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_07: 更新不存在的教师班级关联"""
         self.run_api_test(
             "teacher_class_07", "更新不存在的教师班级关联",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/9999',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/999/999',
              '-H', 'Content-Type: application/json',
-             '-d', '{"teacher_id": 9999, "class_id": 9999}',
+             '-d', '{"new_teacher_id": 1}',
              '|', 'jq'],
             "admin_teacher_class_07_update_teacher_class_not_found.json",
             self.test_setup,

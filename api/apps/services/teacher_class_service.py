@@ -158,14 +158,14 @@ class TeacherClassService:
             # 检查关联是否存在
             check_query = "SELECT teacher_id FROM TeacherClasses WHERE teacher_id = %s AND class_id = %s"
             existing = self.db_service.execute_query(check_query, (teacher_id, class_id))
+            current_app.logger.info(f"Checking if teacher class exists: teacher_id={teacher_id}, class_id={class_id}, existing={existing}")
             if not existing:
                 return False
-                
-            # 检查新教师是否存在
-            teacher_query = "SELECT teacher_id FROM Teachers WHERE teacher_id = %s"
-            teacher_result = self.db_service.execute_query(teacher_query, (new_teacher_id,))
-            if not teacher_result:
-                raise ValueError("New teacher not found")
+            if new_teacher_id:
+                teacher_query = "SELECT teacher_id FROM Teachers WHERE teacher_id = %s"
+                teacher_result = self.db_service.execute_query(teacher_query, (new_teacher_id,))
+                if not teacher_result:
+                    raise ValueError("New teacher not found")
             
             # 更新关联信息
             update_query = """
