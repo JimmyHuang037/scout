@@ -119,4 +119,4 @@ def get_class_students(class_id, teacher_id=None):
         return error_response(str(e), 404)
     except Exception as e:
         current_app.logger.error(f"Error getting class students: {str(e)}")
-        return error_response('Failed to get class students'), 500
+        return error_response('Failed to get class students', 500)

@@ -19,5 +19,17 @@ teacher_bp.add_url_rule('/<string:teacher_id>/scores/<int:score_id>', view_func=
 # 注册班级管理路由（教师可访问）
 teacher_bp.add_url_rule('/<string:teacher_id>/classes', view_func=get_teacher_classes, methods=['GET'])
 teacher_bp.add_url_rule('/<string:teacher_id>/classes/<int:class_id>', view_func=get_class_endpoint, methods=['GET'])
-teacher_bp.add_url_rule('/<string:teacher_id>/class_students', view_func=get_class_students, methods=['GET'])
-teacher_bp.add_url_rule('/<string:teacher_id>/all_classes_students', view_func=get_teacher_all_classes_students, methods=['GET'])
+
+# 为需要额外参数的函数创建包装函数
+def _get_class_students_wrapper(teacher_id, class_id):
+    return get_class_students(class_id, teacher_id)
+
+def _get_all_classes_students_wrapper(teacher_id):
+    return get_teacher_all_classes_students(teacher_id)
+
+teacher_bp.add_url_rule('/<string:teacher_id>/classes/<int:class_id>/students', 
+                       view_func=_get_class_students_wrapper, methods=['GET'])
+teacher_bp.add_url_rule('/<string:teacher_id>/all_classes_students', 
+                       view_func=_get_all_classes_students_wrapper, methods=['GET'])
+teacher_bp.add_url_rule('/<string:teacher_id>/classes/students', 
+                       view_func=_get_all_classes_students_wrapper, methods=['GET'])
