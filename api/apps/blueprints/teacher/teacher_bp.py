@@ -8,8 +8,6 @@ from flask import Blueprint, jsonify, request, current_app, session
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 
-@teacher_bp.route('/profile', methods=['GET'])
-@teacher_bp.route('/<string:teacher_id>/profile', methods=['GET'])
 def get_teacher_profile(teacher_id=None):
     """
     获取教师个人资料
@@ -40,8 +38,6 @@ def get_teacher_profile(teacher_id=None):
         return error_response('Failed to get teacher profile', 500)
 
 
-@teacher_bp.route('/classes', methods=['GET'])
-@teacher_bp.route('/<string:teacher_id>/classes', methods=['GET'])
 def get_teacher_classes(teacher_id=None):
     """
     获取教师授课班级列表
@@ -66,8 +62,6 @@ def get_teacher_classes(teacher_id=None):
         return error_response('Failed to get teacher classes', 500)
 
 
-@teacher_bp.route('/classes/students', methods=['GET'])
-@teacher_bp.route('/<string:teacher_id>/classes/students', methods=['GET'])
 def get_teacher_all_classes_students(teacher_id=None):
     """
     获取教师所有班级的学生列表
@@ -92,8 +86,6 @@ def get_teacher_all_classes_students(teacher_id=None):
         return error_response('Failed to get students', 500)
 
 
-@teacher_bp.route('/classes/<int:class_id>/students', methods=['GET'])
-@teacher_bp.route('/<string:teacher_id>/classes/<int:class_id>/students', methods=['GET'])
 def get_class_students(class_id, teacher_id=None):
     """
     获取班级学生列表

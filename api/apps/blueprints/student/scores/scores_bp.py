@@ -5,7 +5,6 @@ from flask import Blueprint, request, jsonify, current_app
 
 student_scores_bp = Blueprint('student_scores_bp', __name__)
 
-@student_scores_bp.route('/<string:student_id>/scores', methods=['GET'])
 def get_my_scores(student_id):
     try:
         # 移除了认证检查装饰器，保持系统简单

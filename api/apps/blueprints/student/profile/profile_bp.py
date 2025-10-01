@@ -3,7 +3,6 @@ from apps.utils.helpers import success_response, error_response
 from flask import Blueprint, request, jsonify, current_app
 student_profile_bp = Blueprint('student_profile_bp', __name__)
 
-@student_profile_bp.route('/<string:student_id>/profile', methods=['GET'])
 def get_my_profile(student_id):
     try:
         # 移除了认证检查装饰器，保持系统简单

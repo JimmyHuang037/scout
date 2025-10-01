@@ -1,4 +1,5 @@
 from apps.services.class_service import ClassService
+from apps.services.teacher_service import TeacherService
 from apps.utils.helpers import success_response, error_response
 from flask import Blueprint, current_app
 """教师班级管理模块"""
@@ -8,7 +9,7 @@ teacher_class_bp = Blueprint('teacher_class_bp', __name__)
 def get_classes(teacher_id):
     try:
         # 获取教师班级列表
-        classes = ClassService().get_classes_by_teacher(teacher_id)
+        classes = TeacherService().get_teacher_classes(teacher_id)
         current_app.logger.info(f"Teacher {teacher_id} retrieved classes")
         return success_response(classes)
     except Exception as e:
@@ -42,7 +43,6 @@ def get_class(teacher_id, class_id):
         current_app.logger.error(f'Failed to fetch class: {str(e)}')
         return error_response('Failed to fetch class', 500)
 
-@teacher_class_bp.route('/<string:teacher_id>/classes/<int:class_id>', methods=['GET'])
 def get_class_endpoint(teacher_id, class_id):
     # 获取班级信息
     return get_class(teacher_id, class_id)
