@@ -33,8 +33,11 @@ def create_teacher_class():
             current_app.logger.info(f'Admin created teacher-class association: {teacher_id}:{class_id}')
             return success_response({"teacher_id": teacher_id, "class_id": class_id}, "教师班级关联创建成功"), 201
         except Exception as e:
-            if "Duplicate entry" in str(e):
+            error_msg = str(e)
+            if "Duplicate entry" in error_msg:
                 return error_response("教师班级关联已存在", 409)
+            elif "not found" in error_msg:
+                return error_response(error_msg, 404)
             else:
                 raise
 
@@ -68,38 +71,40 @@ def get_teacher_classes():
         return error_response("获取教师班级关联列表失败", 500)
 
 
-@admin_teacher_classes_bp.route('/<int:teacher_class_id>', methods=['GET'])
-def get_teacher_class(teacher_class_id):
+@admin_teacher_classes_bp.route('/<int:teacher_id>/<int:class_id>', methods=['GET'])
+def get_teacher_class(teacher_id, class_id):
     """
     获取单个教师班级关联信息
     
     Args:
-        teacher_class_id (int): 教师班级关联ID
+        teacher_id (int): 教师ID
+        class_id (int): 班级ID
         
     Returns:
         JSON: 教师班级关联信息
     """
     try:
         # 获取教师班级关联信息
-        teacher_class = TeacherClassService().get_teacher_class_by_id(teacher_class_id)
+        teacher_class = TeacherClassService().get_teacher_class(teacher_id, class_id)
         if not teacher_class:
             return error_response("教师班级关联不存在", 404)
         
-        current_app.logger.info(f'Admin retrieved teacher-class association: {teacher_class_id}')
+        current_app.logger.info(f'Admin retrieved teacher-class association: {teacher_id}:{class_id}')
         return success_response(teacher_class)
     
     except Exception as e:
-        current_app.logger.error(f'Failed to retrieve teacher-class association {teacher_class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to retrieve teacher-class association {teacher_id}:{class_id}: {str(e)}')
         return error_response("获取教师班级关联信息失败", 500)
 
 
-@admin_teacher_classes_bp.route('/<int:teacher_class_id>', methods=['PUT'])
-def update_teacher_class(teacher_class_id):
+@admin_teacher_classes_bp.route('/<int:teacher_id>/<int:class_id>', methods=['PUT'])
+def update_teacher_class(teacher_id, class_id):
     """
     更新教师班级关联信息
     
     Args:
-        teacher_class_id (int): 教师班级关联ID
+        teacher_id (int): 教师ID
+        class_id (int): 班级ID
         
     Returns:
         JSON: 更新结果
@@ -111,48 +116,48 @@ def update_teacher_class(teacher_class_id):
             return error_response("无效的请求数据", 400)
         
         # 提取必要字段
-        teacher_id = data.get('teacher_id')
-        class_id = data.get('class_id')
+        new_teacher_id = data.get('teacher_id')
         
         # 验证必要字段
-        if teacher_id is None or class_id is None:
+        if new_teacher_id is None:
             return error_response("缺少必要字段", 400)
         
         # 更新教师班级关联
         teacher_class_service = TeacherClassService()
-        result = teacher_class_service.update_teacher_class(teacher_class_id, teacher_id, class_id)
+        result = teacher_class_service.update_teacher_class(teacher_id, class_id, new_teacher_id)
         
         if not result:
             return error_response("教师班级关联不存在", 404)
         
-        current_app.logger.info(f'Admin updated teacher-class association: {teacher_class_id}')
-        return success_response({"teacher_class_id": teacher_class_id}, "教师班级关联更新成功")
+        current_app.logger.info(f'Admin updated teacher-class association: {teacher_id}:{class_id}')
+        return success_response({"teacher_id": teacher_id, "class_id": class_id}, "教师班级关联更新成功")
     
     except Exception as e:
-        current_app.logger.error(f'Failed to update teacher-class association {teacher_class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to update teacher-class association {teacher_id}:{class_id}: {str(e)}')
         return error_response("更新教师班级关联失败", 500)
 
 
-@admin_teacher_classes_bp.route('/<int:teacher_class_id>', methods=['DELETE'])
-def delete_teacher_class(teacher_class_id):
+@admin_teacher_classes_bp.route('/<int:teacher_id>/<int:class_id>', methods=['DELETE'])
+def delete_teacher_class(teacher_id, class_id):
     """
     删除教师班级关联
     
     Args:
-        teacher_class_id (int): 教师班级关联ID
+        teacher_id (int): 教师ID
+        class_id (int): 班级ID
         
     Returns:
         JSON: 删除结果
     """
     try:
         # 删除教师班级关联
-        result = TeacherClassService().delete_teacher_class(teacher_class_id)
+        result = TeacherClassService().delete_teacher_class(teacher_id, class_id)
         if not result:
             return error_response("教师班级关联不存在", 404)
         
-        current_app.logger.info(f'Admin deleted teacher-class association: {teacher_class_id}')
-        return success_response({"teacher_class_id": teacher_class_id}, "教师班级关联删除成功")
+        current_app.logger.info(f'Admin deleted teacher-class association: {teacher_id}:{class_id}')
+        return success_response({"teacher_id": teacher_id, "class_id": class_id}, "教师班级关联删除成功")
     
     except Exception as e:
-        current_app.logger.error(f'Failed to delete teacher-class association {teacher_class_id}: {str(e)}')
+        current_app.logger.error(f'Failed to delete teacher-class association {teacher_id}:{class_id}: {str(e)}')
         return error_response("删除教师班级关联失败", 500)

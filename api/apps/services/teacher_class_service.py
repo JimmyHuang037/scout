@@ -76,6 +76,28 @@ class TeacherClassService:
         """
         return self.db_service.execute_query(query, (teacher_id,))
 
+    def get_teacher_class(self, teacher_id, class_id):
+        """
+        根据教师ID和班级ID获取特定的教师班级关联信息
+        
+        Args:
+            teacher_id (int): 教师ID
+            class_id (int): 班级ID
+            
+        Returns:
+            dict: 教师班级关联信息
+        """
+        query = """
+            SELECT tc.teacher_id, tc.class_id,
+                   t.teacher_name, c.class_name
+            FROM TeacherClasses tc
+            JOIN Teachers t ON tc.teacher_id = t.teacher_id
+            JOIN Classes c ON tc.class_id = c.class_id
+            WHERE tc.teacher_id = %s AND tc.class_id = %s
+        """
+        result = self.db_service.execute_query(query, (teacher_id, class_id))
+        return result[0] if result else None
+
     def create_teacher_class(self, teacher_id, class_id):
         """
         创建教师班级关联
@@ -95,9 +117,9 @@ class TeacherClassService:
             class_result = self.db_service.execute_query(class_query, (class_id,))
             
             if not teacher_result:
-                raise ValueError("Teacher not found")
+                raise ValueError(f"Teacher with ID {teacher_id} not found")
             if not class_result:
-                raise ValueError("Class not found")
+                raise ValueError(f"Class with ID {class_id} not found")
             
             # 检查关联是否已存在
             check_query = """

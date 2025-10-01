@@ -475,7 +475,7 @@ class TestAdminEndpoints(CurlTestBase):
             "teacher_class_02", "创建教师班级关联",
             ['curl', '-s', '-X', 'POST', f'{self.base_url}/api/admin/teacher_classes/',
              '-H', 'Content-Type: application/json',
-             '-d', '{"teacher_id": 1, "class_id": 1}',
+             '-d', '{"teacher_id": 2, "class_id": 3}',
              '|', 'jq'],
             "admin_teacher_class_02_create_teacher_class.json",
             self.test_setup
@@ -485,7 +485,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_03: 获取特定教师班级关联"""
         self.run_api_test(
             "teacher_class_03", "获取特定教师班级关联",
-            ['curl', '-s', f'{self.base_url}/api/admin/teacher_classes/1', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/admin/teacher_classes/2/2', '|', 'jq'],
             "admin_teacher_class_03_get_teacher_class.json",
             self.test_setup
         )
@@ -494,9 +494,9 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_04: 更新教师班级关联"""
         self.run_api_test(
             "teacher_class_04", "更新教师班级关联",
-            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/1',
+            ['curl', '-s', '-X', 'PUT', f'{self.base_url}/api/admin/teacher_classes/4/6',
              '-H', 'Content-Type: application/json',
-             '-d', '{"teacher_id": 2, "class_id": 2}',
+             '-d', '{"teacher_id": 2}',
              '|', 'jq'],
             "admin_teacher_class_04_update_teacher_class.json",
             self.test_setup
@@ -506,7 +506,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例teacher_class_05: 删除教师班级关联"""
         self.run_api_test(
             "teacher_class_05", "删除教师班级关联",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher_classes/1', 
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/teacher_classes/4/8', 
              '-H', 'Content-Type: application/json',
              '-d', '{"class_id": 1}',
              '|', 'jq'],
