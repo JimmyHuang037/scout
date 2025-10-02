@@ -50,20 +50,19 @@ def create_teacher_class():
     if not teacher_id or not class_id:
         return error_response("教师ID和班级ID不能为空", 400)
     
-    # 准备教师班级关联数据字典
-    teacher_class_data = {
-        'teacher_id': teacher_id,
-        'class_id': class_id
-    }
-    
     # 调用服务创建教师班级关联
     teacher_class_service = TeacherClassService()
-    result = teacher_class_service.create_teacher_class(teacher_class_data)
-    
-    # 记录成功日志
-    current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}")
-    
-    return success_response(result, 201)
+    try:
+        result = teacher_class_service.create_teacher_class(teacher_id, class_id)
+        # 记录成功日志
+        current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}")
+        return success_response({"message": "教师班级关联创建成功"}, 201)
+    except ValueError as e:
+        current_app.logger.warning(f"创建教师班级关联失败: {str(e)}")
+        return error_response(str(e), 400)
+    except Exception as e:
+        current_app.logger.error(f"创建教师班级关联时发生错误: {str(e)}")
+        return error_response("内部服务器错误", 500)
 
 
 @handle_exceptions
@@ -80,7 +79,7 @@ def get_teacher_class(teacher_id: int, class_id: int):
     """
     # 调用服务获取教师班级关联信息
     teacher_class_service = TeacherClassService()
-    teacher_class_data = teacher_class_service.get_teacher_class_by_id(teacher_id, class_id)
+    teacher_class_data = teacher_class_service.get_teacher_class(teacher_id, class_id)
     
     if not teacher_class_data:
         # 记录警告日志
@@ -110,16 +109,11 @@ def update_teacher_class(teacher_id: int, class_id: int):
     if not data:
         return error_response("请求数据不能为空", 400)
     
-    # 准备更新数据字典
-    update_data = {}
-    if 'teacher_id' in data:
-        update_data['teacher_id'] = data['teacher_id']
-    if 'class_id' in data:
-        update_data['class_id'] = data['class_id']
+    new_teacher_id = data.get('new_teacher_id')
     
     # 调用服务更新教师班级关联
     teacher_class_service = TeacherClassService()
-    result = teacher_class_service.update_teacher_class(teacher_id, class_id, update_data)
+    result = teacher_class_service.update_teacher_class(teacher_id, class_id, new_teacher_id)
     
     if not result:
         # 记录警告日志
