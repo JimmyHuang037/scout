@@ -74,13 +74,13 @@ class AppFactory:
         @app.errorhandler(404)
         def not_found(error):
             request_id = getattr(request, 'request_id', 'N/A')
-            app.logger.warning(f"[{request_id}] 404 Not Found: {request.path}")
+            app.logger.warning(f"[{request.request_id}] 404 Not Found: {request.path}")
             return error_response('Not found', 404)
             
         @app.errorhandler(500)
         def internal_error(error):
             request_id = getattr(request, 'request_id', 'N/A')
-            app.logger.error(f"[{request_id}] 500 Internal Server Error: {str(error)}")
+            app.logger.error(f"[{request.request_id}] 500 Internal Server Error: {str(error)}")
             return error_response('Internal server error', 500)
 
 

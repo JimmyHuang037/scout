@@ -1,6 +1,7 @@
 import os
 from .test_curl_base import CurlTestBase
 from config import Config
+
 class TestStudentEndpoints(CurlTestBase):
     """学生端点测试类 - 无需登录和会话的测试"""
 

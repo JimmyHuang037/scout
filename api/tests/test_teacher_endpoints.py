@@ -139,7 +139,7 @@ class TestTeacherEndpoints(CurlTestBase):
         """测试用例students_03: 教师获取不存在的学生"""
         self.run_api_test(
             "students_03", "教师获取不存在的学生",
-            ['curl', '-s', f'{self.base_url}/api/teacher/1/students/NOTEXIST', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/teacher/students/1/NOTEXIST', '|', 'jq'],
             "teacher_students_03_get_student_not_found.json",
             self.test_setup,
             expect_error=True
@@ -149,7 +149,7 @@ class TestTeacherEndpoints(CurlTestBase):
         """测试用例students_04: 教师获取班级学生列表（无权限访问的班级）"""
         self.run_api_test(
             "students_04", "教师获取班级学生列表（无权限访问的班级）",
-            ['curl', '-s', f'{self.base_url}/api/teacher/1/classes/1/students', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/teacher/classes/1/1/students', '|', 'jq'],
             "teacher_students_04_get_class_students.json",
             self.test_setup,
             expect_error=True
