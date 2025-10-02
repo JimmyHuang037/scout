@@ -25,7 +25,7 @@ class TestStudentEndpoints(CurlTestBase):
         # 根据API实现，使用路径参数传递学生ID
         self.run_api_test(
             1, "获取学生个人资料",
-            ['curl', '-s', f'{self.base_url}/api/student/S0101/profile', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/student/profile/S0101', '|', 'jq'],
             "student_1_get_profile.json", self.test_setup
         )
 
@@ -33,7 +33,7 @@ class TestStudentEndpoints(CurlTestBase):
         """测试用例2: 获取学生成绩（无需登录和会话）"""
         self.run_api_test(
             2, "获取学生成绩",
-            ['curl', '-s', f'{self.base_url}/api/student/S0101/scores', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/student/scores/S0101', '|', 'jq'],
             "student_2_get_scores.json", self.test_setup
         )
 
@@ -41,6 +41,6 @@ class TestStudentEndpoints(CurlTestBase):
         """测试用例3: 获取学生考试结果（无需登录和会话）"""
         self.run_api_test(
             3, "获取学生考试结果",
-            ['curl', '-s', f'{self.base_url}/api/student/S0101/exam_results', '|', 'jq'],
+            ['curl', '-s', f'{self.base_url}/api/student/exam_results/S0101', '|', 'jq'],
             "student_3_get_exam_results.json", self.test_setup
         )

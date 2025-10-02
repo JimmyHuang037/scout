@@ -1,6 +1,10 @@
+from flask import Blueprint, jsonify, request, session, current_app
 from apps.utils.database_service import DatabaseService
 from apps.utils.helpers import success_response, error_response
-from flask import jsonify, request, session, current_app
+
+
+"""认证蓝图模块"""
+auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
 
 def login():
@@ -83,3 +87,9 @@ def get_current_user():
     except Exception as e:
         current_app.logger.error(f"Error getting current user: {str(e)}")
         return error_response('Failed to get user info', 500)
+
+
+# 注册路由
+auth_bp.add_url_rule('/login', view_func=login, methods=['POST'])
+auth_bp.add_url_rule('/logout', view_func=logout, methods=['POST'])
+auth_bp.add_url_rule('/me', view_func=get_current_user, methods=['GET'])

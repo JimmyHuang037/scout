@@ -1,6 +1,7 @@
 from flask import Blueprint, request, current_app
 from apps.services.student_service import StudentService
-from apps.services import TeacherService
+from apps.services.teacher_service import TeacherService
+from apps.services.class_service import ClassService
 from apps.utils.helpers import success_response, error_response
 
 
@@ -63,6 +64,36 @@ def get_teacher_all_classes_students(teacher_id):
         return error_response('Failed to get students', 500)
 
 
+def get_teacher_class_students(teacher_id, class_id):
+    """
+    获取教师特定班级的学生列表
+    
+    Args:
+        teacher_id (str): 教师ID
+        class_id (str): 班级ID
+        
+    Returns:
+        JSON: 教师特定班级的学生列表
+    """
+    try:
+        # 检查是否提供了teacher_id
+        if teacher_id is None:
+            return error_response('Teacher ID is required', 400)
+            
+        # 检查是否提供了class_id
+        if class_id is None:
+            return error_response('Class ID is required', 400)
+            
+        # 使用ClassService获取班级学生列表
+        class_service = ClassService()
+        students_data = class_service.get_students_by_class(class_id, teacher_id)
+        
+        return success_response(students_data)
+    except Exception as e:
+        current_app.logger.error(f"Error getting teacher class students: {str(e)}")
+        return error_response('Failed to get students', 500)
+
+
 def get_teacher_students_helper(teacher_id):
     """Helper function to get teacher's students"""
     try:
@@ -98,5 +129,5 @@ def get_teacher_student_helper(teacher_id, student_id):
 teacher_students_bp.add_url_rule('/', view_func=get_teacher_students, methods=['GET'], defaults={'teacher_id': None})
 teacher_students_bp.add_url_rule('/<string:teacher_id>', view_func=get_teacher_students, methods=['GET'])
 teacher_students_bp.add_url_rule('/<string:teacher_id>/<string:student_id>', view_func=get_teacher_student, methods=['GET'])
-teacher_students_bp.add_url_rule('/<string:teacher_id>/classes/students', view_func=get_teacher_all_classes_students, methods=['GET'])
+teacher_students_bp.add_url_rule('/<string:teacher_id>/class/<string:class_id>', view_func=get_teacher_class_students, methods=['GET'])
 teacher_students_bp.add_url_rule('/<string:teacher_id>/all_classes_students', view_func=get_teacher_all_classes_students, methods=['GET'])

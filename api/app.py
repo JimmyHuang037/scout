@@ -6,8 +6,8 @@ from flask_cors import CORS
 from apps.blueprints.admin import admin_bp
 from apps.blueprints.auth import auth_bp
 from apps.blueprints.common import common_bp
-from apps.blueprints.student import student_bp as student_main_bp
-from apps.blueprints.teacher import teacher_bp as teacher_main_bp
+from apps.blueprints.student import student_bp
+from apps.blueprints.teacher import teacher_bp
 from apps.utils.helpers import error_response
 from config import config
 
@@ -32,8 +32,8 @@ class AppFactory:
         app.register_blueprint(auth_bp)
         app.register_blueprint(common_bp)
         app.register_blueprint(admin_bp)
-        app.register_blueprint(student_main_bp)
-        app.register_blueprint(teacher_main_bp)
+        app.register_blueprint(student_bp)
+        app.register_blueprint(teacher_bp)
 
     @staticmethod
     def _setup_logging(app):
