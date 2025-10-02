@@ -7,7 +7,6 @@ from flask_cors import CORS
 from apps.utils.responses import error_response
 from config import Config, config
 
-# 导入蓝图
 from apps.blueprints.auth import auth_bp
 from apps.blueprints.common import common_bp
 from apps.blueprints.admin import admin_bp
@@ -40,18 +39,14 @@ class AppFactory:
 
     @staticmethod
     def _setup_logging(app):
-        """配置应用的日志系统"""
-        # 创建文件处理器
         file_handler = logging.FileHandler(app.config['LOG_FILE_PATH'])
         file_handler.setLevel(app.config['LOG_LEVEL'])
         
-        # 定义日志格式
         formatter = logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         )
         file_handler.setFormatter(formatter)
         
-        # 将处理器添加到应用日志器
         app.logger.addHandler(file_handler)
         app.logger.setLevel(app.config['LOG_LEVEL'])
 
