@@ -173,14 +173,14 @@ def get_teacher_class_students(teacher_id, class_id):
     return success_response(students_data)
 
 
-# 注册路由
+# 注册路由规则
 teacher_bp.add_url_rule('/profile/<string:teacher_id>', view_func=get_teacher_profile, methods=['GET'])
 teacher_bp.add_url_rule('/scores/<string:teacher_id>', view_func=get_scores, methods=['GET'])
 teacher_bp.add_url_rule('/scores/<string:teacher_id>/<int:score_id>', view_func=update_score, methods=['PUT'])
 teacher_bp.add_url_rule('/classes/<string:teacher_id>', view_func=get_classes, methods=['GET'])
-teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>', view_func=get_class, methods=['GET'])
 teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>/students', view_func=get_class_students, methods=['GET'])
+teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>', view_func=get_class, methods=['GET'])
 teacher_bp.add_url_rule('/students/<string:teacher_id>', view_func=get_teacher_students, methods=['GET'])
 teacher_bp.add_url_rule('/students/<string:teacher_id>/<string:student_id>', view_func=get_teacher_student, methods=['GET'])
-teacher_bp.add_url_rule('/students/<string:teacher_id>/class/<string:class_id>', view_func=get_teacher_class_students, methods=['GET'])
 teacher_bp.add_url_rule('/students/<string:teacher_id>/all_classes_students', view_func=get_teacher_all_classes_students, methods=['GET'])
+teacher_bp.add_url_rule('/students/<string:teacher_id>/class/<string:class_id>', view_func=get_teacher_class_students, methods=['GET'])
