@@ -91,20 +91,6 @@ def create_student():
 - `apps/blueprints/admin/teacher_classes.py` 中的 [create_teacher_class](file:///home/jimmy/repo/scout/api/apps/services/teacher_class_service.py#L100-L142) 函数已移除 `try/except` 块
 - `apps/blueprints/auth.py` 中的 [login](file:///home/jimmy/repo/scout/api/apps/blueprints/auth.py#L15-L37)、[logout](file:///home/jimmy/repo/scout/api/apps/blueprints/auth.py#L40-L51) 和 [get_current_user](file:///home/jimmy/repo/scout/api/apps/blueprints/auth.py#L54-L71) 函数已移除手动的 `try/except` 块
 
-## 4. 服务实例化的一致性
-
-有些地方直接调用服务构造函数：
-```python
-student_service = StudentService()
-```
-
-有些地方使用简写形式：
-```python
-scores = ScoreService().get_student_scores(student_id)
-```
-
-应该统一这种写法以提高代码一致性。
-
 ## 5. 响应消息的中英文混合问题
 
 在一些蓝图中，响应消息存在中英文混合的问题，例如在[student.py](file:///home/jimmy/repo/scout/api/apps/blueprints/student.py)中：
@@ -122,13 +108,15 @@ return error_response('Student profile not found', 404)
 - `apps/blueprints/teacher.py` 中的所有错误消息已改为中文
 - `apps/blueprints/auth.py` 中的所有错误消息已改为中文
 
-## 6. 路由注册方式的不一致
-
-在[student.py](file:///home/jimmy/repo/scout/api/apps/blueprints/student.py)中，路由注册方式与其他蓝图不同，应该统一所有蓝图的路由注册方式。
-
 ## 7. 命名规范的统一
 
 某些函数命名可以更加清晰和统一，例如[teacher.py](file:///home/jimmy/repo/scout/api/apps/services/teacher_service.py)中的[get_scores](file:///home/jimmy/repo/scout/api/apps/blueprints/teacher.py#L23-L42)函数可以重命名为[get_teacher_scores](file:///home/jimmy/repo/scout/api/apps/services/teacher_service.py#L105-L123)以提高可读性。
+
+### 已完成的改进
+
+以下文件中的函数命名已改进：
+
+- `apps/blueprints/teacher.py` 中的 [get_scores](file:///home/jimmy/repo/scout/api/apps/blueprints/teacher.py#L23-L42) 函数已重命名为 [get_teacher_scores](file:///home/jimmy/repo/scout/api/apps/services/teacher_service.py#L309-L342)
 
 ## 8. 数据访问模式的统一
 

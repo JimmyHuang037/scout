@@ -24,7 +24,7 @@ def get_teacher_profile(teacher_id):
 
 
 @handle_exceptions
-def get_scores(teacher_id):
+def get_teacher_scores(teacher_id):
     """
     获取成绩列表
     
@@ -175,7 +175,7 @@ def get_teacher_class_students(teacher_id, class_id):
 
 # 注册路由规则
 teacher_bp.add_url_rule('/profile/<string:teacher_id>', view_func=get_teacher_profile, methods=['GET'])
-teacher_bp.add_url_rule('/scores/<string:teacher_id>', view_func=get_scores, methods=['GET'])
+teacher_bp.add_url_rule('/scores/<string:teacher_id>', view_func=get_teacher_scores, methods=['GET'])
 teacher_bp.add_url_rule('/scores/<string:teacher_id>/<int:score_id>', view_func=update_score, methods=['PUT'])
 teacher_bp.add_url_rule('/classes/<string:teacher_id>', view_func=get_classes, methods=['GET'])
 teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>/students', view_func=get_class_students, methods=['GET'])
