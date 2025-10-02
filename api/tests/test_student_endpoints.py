@@ -45,3 +45,12 @@ class TestStudentEndpoints(CurlTestBase):
             ['curl', '-s', f'{self.base_url}/api/student/exam_results/S0101', '|', 'jq'],
             "student_3_get_exam_results.json", self.test_setup
         )
+        
+    def test_04_get_student_exam_results_not_found(self):
+        """测试用例4: 获取不存在学生ID的考试结果，应返回404错误"""
+        self.run_api_test(
+            4, "获取不存在学生ID的考试结果",
+            ['curl', '-s', f'{self.base_url}/api/student/exam_results/S999', '|', 'jq'],
+            "student_4_get_exam_results_not_found.json", self.test_setup,
+            expect_error=True
+        )

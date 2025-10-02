@@ -24,12 +24,23 @@ def get_my_profile(student_id):
 def get_my_scores(student_id):
     score_service = ScoreService()
     scores = score_service.get_student_scores(student_id)
+
+    if not scores:
+        return error_response('学生个人成绩未找到', 404)
+
     current_app.logger.info(f"Student {student_id} retrieved scores")
     return success_response(scores)
 
 
 @handle_exceptions
 def get_my_exam_results(student_id):
+    # 首先检查学生是否存在
+    student_service = StudentService()
+    student_data = student_service.get_student_by_id(student_id)
+    
+    if not student_data:
+        return error_response('学生未找到', 404)
+        
     score_service = ScoreService()
     exam_results = score_service.get_student_exam_results(student_id)
     current_app.logger.info(f"Student {student_id} retrieved exam results")
