@@ -5,7 +5,7 @@ from apps.utils.responses import success_response, error_response
 from apps.utils.validation import validate_json_input
 
 
-# 科目管理蓝图模块
+# 科目管理蓝图
 admin_subjects_bp = Blueprint('admin_subjects', __name__, url_prefix='/subjects')
 
 

@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
 from apps.utils.decorators import handle_exceptions
-
+from apps.utils.responses import success_response, error_response
 
 """公共蓝图模块"""
-common_bp = Blueprint('common', __name__)
+common_bp = Blueprint('common', __name__, url_prefix='/api')
 
 
 def index():
@@ -31,5 +31,5 @@ def test_error():
 
 # 注册路由
 common_bp.add_url_rule('/', view_func=index, methods=['GET'])
-common_bp.add_url_rule('/api/health', view_func=health_check, methods=['GET'])
-common_bp.add_url_rule('/api/test_error', view_func=test_error, methods=['GET'])
+common_bp.add_url_rule('/health', view_func=health_check, methods=['GET'])
+common_bp.add_url_rule('/test_error', view_func=test_error, methods=['GET'])

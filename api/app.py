@@ -32,20 +32,26 @@ class AppFactory:
 
     @staticmethod
     def _init_blueprints(app):
-        app.register_blueprint(auth_bp)
-        app.register_blueprint(common_bp)
-        app.register_blueprint(admin_bp)
-        app.register_blueprint(student_bp)
-        app.register_blueprint(teacher_bp)
+        app.register_blueprint(auth_bp, url_prefix='/api/auth')
+        app.register_blueprint(common_bp, url_prefix='/api')
+        app.register_blueprint(admin_bp, url_prefix='/api/admin')
+        app.register_blueprint(student_bp, url_prefix='/api/student')
+        app.register_blueprint(teacher_bp, url_prefix='/api/teacher')
 
     @staticmethod
     def _setup_logging(app):
+        """配置应用的日志系统"""
+        # 创建文件处理器
         file_handler = logging.FileHandler(app.config['LOG_FILE_PATH'])
         file_handler.setLevel(app.config['LOG_LEVEL'])
+        
+        # 定义日志格式
         formatter = logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         )
         file_handler.setFormatter(formatter)
+        
+        # 将处理器添加到应用日志器
         app.logger.addHandler(file_handler)
         app.logger.setLevel(app.config['LOG_LEVEL'])
 
@@ -76,13 +82,11 @@ class AppFactory:
     def _register_error_handlers(app):
         @app.errorhandler(404)
         def not_found(error):
-            request_id = getattr(request, 'request_id', 'N/A')
             app.logger.warning(f"[{request.request_id}] 404 Not Found: {request.path}")
             return error_response('Not found', 404)
             
         @app.errorhandler(500)
         def internal_error(error):
-            request_id = getattr(request, 'request_id', 'N/A')
             app.logger.error(f"[{request.request_id}] 500 Internal Server Error: {str(error)}")
             return error_response('Internal server error', 500)
 
