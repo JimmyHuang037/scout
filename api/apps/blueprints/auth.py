@@ -1,7 +1,7 @@
-from flask import Blueprint, jsonify, request, session, current_app
-from apps.utils.database_service import DatabaseService
-from apps.utils.helpers import success_response, error_response
+from flask import Blueprint, request, current_app, session
 from apps.utils.decorators import handle_exceptions
+from apps.utils.responses import success_response, error_response
+from apps.services.user_service import UserService
 
 
 """认证蓝图模块"""
@@ -23,18 +23,12 @@ def login():
     if not user_id or not password:
         return error_response('缺少用户ID或密码', 400)
         
-    # 查询数据库验证用户
-    db_service = DatabaseService()
-    query = """
-        SELECT user_id, user_name as username, role, password 
-        FROM users 
-        WHERE user_id = %s AND password = %s
-    """
-    result = db_service.execute_query(query, (user_id, password))
+    # 使用UserService验证用户
+    user_service = UserService()
+    user = user_service.authenticate_user(user_id, password)
     
-    if result:
+    if user:
         # 登录成功，设置session
-        user = result[0]
         session['user_id'] = user['user_id']
         session['username'] = user['username']
         session['role'] = user['role']

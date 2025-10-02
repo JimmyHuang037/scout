@@ -11,6 +11,18 @@ class Config:
     MYSQL_PASSWORD = 'Newuser1'
     MYSQL_DB = 'school_management'
     
+    # Flask-Session配置
+    SESSION_TYPE = 'filesystem'
+    SESSION_FILE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sessions')
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True
+    SESSION_KEY_PREFIX = 'scout:'
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    
+    # 确保会话目录存在
+    if not os.path.exists(SESSION_FILE_DIR):
+        os.makedirs(SESSION_FILE_DIR)
+    
     # 日志配置
     LOGS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'logs'))
     LOG_FILE_PATH = os.path.join(LOGS_DIR, 'app.log')

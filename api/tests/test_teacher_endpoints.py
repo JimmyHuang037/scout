@@ -70,7 +70,8 @@ class TestTeacherEndpoints(CurlTestBase):
              '-d', '{"score": 85}',
              '|', 'jq'],
             "teacher_scores_03_update_score_not_found.json",
-            self.test_setup
+            self.test_setup,
+            expect_error=True
         )
 
     def test_scores_04_update_score_invalid_range(self):

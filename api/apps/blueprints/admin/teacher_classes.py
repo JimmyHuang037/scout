@@ -1,7 +1,8 @@
 from flask import Blueprint, request, current_app
-from apps.services import TeacherClassService
-from apps.utils.helpers import success_response, error_response, validate_json_input
+from apps.services.teacher_class_service import TeacherClassService
 from apps.utils.decorators import handle_exceptions
+from apps.utils.responses import success_response, error_response
+from apps.utils.validation import validate_json_input
 
 
 # 教师班级关联管理蓝图

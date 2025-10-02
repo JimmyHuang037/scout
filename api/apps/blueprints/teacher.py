@@ -1,72 +1,59 @@
 from flask import Blueprint, request, current_app
-from apps.services import TeacherService, ScoreService
-from apps.services.student_service import StudentService
-from apps.services.class_service import ClassService
 from apps.utils.decorators import handle_exceptions
-from apps.utils.helpers import success_response, error_response
+from apps.utils.responses import success_response, error_response
+from apps.services.teacher_service import TeacherService
+from apps.services.class_service import ClassService
+from apps.services.student_service import StudentService
+from apps.services.score_service import ScoreService
 
-
-# 教师管理蓝图
+"""教师蓝图模块"""
 teacher_bp = Blueprint('teacher', __name__, url_prefix='/api/teacher')
 
 
 @handle_exceptions
-def get_teacher_profile(teacher_id):
-    """获取指定教师的个人资料"""
+def get_profile(teacher_id):
+    """获取教师个人资料"""
+    # 获取教师个人资料
     teacher_service = TeacherService()
     profile_data = teacher_service.get_teacher_profile(teacher_id)
-
     if not profile_data:
-        return error_response('教师个人资料未找到', 404)
-
+        return error_response('教师未找到', 404)
+        
     current_app.logger.info(f"Teacher {teacher_id} profile retrieved")
     return success_response(profile_data)
 
 
 @handle_exceptions
-def get_teacher_scores(teacher_id):
-    """
-    获取成绩列表
-    
-    Args:
-        teacher_id (string): 教师ID
-        
-    Returns:
-        JSON: 成绩列表
-    """
+def get_my_scores(teacher_id):
+    """获取我的成绩列表"""
     # 获取查询参数
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 10, type=int)
     
-    # 创建成绩服务实例并获取成绩列表
+    # 获取成绩列表
     score_service = ScoreService()
     scores_data = score_service.get_teacher_scores(teacher_id, page, per_page)
-    
-    current_app.logger.info(f"Teacher {teacher_id} retrieved scores list")
+    current_app.logger.info(f"Teacher {teacher_id} retrieved scores")
     return success_response(scores_data)
 
 
 @handle_exceptions
-def update_score(teacher_id, score_id):
-    """
-    更新成绩记录
-    
-    Args:
-        teacher_id (string): 教师ID
-        score_id (int): 成绩ID
-        
-    Returns:
-        JSON: 更新结果
-    """
-    # 获取请求数据
+def update_my_score(teacher_id, score_id):
+    """更新我的成绩"""
+    # 验证输入
     data = request.get_json()
-    if not data:
-        return error_response("无效的请求数据", 400)
+    score = data.get('score')
     
-    # 创建成绩服务实例并更新成绩
+    if score is None:
+        return error_response('成绩是必需的', 400)
+        
+    # 更新成绩
     score_service = ScoreService()
-    result = score_service.update_score(score_id, data)
-    
+    score_data = {'score': score}
+    result = score_service.update_score(score_id, score_data)
+    if not result:
+        return error_response('成绩未找到', 404)
+        
     current_app.logger.info(f"Teacher {teacher_id} updated score {score_id}")
     return success_response(result)
 
@@ -74,7 +61,8 @@ def update_score(teacher_id, score_id):
 @handle_exceptions
 def get_classes(teacher_id):
     # 获取教师班级列表
-    classes = TeacherService().get_teacher_classes(teacher_id)
+    teacher_service = TeacherService()
+    classes = teacher_service.get_teacher_classes(teacher_id)
     current_app.logger.info(f"Teacher {teacher_id} retrieved classes")
     return success_response(classes)
 
@@ -82,7 +70,8 @@ def get_classes(teacher_id):
 @handle_exceptions
 def get_class_students(teacher_id, class_id):
     # 获取班级学生列表
-    students = ClassService().get_students_by_class(class_id, teacher_id)
+    class_service = ClassService()
+    students = class_service.get_students_by_class(class_id, teacher_id)
     current_app.logger.info(f"Teacher {teacher_id} retrieved students for class {class_id}")
     return success_response(students)
 
@@ -109,7 +98,8 @@ def get_teacher_students(teacher_id):
     per_page = request.args.get('per_page', 10, type=int)
     
     # 获取教师学生列表
-    students_data = StudentService().get_teacher_students(teacher_id, None, page, per_page)
+    student_service = StudentService()
+    students_data = student_service.get_teacher_students(teacher_id, None, page, per_page)
     current_app.logger.info(f"Teacher {teacher_id} retrieved students")
     return success_response(students_data)
 
@@ -117,7 +107,8 @@ def get_teacher_students(teacher_id):
 @handle_exceptions
 def get_teacher_student(teacher_id, student_id):
     # 获取学生详情
-    student_data = StudentService().get_student_by_id(student_id)
+    student_service = StudentService()
+    student_data = student_service.get_student_by_id(student_id)
     if not student_data:
         return error_response('学生未找到', 404)
         
@@ -126,61 +117,27 @@ def get_teacher_student(teacher_id, student_id):
 
 
 @handle_exceptions
-def get_teacher_all_classes_students(teacher_id):
-    """
-    获取教师所有班级的学生列表
+def get_exam_scores(teacher_id, exam_id):
+    # 获取查询参数
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     
-    Args:
-        teacher_id (str): 教师ID
-        
-    Returns:
-        JSON: 教师所有班级的学生列表
-    """
-    # 检查是否提供了teacher_id
-    if teacher_id is None:
-        return error_response('教师ID是必需的', 400)
-        
-    teacher_service = TeacherService()
-    students_data = teacher_service.get_all_classes_students(teacher_id)
-    
-    return success_response(students_data)
+    # 获取成绩列表
+    score_service = ScoreService()
+    scores_data = score_service.get_exam_scores(teacher_id, exam_id, page, per_page)
+    current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
+    return success_response(scores_data)
 
 
-@handle_exceptions
-def get_teacher_class_students(teacher_id, class_id):
-    """
-    获取教师特定班级的学生列表
-    
-    Args:
-        teacher_id (str): 教师ID
-        class_id (str): 班级ID
-        
-    Returns:
-        JSON: 教师特定班级的学生列表
-    """
-    # 检查是否提供了teacher_id
-    if teacher_id is None:
-        return error_response('教师ID是必需的', 400)
-        
-    # 检查是否提供了class_id
-    if class_id is None:
-        return error_response('班级ID是必需的', 400)
-        
-    # 使用ClassService获取班级学生列表
-    class_service = ClassService()
-    students_data = class_service.get_students_by_class(class_id, teacher_id)
-    
-    return success_response(students_data)
-
-
-# 注册路由规则
-teacher_bp.add_url_rule('/profile/<string:teacher_id>', view_func=get_teacher_profile, methods=['GET'])
-teacher_bp.add_url_rule('/scores/<string:teacher_id>', view_func=get_teacher_scores, methods=['GET'])
-teacher_bp.add_url_rule('/scores/<string:teacher_id>/<int:score_id>', view_func=update_score, methods=['PUT'])
+# 注册路由
+teacher_bp.add_url_rule('/profile/<string:teacher_id>', view_func=get_profile, methods=['GET'])
+teacher_bp.add_url_rule('/scores/<string:teacher_id>', view_func=get_my_scores, methods=['GET'])
+teacher_bp.add_url_rule('/scores/<string:teacher_id>/<int:score_id>', view_func=update_my_score, methods=['PUT'])
 teacher_bp.add_url_rule('/classes/<string:teacher_id>', view_func=get_classes, methods=['GET'])
-teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>/students', view_func=get_class_students, methods=['GET'])
-teacher_bp.add_url_rule('/classes/<string:teacher_id>/<int:class_id>', view_func=get_class, methods=['GET'])
+teacher_bp.add_url_rule('/classes/<string:teacher_id>/<string:class_id>/students', view_func=get_class_students, methods=['GET'])
+teacher_bp.add_url_rule('/classes/<string:teacher_id>/<string:class_id>', view_func=get_class, methods=['GET'])
 teacher_bp.add_url_rule('/students/<string:teacher_id>', view_func=get_teacher_students, methods=['GET'])
 teacher_bp.add_url_rule('/students/<string:teacher_id>/<string:student_id>', view_func=get_teacher_student, methods=['GET'])
-teacher_bp.add_url_rule('/students/<string:teacher_id>/all_classes_students', view_func=get_teacher_all_classes_students, methods=['GET'])
-teacher_bp.add_url_rule('/students/<string:teacher_id>/class/<string:class_id>', view_func=get_teacher_class_students, methods=['GET'])
+teacher_bp.add_url_rule('/students/<string:teacher_id>/class/<string:class_id>', view_func=get_class_students, methods=['GET'])  # 添加这个路由
+teacher_bp.add_url_rule('/students/<string:teacher_id>/all_classes_students', view_func=get_teacher_students, methods=['GET'])  # 添加这个路由
+teacher_bp.add_url_rule('/exams/<string:teacher_id>/<int:exam_id>/scores', view_func=get_exam_scores, methods=['GET'])

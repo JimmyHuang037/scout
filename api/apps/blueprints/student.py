@@ -1,11 +1,10 @@
-from flask import Blueprint, current_app
+from flask import Blueprint, request, current_app
+from apps.utils.decorators import handle_exceptions
+from apps.utils.responses import success_response, error_response
 from apps.services.student_service import StudentService
 from apps.services.score_service import ScoreService
-from apps.utils.decorators import handle_exceptions
-from apps.utils.helpers import success_response, error_response
 
-
-# 学生管理蓝图
+"""学生蓝图模块"""
 student_bp = Blueprint('student', __name__, url_prefix='/api/student')
 
 
@@ -27,7 +26,8 @@ def get_my_profile(student_id):
 def get_my_scores(student_id):
     """获取指定学生的成绩"""
     # 获取学生成绩
-    scores = ScoreService().get_student_scores(student_id)
+    score_service = ScoreService()
+    scores = score_service.get_student_scores(student_id)
     current_app.logger.info(f"Student {student_id} retrieved scores")
     return success_response(scores)
 
@@ -36,7 +36,8 @@ def get_my_scores(student_id):
 def get_my_exam_results(student_id):
     """获取指定学生的考试结果"""
     # 获取学生考试结果
-    exam_results = ScoreService().get_student_exam_results(student_id)
+    score_service = ScoreService()
+    exam_results = score_service.get_student_exam_results(student_id)
     current_app.logger.info(f"Student {student_id} retrieved exam results")
     return success_response(exam_results)
 

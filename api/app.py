@@ -1,15 +1,18 @@
+import os
 import logging
 import time
-from flask import Flask, request, jsonify
+from datetime import datetime
+from flask import Flask, request, current_app
 from flask_cors import CORS
+from apps.utils.responses import error_response
+from config import Config, config
 
-from apps.blueprints.admin import admin_bp
+# 导入蓝图
 from apps.blueprints.auth import auth_bp
 from apps.blueprints.common import common_bp
+from apps.blueprints.admin import admin_bp
 from apps.blueprints.student import student_bp
 from apps.blueprints.teacher import teacher_bp
-from apps.utils.helpers import error_response
-from config import config
 
 
 class AppFactory:

@@ -147,6 +147,12 @@ class ScoreService:
         Returns:
             dict: 更新后的成绩信息
         """
+        # 先检查成绩是否存在
+        check_query = "SELECT 1 FROM Scores WHERE score_id = %s"
+        check_result = self.db_service.execute_query(check_query, (score_id,))
+        if not check_result:
+            return None
+            
         # 更新成绩
         update_query = "UPDATE Scores SET score = %s WHERE score_id = %s"
         self.db_service.execute_update(update_query, (score_data['score'], score_id))

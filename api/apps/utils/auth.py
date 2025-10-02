@@ -1,7 +1,12 @@
 from functools import wraps
-from apps.utils.helpers import error_response
 from flask import session
+from apps.utils.responses import error_response
+from apps.utils.database_service import DatabaseService
+
 """认证和权限检查工具模块"""
+# 已废弃的认证和权限检查工具模块
+# 功能已迁移至 apps/utils/decorators.py
+# 请勿再使用此文件中的函数
 
 
 def require_auth():
