@@ -77,12 +77,3 @@ class DatabaseService:
         return execute_update(query, params)
 
 
-def get_db():
-    if 'db_service' not in get_db.__dict__:
-        get_db.db_service = DatabaseService()
-    return get_db.db_service
-
-
-def close_db(error=None):
-    if 'db_service' in get_db.__dict__:
-        del get_db.db_service
