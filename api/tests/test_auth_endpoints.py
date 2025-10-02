@@ -58,3 +58,13 @@ class TestAuthEndpoints(CurlTestBase):
             "auth_3_logout_with_session.json",
             self.test_setup
         )
+
+    def test_04_common_test_error(self):
+        """测试用例4: 测试公共蓝图的错误处理"""
+        self.run_api_test(
+            "common_01", "测试公共蓝图的错误处理",
+            ['curl', '-s', '-X', 'GET', f'{self.base_url}/api/test_error'],
+            "common_test_error.json",
+            self.test_setup,
+            expect_error=True
+        )
