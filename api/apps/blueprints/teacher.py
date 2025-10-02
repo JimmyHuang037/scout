@@ -1,6 +1,7 @@
 from flask import Blueprint, request, current_app
 from apps.utils.decorators import handle_exceptions
 from apps.utils.responses import success_response, error_response
+from apps.utils.validation import validate_json_input
 from apps.services.teacher_service import TeacherService
 from apps.services.class_service import ClassService
 from apps.services.student_service import StudentService
@@ -41,11 +42,11 @@ def get_my_scores(teacher_id):
 def update_my_score(teacher_id, score_id):
     """更新我的成绩"""
     # 验证输入
-    data = request.get_json()
+    data, error = validate_json_input(['score'])
+    if error:
+        return error
+        
     score = data.get('score')
-    
-    if score is None:
-        return error_response('成绩是必需的', 400)
         
     # 更新成绩
     score_service = ScoreService()
