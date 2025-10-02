@@ -1,8 +1,5 @@
 from datetime import datetime
-from functools import wraps
-import os
-import time
-from flask import jsonify, request, current_app, session
+from flask import jsonify, session
 """助手函数模块，包含各种通用工具函数"""
 
 
@@ -46,44 +43,6 @@ def error_response(message="Error", status_code=400):
     return jsonify(response), status_code
 
 
-def auth_required(f):
-    """
-    认证装饰器，检查用户是否已登录
-    
-    Args:
-        f: 被装饰的函数
-        
-    Returns:
-        function: 装饰后的函数
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return error_response('Authentication required', 401)
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-def role_required(required_role):
-    """
-    角色权限装饰器，检查用户是否具有指定角色
-    
-    Args:
-        required_role (str): 需要的角色
-        
-    Returns:
-        function: 装饰器函数
-    """
-    def decorator(f):
-        @wraps(f)
-        def decorated_function(*args, **kwargs):
-            if 'user_role' not in session or session['user_role'] != required_role:
-                return error_response('Access denied', 403)
-            return f(*args, **kwargs)
-        return decorated_function
-    return decorator
-
-
 def get_current_user():
     """
     获取当前登录用户信息
@@ -98,56 +57,5 @@ def get_current_user():
     }
 
 
-def handle_exceptions(f):
-    """
-    全局异常处理装饰器，统一处理视图函数中的异常
-    
-    Args:
-        f: 被装饰的函数
-        
-    Returns:
-        function: 装饰后的函数
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        start_time = time.time()
-        request_id = f"{int(start_time * 1000000) % 1000000:06d}"
-        
-        # 记录请求信息
-        current_app.logger.info(f"[{request_id}] {request.method} {request.path} - "
-                               f"Args: {args}, Kwargs: {kwargs}")
-        
-        try:
-            result = f(*args, **kwargs)
-            execution_time = time.time() - start_time
-            current_app.logger.info(f"[{request_id}] Request completed in {execution_time:.2f}s")
-            return result
-        except Exception as e:
-            execution_time = time.time() - start_time
-            error_msg = f"[{request_id}] {type(e).__name__}: {str(e)} - Execution time: {execution_time:.2f}s"
-            current_app.logger.error(error_msg)
-            return error_response('Internal server error', 500)
-    return decorated_function
 
 
-
-
-def configure_logging(app):
-    """
-    配置应用日志（使用Flask内置日志系统）
-    
-    Args:
-        app: Flask应用实例
-    """
-    # 使用Flask内置的日志配置
-    if not app.config.get('TESTING', False):
-        # 确保日志目录存在
-        logs_dir = app.config.get('LOGS_DIR')
-        if logs_dir and not os.path.exists(logs_dir):
-            os.makedirs(logs_dir)
-            
-        # 配置日志格式和级别
-        app.logger.setLevel(app.config['LOG_LEVEL'])
-        
-        # 注意：实际的日志文件处理器应该在app.py中配置，
-        # 这里只保留应用特定的日志配置逻辑

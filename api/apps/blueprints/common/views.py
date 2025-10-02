@@ -1,5 +1,8 @@
 from flask import jsonify, request
-from apps.utils.helpers import handle_exceptions
+from apps.utils.decorators import handle_exceptions
+
+from . import views
+
 
 def index():
     """首页路由"""

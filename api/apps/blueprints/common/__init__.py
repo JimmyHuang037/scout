@@ -1,26 +1,7 @@
 from flask import jsonify, request
-from apps.utils.helpers import handle_exceptions
+from apps.utils.decorators import handle_exceptions
 
-
-def index():
-    """首页"""
-    return "Welcome to the API", 200
-
-
-def health_check():
-    """健康检查接口"""
-    return jsonify({
-        'status': 'healthy',
-        'method': request.method
-    }), 200
-
-
-@handle_exceptions
-def test_error():
-    """测试错误接口"""
-    # 故意引发一个异常来测试错误处理
-    raise Exception("This is a test error for exception handling")
-
+from . import views
 
 """公共蓝图模块"""
 

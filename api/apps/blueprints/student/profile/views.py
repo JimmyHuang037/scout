@@ -1,5 +1,6 @@
 from apps.services.student_service import StudentService
-from apps.utils.helpers import success_response, error_response, handle_exceptions
+from apps.utils.decorators import handle_exceptions
+from apps.utils.helpers import success_response, error_response
 from flask import current_app
 
 @handle_exceptions
