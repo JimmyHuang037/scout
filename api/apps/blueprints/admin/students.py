@@ -23,14 +23,17 @@ def get_students():
 
 @handle_exceptions
 def create_student():
-    data, error = validate_json_input(['student_id', 'student_name', 'class_id'])
+    data, error = validate_json_input(['student_name', 'class_id'])
     if error:
         return error
     
-    student_id = data.get('student_id')
     student_name = data.get('student_name')
     class_id = data.get('class_id')
     password = data.get('password')
+    student_id = data.get('student_id')  # 从请求数据中获取student_id
+    
+    if not student_name or not class_id or not student_id:  # 添加对student_id的检查
+        return error_response("学生姓名、班级ID和学生ID不能为空", 400)
     
     student_data = {
         'student_id': student_id,
@@ -48,7 +51,7 @@ def create_student():
 
 
 @handle_exceptions
-def get_student(student_id: str):
+def get_student(student_id):  # 移除int类型注解
     student_service = StudentService()
     student_data = student_service.get_student_by_id(student_id)
     
@@ -62,7 +65,7 @@ def get_student(student_id: str):
 
 
 @handle_exceptions
-def update_student(student_id: str):
+def update_student(student_id):  # 移除int类型注解
     data, error = validate_json_input(required_fields=[], allow_empty=True)
     if error:
         return error
@@ -74,9 +77,6 @@ def update_student(student_id: str):
         update_data['class_id'] = data['class_id']
     if 'password' in data:
         update_data['password'] = data['password']
-        
-    if not update_data:
-        return error_response("请提供至少一个要更新的字段", 400)
     
     student_service = StudentService()
     result = student_service.update_student(student_id, update_data)
@@ -91,7 +91,7 @@ def update_student(student_id: str):
 
 
 @handle_exceptions
-def delete_student(student_id: str):
+def delete_student(student_id):  # 移除int类型注解
     student_service = StudentService()
     result = student_service.delete_student(student_id)
     
@@ -106,6 +106,6 @@ def delete_student(student_id: str):
 
 admin_students_bp.add_url_rule('/', view_func=get_students, methods=['GET'])
 admin_students_bp.add_url_rule('/', view_func=create_student, methods=['POST'])
-admin_students_bp.add_url_rule('/<string:student_id>', view_func=get_student, methods=['GET'])
-admin_students_bp.add_url_rule('/<string:student_id>', view_func=update_student, methods=['PUT'])
-admin_students_bp.add_url_rule('/<string:student_id>', view_func=delete_student, methods=['DELETE'])
+admin_students_bp.add_url_rule('/<student_id>', view_func=get_student, methods=['GET'])  # 移除int:前缀
+admin_students_bp.add_url_rule('/<student_id>', view_func=update_student, methods=['PUT'])  # 移除int:前缀
+admin_students_bp.add_url_rule('/<student_id>', view_func=delete_student, methods=['DELETE'])  # 移除int:前缀

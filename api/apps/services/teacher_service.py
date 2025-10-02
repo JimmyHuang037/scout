@@ -1,5 +1,6 @@
 from apps.services.class_service import ClassService
 from apps.utils.database_service import DatabaseService
+from flask import current_app
 """教师服务模块，处理与教师相关的业务逻辑"""
 
 
