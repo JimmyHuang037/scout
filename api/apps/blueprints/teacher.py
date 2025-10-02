@@ -17,7 +17,7 @@ def get_teacher_profile(teacher_id):
     profile_data = teacher_service.get_teacher_profile(teacher_id)
 
     if not profile_data:
-        return error_response('Teacher profile not found', 404)
+        return error_response('教师个人资料未找到', 404)
 
     current_app.logger.info(f"Teacher {teacher_id} profile retrieved")
     return success_response(profile_data)
@@ -94,7 +94,7 @@ def get_class(teacher_id, class_id):
     class_service = ClassService()
     class_data = class_service.get_class_by_id(class_id)
     if not class_data:
-        return error_response('Class not found', 404)
+        return error_response('班级未找到', 404)
         
     # 验证该教师是否有权访问此班级
     # 这里简化处理，实际应该检查教师与班级的关联关系
@@ -119,7 +119,7 @@ def get_teacher_student(teacher_id, student_id):
     # 获取学生详情
     student_data = StudentService().get_student_by_id(student_id)
     if not student_data:
-        return error_response('Student not found', 404)
+        return error_response('学生未找到', 404)
         
     current_app.logger.info(f"Teacher {teacher_id} retrieved student {student_id}")
     return success_response(student_data)
@@ -138,7 +138,7 @@ def get_teacher_all_classes_students(teacher_id):
     """
     # 检查是否提供了teacher_id
     if teacher_id is None:
-        return error_response('Teacher ID is required', 400)
+        return error_response('教师ID是必需的', 400)
         
     teacher_service = TeacherService()
     students_data = teacher_service.get_all_classes_students(teacher_id)
@@ -160,11 +160,11 @@ def get_teacher_class_students(teacher_id, class_id):
     """
     # 检查是否提供了teacher_id
     if teacher_id is None:
-        return error_response('Teacher ID is required', 400)
+        return error_response('教师ID是必需的', 400)
         
     # 检查是否提供了class_id
     if class_id is None:
-        return error_response('Class ID is required', 400)
+        return error_response('班级ID是必需的', 400)
         
     # 使用ClassService获取班级学生列表
     class_service = ClassService()

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
 from apps.services import ExamTypeService
-from apps.utils.helpers import success_response, error_response
+from apps.utils.helpers import success_response, error_response, validate_json_input
 from apps.utils.decorators import handle_exceptions
 
 
@@ -38,16 +38,12 @@ def create_exam_type():
     Returns:
         JSON: 创建结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(['exam_type_name'])
+    if error:
+        return error
     
     exam_type_name = data.get('exam_type_name')
-    
-    # 检查必填字段
-    if not exam_type_name:
-        return error_response("考试类型名称不能为空", 400)
     
     # 准备考试类型数据字典
     exam_type_data = {
@@ -101,10 +97,10 @@ def update_exam_type(exam_type_id: int):
     Returns:
         JSON: 更新结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(required_fields=[], allow_empty=True)
+    if error:
+        return error
     
     # 准备更新数据字典
     update_data = {}

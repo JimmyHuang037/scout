@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
 from apps.services import TeacherService
-from apps.utils.helpers import success_response, error_response
+from apps.utils.helpers import success_response, error_response, validate_json_input
 from apps.utils.decorators import handle_exceptions
 
 
@@ -38,10 +38,10 @@ def create_teacher():
     Returns:
         JSON: 创建结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(['teacher_name', 'subject_id'])
+    if error:
+        return error
     
     teacher_name = data.get('teacher_name')
     subject_id = data.get('subject_id')
@@ -105,10 +105,10 @@ def update_teacher(teacher_id: int):
     Returns:
         JSON: 更新结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(required_fields=[], allow_empty=True)
+    if error:
+        return error
     
     # 准备更新数据字典
     update_data = {}

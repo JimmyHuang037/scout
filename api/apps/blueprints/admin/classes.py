@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
 from apps.services import ClassService
-from apps.utils.helpers import success_response, error_response
+from apps.utils.helpers import success_response, error_response, validate_json_input
 from apps.utils.decorators import handle_exceptions
 
 
@@ -38,10 +38,10 @@ def create_class():
     Returns:
         JSON: 创建结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(['class_name'])
+    if error:
+        return error
     
     class_name = data.get('class_name')
     
@@ -101,10 +101,10 @@ def update_class(class_id: int):
     Returns:
         JSON: 更新结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(required_fields=[], allow_empty=True)
+    if error:
+        return error
     
     # 准备更新数据字典
     update_data = {}

@@ -17,7 +17,7 @@ def get_my_profile(student_id):
     profile_data = student_service.get_student_profile(student_id)
     
     if not profile_data:
-        return error_response('Student profile not found', 404)
+        return error_response('学生个人资料未找到', 404)
         
     current_app.logger.info(f"Student {student_id} profile retrieved")
     return success_response(profile_data)

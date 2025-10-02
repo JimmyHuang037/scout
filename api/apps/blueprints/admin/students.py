@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
 from apps.services import StudentService
-from apps.utils.helpers import success_response, error_response
+from apps.utils.helpers import success_response, error_response, validate_json_input
 from apps.utils.decorators import handle_exceptions
 
 
@@ -38,19 +38,15 @@ def create_student():
     Returns:
         JSON: 创建结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(['student_id', 'student_name', 'class_id'])
+    if error:
+        return error
     
     student_id = data.get('student_id')
     student_name = data.get('student_name')
     class_id = data.get('class_id')
     password = data.get('password')
-    
-    # 检查必填字段
-    if not student_id or not student_name or not class_id:
-        return error_response("学生ID、学生姓名和班级ID不能为空", 400)
     
     # 准备学生数据字典
     student_data = {
@@ -107,10 +103,10 @@ def update_student(student_id: str):
     Returns:
         JSON: 更新结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据并获取数据
+    data, error = validate_json_input(required_fields=[], allow_empty=True)
+    if error:
+        return error
     
     # 准备更新数据字典
     update_data = {}
@@ -120,6 +116,10 @@ def update_student(student_id: str):
         update_data['class_id'] = data['class_id']
     if 'password' in data:
         update_data['password'] = data['password']
+        
+    # 如果没有任何更新字段
+    if not update_data:
+        return error_response("请提供至少一个要更新的字段", 400)
     
     # 调用服务更新学生
     student_service = StudentService()

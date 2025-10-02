@@ -1,6 +1,6 @@
 from flask import Blueprint, request, current_app
 from apps.services import TeacherClassService
-from apps.utils.helpers import success_response, error_response
+from apps.utils.helpers import success_response, error_response, validate_json_input
 from apps.utils.decorators import handle_exceptions
 
 
@@ -38,31 +38,21 @@ def create_teacher_class():
     Returns:
         JSON: 创建结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(['teacher_id', 'class_id'])
+    if error:
+        return error
     
     teacher_id = data.get('teacher_id')
     class_id = data.get('class_id')
     
-    # 检查必填字段
-    if not teacher_id or not class_id:
-        return error_response("教师ID和班级ID不能为空", 400)
-    
     # 调用服务创建教师班级关联
     teacher_class_service = TeacherClassService()
-    try:
-        result = teacher_class_service.create_teacher_class(teacher_id, class_id)
-        # 记录成功日志
-        current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}")
-        return success_response({"message": "教师班级关联创建成功"}, 201)
-    except ValueError as e:
-        current_app.logger.warning(f"创建教师班级关联失败: {str(e)}")
-        return error_response(str(e), 400)
-    except Exception as e:
-        current_app.logger.error(f"创建教师班级关联时发生错误: {str(e)}")
-        return error_response("内部服务器错误", 500)
+    result = teacher_class_service.create_teacher_class(teacher_id, class_id)
+    
+    # 记录成功日志
+    current_app.logger.info(f"成功创建教师班级关联: 教师{teacher_id}-班级{class_id}")
+    return success_response({"message": "教师班级关联创建成功"}, 201)
 
 
 @handle_exceptions
@@ -104,10 +94,10 @@ def update_teacher_class(teacher_id: int, class_id: int):
     Returns:
         JSON: 更新结果
     """
-    # 获取请求数据
-    data = request.get_json()
-    if not data:
-        return error_response("请求数据不能为空", 400)
+    # 验证请求数据
+    data, error = validate_json_input(required_fields=[], allow_empty=True)
+    if error:
+        return error
     
     new_teacher_id = data.get('new_teacher_id')
     
