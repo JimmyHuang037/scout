@@ -1,27 +1,13 @@
 from apps.utils.database_service import DatabaseService
 from flask import current_app
 
-"""用户服务类"""
-
 
 class UserService:
-    """用户服务类"""
 
     def __init__(self):
-        """初始化用户服务"""
         self.db_service = DatabaseService()
 
     def authenticate_user(self, user_id, password):
-        """
-        验证用户凭证
-        
-        Args:
-            user_id (str): 用户ID
-            password (str): 密码
-            
-        Returns:
-            dict: 用户信息，如果验证失败则返回None
-        """
         try:
             query = """
                 SELECT user_id, user_name as username, role, password 

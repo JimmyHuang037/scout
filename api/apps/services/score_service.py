@@ -1,26 +1,13 @@
 from apps.utils.database_service import DatabaseService
 from flask import current_app
-"""成绩服务模块，处理与成绩相关的业务逻辑"""
-
 
 
 class ScoreService:
-    """成绩服务类"""
 
     def __init__(self):
-        """初始化成绩服务"""
         self.db_service = DatabaseService()
 
     def get_student_scores(self, student_id):
-        """
-        获取学生所有成绩
-        
-        Args:
-            student_id (str): 学生ID
-            
-        Returns:
-            list: 成绩列表
-        """
         query = """
             SELECT s.score_id, s.score as score, s.exam_type_id as exam_name, 
                    s.subject_id as subject_name, s.student_id as student_name
@@ -31,16 +18,6 @@ class ScoreService:
         return self.db_service.execute_query(query, (student_id,))
 
     def get_student_exam_score(self, student_id, exam_id):
-        """
-        获取学生某次考试成绩
-        
-        Args:
-            student_id (int): 学生ID
-            exam_id (int): 考试ID
-            
-        Returns:
-            dict: 成绩信息
-        """
         query = """
             SELECT s.score_id, s.score, e.exam_id as exam_name, 
                    sub.subject_id as subject_name, st.student_id as student_name
@@ -54,16 +31,6 @@ class ScoreService:
         return result[0] if result else None
 
     def enter_scores(self, exam_id, scores_data):
-        """
-        录入考试成绩
-        
-        Args:
-            exam_id (int): 考试ID
-            scores_data (list): 成绩数据列表
-            
-        Returns:
-            dict: 录入结果
-        """
         try:
             inserted_count = 0
             updated_count = 0
@@ -72,7 +39,6 @@ class ScoreService:
                 student_id = score_data['student_id']
                 score = score_data['score']
                 
-                # 检查成绩是否已存在
                 check_query = """
                     SELECT score_id FROM Scores 
                     WHERE exam_id = %s AND student_id = %s
@@ -80,7 +46,6 @@ class ScoreService:
                 existing = self.db_service.execute_query(check_query, (exam_id, student_id))
                 
                 if existing:
-                    # 更新已存在的成绩
                     update_query = """
                         UPDATE Scores 
                         SET score = %s 
@@ -89,8 +54,6 @@ class ScoreService:
                     self.db_service.execute_update(update_query, (score, exam_id, student_id))
                     updated_count += 1
                 else:
-                    # 插入新成绩
-                    # 首先获取科目ID
                     subject_query = "SELECT subject_id FROM Exams WHERE exam_id = %s"
                     subject_result = self.db_service.execute_query(subject_query, (exam_id,))
                     if not subject_result:
@@ -115,15 +78,6 @@ class ScoreService:
             raise
 
     def get_exam_scores(self, exam_id):
-        """
-        获取考试成绩列表
-        
-        Args:
-            exam_id (int): 考试ID
-            
-        Returns:
-            list: 成绩列表
-        """
         query = """
             SELECT s.score_id, s.score, s.exam_id, s.subject_id, s.student_id,
                    e.exam_name, e.exam_date, sub.subject_name, st.student_name, st.student_number
@@ -137,27 +91,14 @@ class ScoreService:
         return self.db_service.execute_query(query, (exam_id,))
 
     def update_score(self, score_id, score_data):
-        """
-        更新成绩
-        
-        Args:
-            score_id (int): 成绩ID
-            score_data (dict): 成绩数据
-            
-        Returns:
-            dict: 更新后的成绩信息
-        """
-        # 先检查成绩是否存在
         check_query = "SELECT 1 FROM Scores WHERE score_id = %s"
         check_result = self.db_service.execute_query(check_query, (score_id,))
         if not check_result:
             return None
             
-        # 更新成绩
         update_query = "UPDATE Scores SET score = %s WHERE score_id = %s"
         self.db_service.execute_update(update_query, (score_data['score'], score_id))
         
-        # 返回更新后的成绩信息
         query = """
             SELECT s.score_id, s.score, s.exam_type_id, s.subject_id, s.student_id,
                    et.exam_type_name as exam_name, sub.subject_name, st.student_name, st.student_id as student_number
@@ -171,16 +112,6 @@ class ScoreService:
         return result[0] if result else None
 
     def get_exam_statistics(self, exam_id):
-        """
-        获取考试统计信息
-        
-        Args:
-            exam_id (int): 考试ID
-            
-        Returns:
-            dict: 统计信息
-        """
-        # 获取考试基本信息
         exam_query = """
             SELECT exam_name, subject_id FROM Exams 
             WHERE exam_id = %s
@@ -189,7 +120,6 @@ class ScoreService:
         if not exam_result:
             return None
             
-        # 获取成绩统计
         stats_query = """
             SELECT 
                 COUNT(*) as total_students,
@@ -210,17 +140,6 @@ class ScoreService:
         return statistics
 
     def get_exam_class_scores(self, exam_id, class_id, teacher_id):
-        """
-        获取考试班级成绩列表
-        
-        Args:
-            exam_id (int): 考试ID
-            class_id (int): 班级ID
-            teacher_id (int): 教师ID
-            
-        Returns:
-            list: 成绩列表
-        """
         query = """
             SELECT s.score_id, s.score, s.exam_id, s.subject_id, s.student_id,
                    e.exam_name, e.exam_date, sub.subject_name, st.student_name, st.student_number
@@ -234,15 +153,6 @@ class ScoreService:
         return self.db_service.execute_query(query, (exam_id, class_id))
 
     def get_student_exam_results(self, student_id):
-        """
-        获取学生考试结果列表
-        
-        Args:
-            student_id (str): 学生ID
-            
-        Returns:
-            list: 考试结果列表
-        """
         query = """
             SELECT er.exam_type as exam_name, er.student_name, 
                    er.chinese, er.math, er.english, 
@@ -257,27 +167,15 @@ class ScoreService:
         return self.db_service.execute_query(query, (student_id,))
 
     def create_score(self, score_data):
-        """
-        创建成绩记录
-        
-        Args:
-            score_data (dict): 成绩数据
-            
-        Returns:
-            int: 创建的成绩ID
-        """
         try:
-            # 获取必要的参数
             student_id = score_data.get('student_id')
             subject_id = score_data.get('subject_id')
             exam_type_id = score_data.get('exam_type_id')
             score_value = score_data.get('score')
             
-            # 验证必要参数
             if not all([student_id, subject_id, exam_type_id, score_value is not None]):
                 raise ValueError("Missing required parameters")
             
-            # 插入新成绩
             insert_query = """
                 INSERT INTO Scores (student_id, subject_id, exam_type_id, score)
                 VALUES (%s, %s, %s, %s)
@@ -293,17 +191,7 @@ class ScoreService:
             raise
 
     def delete_score(self, score_id):
-        """
-        删除成绩记录
-        
-        Args:
-            score_id (int): 成绩ID
-            
-        Returns:
-            bool: 是否删除成功
-        """
         try:
-            # 删除成绩
             query = "DELETE FROM Scores WHERE score_id = %s"
             self.db_service.execute_update(query, (score_id,))
             return True
@@ -314,21 +202,9 @@ class ScoreService:
             self.db_service.close()
 
     def get_teacher_scores(self, teacher_id, page=1, per_page=10):
-        """
-        获取教师相关的成绩列表（带分页）
-        
-        Args:
-            teacher_id (str): 教师ID
-            page (int): 页码
-            per_page (int): 每页数量
-            
-        Returns:
-            dict: 成绩列表和分页信息
-        """
         try:
             offset = (page - 1) * per_page
             
-            # 获取总数
             count_query = """
                 SELECT COUNT(*) as count
                 FROM Scores s
@@ -339,7 +215,6 @@ class ScoreService:
             total_result = self.db_service.execute_query(count_query, (teacher_id,))
             total = total_result[0]['count'] if total_result else 0
             
-            # 获取成绩列表
             query = """
                 SELECT s.score_id, s.score, s.exam_type_id, s.subject_id, s.student_id,
                        et.exam_type_name as exam_name, sub.subject_name, 

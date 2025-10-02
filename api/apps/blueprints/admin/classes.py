@@ -30,7 +30,7 @@ def create_class():
     return success_response(result, 201)
 
 @handle_exceptions
-def get_class(class_id: int):
+def get_class(class_id):
     class_service = ClassService()
     class_data = class_service.get_class_by_id(class_id)
     if not class_data:
@@ -40,7 +40,7 @@ def get_class(class_id: int):
     return success_response(class_data)
 
 @handle_exceptions
-def update_class(class_id: int):
+def update_class(class_id):
     data, error = validate_json_input(required_fields=[], allow_empty=True)
     if error:
         return error
@@ -56,7 +56,7 @@ def update_class(class_id: int):
     return success_response({"message": "班级信息更新成功"})
 
 @handle_exceptions
-def delete_class(class_id: int):
+def delete_class(class_id):
     class_service = ClassService()
     result = class_service.delete_class(class_id)
     if not result:
@@ -67,6 +67,6 @@ def delete_class(class_id: int):
 
 admin_classes_bp.add_url_rule('/', view_func=get_classes, methods=['GET'])
 admin_classes_bp.add_url_rule('/', view_func=create_class, methods=['POST'])
-admin_classes_bp.add_url_rule('/<int:class_id>', view_func=get_class, methods=['GET'])
-admin_classes_bp.add_url_rule('/<int:class_id>', view_func=update_class, methods=['PUT'])
-admin_classes_bp.add_url_rule('/<int:class_id>', view_func=delete_class, methods=['DELETE'])
+admin_classes_bp.add_url_rule('/<class_id>', view_func=get_class, methods=['GET'])
+admin_classes_bp.add_url_rule('/<class_id>', view_func=update_class, methods=['PUT'])
+admin_classes_bp.add_url_rule('/<class_id>', view_func=delete_class, methods=['DELETE'])
