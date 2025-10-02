@@ -6,7 +6,7 @@ from apps.utils.validation import validate_json_input
 
 
 # 考试类型管理蓝图
-admin_exam_types_bp = Blueprint('admin_exam_types', __name__, url_prefix='/exam_types')
+admin_exam_types_bp = Blueprint('admin_exam_types', __name__)
 
 
 @handle_exceptions

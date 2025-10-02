@@ -6,7 +6,7 @@ from apps.utils.validation import validate_json_input
 
 
 # 科目管理蓝图
-admin_subjects_bp = Blueprint('admin_subjects', __name__, url_prefix='/subjects')
+admin_subjects_bp = Blueprint('admin_subjects', __name__)
 
 
 @handle_exceptions

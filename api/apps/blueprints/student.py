@@ -6,7 +6,7 @@ from apps.services.student_service import StudentService
 from apps.services.score_service import ScoreService
 
 """学生蓝图模块"""
-student_bp = Blueprint('student', __name__, url_prefix='/api/student')
+student_bp = Blueprint('student', __name__)
 
 
 @handle_exceptions

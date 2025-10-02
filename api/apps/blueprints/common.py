@@ -3,7 +3,7 @@ from apps.utils.decorators import handle_exceptions
 from apps.utils.responses import success_response, error_response
 
 """公共蓝图模块"""
-common_bp = Blueprint('common', __name__, url_prefix='/api')
+common_bp = Blueprint('common', __name__)
 
 
 def index():

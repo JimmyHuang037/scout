@@ -6,7 +6,7 @@ from apps.utils.validation import validate_json_input
 
 
 # 教师班级关联管理蓝图
-admin_teacher_classes_bp = Blueprint('admin_teacher_classes', __name__, url_prefix='/teacher_classes')
+admin_teacher_classes_bp = Blueprint('admin_teacher_classes', __name__)
 
 
 @handle_exceptions

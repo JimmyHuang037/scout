@@ -5,7 +5,7 @@ from apps.services.user_service import UserService
 
 
 """认证蓝图模块"""
-auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
+auth_bp = Blueprint('auth', __name__)
 
 
 @handle_exceptions
