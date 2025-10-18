@@ -49,7 +49,9 @@ coverage.xml
 *.cover
 *.py,cover
 .hypothesis/
-.pytest_cache/
+
+# Web dependencies
+web/node_modules/
 
 # Translations
 *.mo

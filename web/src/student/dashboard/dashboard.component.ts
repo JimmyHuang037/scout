@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { StudentService } from '../student.service';
-import { Student, Score, ExamResult } from '../student.model';
+import { StudentService } from '../../shared/services';
+import { Student, Score, ExamResult } from '../../shared/models';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -28,7 +28,8 @@ import { CommonModule } from '@angular/common';
             <p><strong>班级:</strong> {{ studentProfile.class_name }}</p>
           </div>
           <ng-template #noProfile>
-            <p>加载中...</p>
+            <p *ngIf="!loadingProfile">无法加载学生信息</p>
+            <p *ngIf="loadingProfile">加载中...</p>
           </ng-template>
         </mat-card-content>
       </mat-card>
@@ -57,7 +58,8 @@ import { CommonModule } from '@angular/common';
             </table>
           </div>
           <ng-template #noScores>
-            <p>暂无成绩数据</p>
+            <p *ngIf="!loadingScores">暂无成绩数据</p>
+            <p *ngIf="loadingScores">加载中...</p>
           </ng-template>
         </mat-tab>
 
@@ -114,7 +116,8 @@ import { CommonModule } from '@angular/common';
             </table>
           </div>
           <ng-template #noResults>
-            <p>暂无考试结果数据</p>
+            <p *ngIf="!loadingResults">暂无考试结果数据</p>
+            <p *ngIf="loadingResults">加载中...</p>
           </ng-template>
         </mat-tab>
       </mat-tab-group>
@@ -159,6 +162,10 @@ export class DashboardComponent implements OnInit {
   examResults: ExamResult[] = [];
   errorMessages: string[] = [];
   
+  loadingProfile = true;
+  loadingScores = true;
+  loadingResults = true;
+  
   displayedScoreColumns: string[] = ['exam_name', 'subject_name', 'score'];
   displayedResultColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'];
   
@@ -176,10 +183,12 @@ export class DashboardComponent implements OnInit {
       next: (profile) => {
         console.log('获取到学生个人资料:', profile);
         this.studentProfile = profile;
+        this.loadingProfile = false;
       },
       error: (error) => {
         console.error('获取学生个人资料出错:', error);
-        this.errorMessages.push('获取学生个人资料出错: ' + JSON.stringify(error));
+        this.errorMessages.push('获取学生个人资料出错: ' + error);
+        this.loadingProfile = false;
       }
     });
     
@@ -187,10 +196,12 @@ export class DashboardComponent implements OnInit {
       next: (scores) => {
         console.log('获取到学生成绩:', scores);
         this.scores = scores;
+        this.loadingScores = false;
       },
       error: (error) => {
         console.error('获取学生成绩出错:', error);
-        this.errorMessages.push('获取学生成绩出错: ' + JSON.stringify(error));
+        this.errorMessages.push('获取学生成绩出错: ' + error);
+        this.loadingScores = false;
       }
     });
     
@@ -198,10 +209,12 @@ export class DashboardComponent implements OnInit {
       next: (results) => {
         console.log('获取到考试结果:', results);
         this.examResults = results;
+        this.loadingResults = false;
       },
       error: (error) => {
         console.error('获取考试结果出错:', error);
-        this.errorMessages.push('获取考试结果出错: ' + JSON.stringify(error));
+        this.errorMessages.push('获取考试结果出错: ' + error);
+        this.loadingResults = false;
       }
     });
   }

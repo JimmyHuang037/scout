@@ -1,15 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { DashboardComponent } from './dashboard/dashboard.component';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-admin-root',
   standalone: true,
-  imports: [RouterOutlet, DashboardComponent],
+  imports: [RouterOutlet],
   template: `
     <div class="main-container">
-      <h1>学生管理系统</h1>
-      <app-dashboard></app-dashboard>
+      <h1>管理员系统</h1>
+      <p>管理员功能正在开发中...</p>
     </div>
   `,
   styles: [`
@@ -25,6 +24,6 @@ import { DashboardComponent } from './dashboard/dashboard.component';
     }
   `]
 })
-export class AppComponent {
-  title = 'student-portal';
+export class AdminAppComponent {
+  title = 'school-management';
 }
