@@ -48,6 +48,17 @@ def get_student(student_id):
     return success_response(student_data)
 
 @handle_exceptions
+def get_studentname(student_name):
+    student_service = StudentService()
+    student_data = student_service.get_student_by_name(student_name)
+    if not student_data:
+        current_app.logger.warning(f"学生未找到，姓名: {student_name}")
+        return error_response("学生不存在", 404)
+    current_app.logger.info(f"成功获取学生信息，ID: {student_name}")
+    return success_response(student_data)
+
+
+@handle_exceptions
 def update_student(student_id):
     data, error = validate_json_input(required_fields=[], allow_empty=True)
     if error:
@@ -82,3 +93,4 @@ admin_students_bp.add_url_rule('/', view_func=create_student, methods=['POST'])
 admin_students_bp.add_url_rule('/<student_id>', view_func=get_student, methods=['GET'])
 admin_students_bp.add_url_rule('/<student_id>', view_func=update_student, methods=['PUT'])
 admin_students_bp.add_url_rule('/<student_id>', view_func=delete_student, methods=['DELETE'])
+admin_students_bp.add_url_rule('/name/<student_name>', view_func=get_studentname, methods=['GET'])

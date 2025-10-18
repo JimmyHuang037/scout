@@ -116,6 +116,16 @@ class TestAdminEndpoints(CurlTestBase):
             expect_error=True
         )
 
+        
+    def test_student_09_get_studentname(self):
+        """测试用例student_09: 由学生名获取学生信息"""
+        self.run_api_test(
+            "student_09", "由学生名获取学生信息",
+            ['curl', '-s', f'{self.base_url}/api/admin/students/name/谷雪', '|', 'jq'],
+            "admin_student_09_get_student.json",
+            self.test_setup
+        )
+
     # ==================== 教师管理模块 ====================
     
     def test_teacher_01_get_list(self):

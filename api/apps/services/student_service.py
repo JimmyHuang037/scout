@@ -92,6 +92,24 @@ class StudentService:
             if current_app:
                 current_app.logger.error(f"Failed to get student by id {student_id}: {str(e)}")
             raise e
+        
+
+    def get_student_by_name(self, student_name):
+        try:
+            query = """
+                SELECT s.student_id, s.student_name, c.class_name
+                FROM `Students` s
+                JOIN `Classes` c ON s.class_id = c.class_id
+                WHERE s.student_name = %s
+            """
+            result = self.db_service.execute_query(query, (student_name,))
+            if result:
+                return result[0]
+            return None
+        except Exception as e:
+            if current_app:
+                current_app.logger.error(f"Failed to get student by name {student_name}: {str(e)}")
+            raise e
 
     def get_all_students(self, page=1, per_page=1000):
         try:
