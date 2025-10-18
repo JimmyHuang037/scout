@@ -21,53 +21,25 @@ export class StudentService {
   constructor(private http: HttpClient) { }
 
   getStudentProfile(studentId: string): Observable<Student> {
-    // 使用text响应类型然后手动解析
-    return this.http.get(`${this.baseUrl}/profile/${studentId}`, { responseType: 'text' })
+    return this.http.get<ApiResponse<Student>>(`${this.baseUrl}/profile/${studentId}`)
       .pipe(
-        map(response => {
-          // 检查响应是否为HTML（错误页面）
-          if (response.startsWith('<!doctype') || response.startsWith('<html')) {
-            throw new Error('Received HTML response instead of JSON. Check if the API server is running and the endpoint is correct.');
-          }
-          
-          // 解析JSON响应
-          const parsedResponse: ApiResponse<Student> = JSON.parse(response);
-          return parsedResponse.data;
-        }),
+        map(response => response.data),
         catchError(this.handleError)
       );
   }
 
   getStudentScores(studentId: string): Observable<Score[]> {
-    return this.http.get(`${this.baseUrl}/scores/${studentId}`, { responseType: 'text' })
+    return this.http.get<ApiResponse<Score[]>>(`${this.baseUrl}/scores/${studentId}`)
       .pipe(
-        map(response => {
-          // 检查响应是否为HTML（错误页面）
-          if (response.startsWith('<!doctype') || response.startsWith('<html')) {
-            throw new Error('Received HTML response instead of JSON. Check if the API server is running and the endpoint is correct.');
-          }
-          
-          // 解析JSON响应
-          const parsedResponse: ApiResponse<Score[]> = JSON.parse(response);
-          return parsedResponse.data;
-        }),
+        map(response => response.data),
         catchError(this.handleError)
       );
   }
 
   getStudentExamResults(studentId: string): Observable<ExamResult[]> {
-    return this.http.get(`${this.baseUrl}/exam_results/${studentId}`, { responseType: 'text' })
+    return this.http.get<ApiResponse<ExamResult[]>>(`${this.baseUrl}/exam_results/${studentId}`)
       .pipe(
-        map(response => {
-          // 检查响应是否为HTML（错误页面）
-          if (response.startsWith('<!doctype') || response.startsWith('<html')) {
-            throw new Error('Received HTML response instead of JSON. Check if the API server is running and the endpoint is correct.');
-          }
-          
-          // 解析JSON响应
-          const parsedResponse: ApiResponse<ExamResult[]> = JSON.parse(response);
-          return parsedResponse.data;
-        }),
+        map(response => response.data),
         catchError(this.handleError)
       );
   }

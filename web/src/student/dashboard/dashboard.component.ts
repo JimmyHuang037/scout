@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { StudentService } from '../../shared/services';
-import { Student, Score, ExamResult } from '../../shared/models';
+import { StudentService } from '../student.service';
+import { Student, Score, ExamResult } from '../student.model';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -187,7 +187,10 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('获取学生个人资料出错:', error);
-        this.errorMessages.push('获取学生个人资料出错: ' + error);
+        const errorMessage = error instanceof Error ? error.message : 
+                            error?.message ? JSON.stringify(error.message) : 
+                            '未知错误';
+        this.errorMessages.push('获取学生个人资料出错: ' + errorMessage);
         this.loadingProfile = false;
       }
     });
@@ -200,7 +203,10 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('获取学生成绩出错:', error);
-        this.errorMessages.push('获取学生成绩出错: ' + error);
+        const errorMessage = error instanceof Error ? error.message : 
+                            error?.message ? JSON.stringify(error.message) : 
+                            '未知错误';
+        this.errorMessages.push('获取学生成绩出错: ' + errorMessage);
         this.loadingScores = false;
       }
     });
@@ -213,7 +219,10 @@ export class DashboardComponent implements OnInit {
       },
       error: (error) => {
         console.error('获取考试结果出错:', error);
-        this.errorMessages.push('获取考试结果出错: ' + error);
+        const errorMessage = error instanceof Error ? error.message : 
+                            error?.message ? JSON.stringify(error.message) : 
+                            '未知错误';
+        this.errorMessages.push('获取考试结果出错: ' + errorMessage);
         this.loadingResults = false;
       }
     });

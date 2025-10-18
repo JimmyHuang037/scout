@@ -18,8 +18,8 @@
           "builder": "@angular-devkit/build-angular:application",
           "options": {
             "outputPath": "dist/school-management",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
+            "index": "index.html",
+            "browser": "main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -30,7 +30,7 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.scss"
+              "styles.scss"
             ],
             "scripts": []
           },

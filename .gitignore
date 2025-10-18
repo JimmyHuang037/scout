@@ -52,6 +52,7 @@ coverage.xml
 
 # Web dependencies
 web/node_modules/
+web/.angular/
 
 # Translations
 *.mo
