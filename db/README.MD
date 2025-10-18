@@ -1,5 +1,6 @@
 # 学校管理系统数据库
 
+
 ## 数据库连接信息
     MYSQL_HOST = 'localhost'
     MYSQL_USER = 'root'
