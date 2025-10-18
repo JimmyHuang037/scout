@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Score } from '../../../shared/models';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -10,7 +10,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   standalone: true,
   imports: [
     NgIf, 
-    NgFor,
     MatCardModule,
     MatTableModule,
     MatProgressSpinnerModule
@@ -44,41 +43,37 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         </div>
         
         <ng-template #noData>
-          <div class="no-data" *ngIf="!loading">
-            <p>暂无成绩记录</p>
-          </div>
-          <div class="loading" *ngIf="loading">
-            <mat-spinner diameter="30"></mat-spinner>
-            <p>加载中...</p>
-          </div>
+          <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+          <p *ngIf="!loading" class="no-data">暂无成绩记录</p>
         </ng-template>
       </mat-card-content>
     </mat-card>
   `,
   styles: [`
     .section {
-      margin-bottom: 30px;
+      margin-bottom: 20px;
     }
-
+    
     .table-container {
       overflow-x: auto;
     }
-
+    
     .data-table {
       width: 100%;
-      margin-top: 10px;
+      table-layout: fixed;
     }
-
-    .no-data, .loading {
+    
+    .data-table th,
+    .data-table td {
+      padding: 8px;
       text-align: center;
-      padding: 20px;
     }
-
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+    
+    .no-data {
+      text-align: center;
+      color: #666;
+      font-style: italic;
+      padding: 20px;
     }
   `]
 })

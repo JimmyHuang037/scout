@@ -1,10 +1,8 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-teacher-root',
   standalone: true,
-  imports: [RouterOutlet],
   template: `
     <div class="main-container">
       <h1>教师管理系统</h1>

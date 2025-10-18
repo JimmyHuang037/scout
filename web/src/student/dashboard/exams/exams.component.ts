@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ExamResult } from '../../../shared/models';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -10,7 +10,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   standalone: true,
   imports: [
     NgIf, 
-    NgFor,
     MatCardModule,
     MatTableModule,
     MatProgressSpinnerModule
@@ -43,29 +42,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
               <td mat-cell *matCellDef="let result">{{result.english}}</td>
             </ng-container>
 
-            <ng-container matColumnDef="physics">
-              <th mat-header-cell *matHeaderCellDef>物理</th>
-              <td mat-cell *matCellDef="let result">{{result.physics}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="chemistry">
-              <th mat-header-cell *matHeaderCellDef>化学</th>
-              <td mat-cell *matCellDef="let result">{{result.chemistry}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="politics">
-              <th mat-header-cell *matHeaderCellDef>政治</th>
-              <td mat-cell *matCellDef="let result">{{result.politics}}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="total_score">
+            <ng-container matColumnDef="total">
               <th mat-header-cell *matHeaderCellDef>总分</th>
-              <td mat-cell *matCellDef="let result">{{result.total_score}}</td>
+              <td mat-cell *matCellDef="let result">{{result.total}}</td>
             </ng-container>
 
-            <ng-container matColumnDef="ranking">
-              <th mat-header-cell *matHeaderCellDef>排名</th>
-              <td mat-cell *matCellDef="let result">{{result.ranking}}</td>
+            <ng-container matColumnDef="average">
+              <th mat-header-cell *matHeaderCellDef>平均分</th>
+              <td mat-cell *matCellDef="let result">{{result.average}}</td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -74,36 +58,43 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         </div>
         
         <ng-template #noData>
-          <div class="no-data" *ngIf="!loading">
-            <p>暂无考试结果</p>
-          </div>
-          <div class="loading" *ngIf="loading">
-            <mat-spinner diameter="30"></mat-spinner>
-            <p>加载中...</p>
-          </div>
+          <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
+          <p *ngIf="!loading" class="no-data">暂无考试结果</p>
         </ng-template>
       </mat-card-content>
     </mat-card>
   `,
   styles: [`
-    :host {
-      display: block;
-      margin-bottom: 30px;
+    .section {
+      margin-bottom: 20px;
     }
     
-    table {
+    .table-container {
+      overflow-x: auto;
+    }
+    
+    .data-table {
       width: 100%;
+      table-layout: fixed;
+    }
+    
+    .data-table th,
+    .data-table td {
+      padding: 8px;
+      text-align: center;
     }
     
     .no-data {
       text-align: center;
+      color: #666;
+      font-style: italic;
       padding: 20px;
     }
   `]
 })
 export class ExamsComponent {
   @Input() examResults: ExamResult[] = [];
-  @Input() loading: boolean = false;
+  @Input() loading = false;
   
-  displayedColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'];
+  displayedColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'total', 'average'];
 }
