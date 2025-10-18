@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { ExamResult } from '../../../shared/models';
-import { NgIf } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -9,7 +8,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   selector: 'app-exams',
   standalone: true,
   imports: [
-    NgIf, 
     MatCardModule,
     MatTableModule,
     MatProgressSpinnerModule

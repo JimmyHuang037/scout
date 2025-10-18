@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
 import { AuthService, UserInfo } from '../shared/admin.service';
 import { MatCardModule } from '@angular/material/card';
 import { MatInputModule } from '@angular/material/input';
@@ -14,7 +13,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   standalone: true,
   imports: [
     FormsModule, 
-    NgIf,
     MatCardModule,
     MatInputModule,
     MatButtonModule,

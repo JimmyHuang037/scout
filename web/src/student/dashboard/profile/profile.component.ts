@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
 import { Student } from '../../../shared/models';
-import { NgIf } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 
@@ -8,7 +7,6 @@ import { MatListModule } from '@angular/material/list';
   selector: 'app-profile',
   standalone: true,
   imports: [
-    NgIf,
     MatCardModule,
     MatListModule
   ],

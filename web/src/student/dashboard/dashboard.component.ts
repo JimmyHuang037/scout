@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { StudentService } from '../../shared/student.service';
 import { Student, Score, ExamResult } from '../../shared/models';
-import { NgIf } from '@angular/common';
 import { ProfileComponent } from './profile/profile.component';
 import { ScoresComponent } from './scores/scores.component';
 import { ExamsComponent } from './exams/exams.component';
@@ -13,7 +12,6 @@ import { MatToolbarModule } from '@angular/material/toolbar';
   selector: 'app-dashboard',
   standalone: true,
   imports: [
-    NgIf, 
     ProfileComponent, 
     ScoresComponent, 
     ExamsComponent,
