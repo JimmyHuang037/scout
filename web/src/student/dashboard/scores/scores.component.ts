@@ -78,10 +78,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
       display: flex;
       flex-direction: column;
       align-items: center;
-    }
-
-    mat-spinner {
-      margin-bottom: 10px;
+      gap: 10px;
     }
   `]
 })

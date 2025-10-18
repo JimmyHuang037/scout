@@ -40,7 +40,16 @@ import { MatToolbarModule } from '@angular/material/toolbar';
       <app-exams [examResults]="examResults" [loading]="loading"></app-exams>
     </div>
   `,
-  styleUrls: ['../app/app.scss']
+  styles: [`
+    .dashboard-container {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .info-section {
+      margin: 16px 0;
+    }
+  `]
 })
 export class DashboardComponent implements OnInit {
   studentId: string | null = null;

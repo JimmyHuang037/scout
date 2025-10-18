@@ -86,32 +86,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     </mat-card>
   `,
   styles: [`
-    .section {
+    :host {
+      display: block;
       margin-bottom: 30px;
     }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .data-table {
+    
+    table {
       width: 100%;
-      margin-top: 10px;
     }
-
-    .no-data, .loading {
+    
+    .no-data {
       text-align: center;
       padding: 20px;
-    }
-
-    .loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    mat-spinner {
-      margin-bottom: 10px;
     }
   `]
 })

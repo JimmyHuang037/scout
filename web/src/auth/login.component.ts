@@ -34,12 +34,12 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         
         <mat-card-content>
           <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-            <mat-form-field appearance="fill" class="full-width">
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>用户ID</mat-label>
               <input matInput type="text" name="userId" [(ngModel)]="loginData.userId" required />
             </mat-form-field>
             
-            <mat-form-field appearance="fill" class="full-width">
+            <mat-form-field appearance="outline" class="full-width">
               <mat-label>密码</mat-label>
               <input matInput type="password" name="password" [(ngModel)]="loginData.password" required />
             </mat-form-field>
@@ -65,40 +65,54 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     .login-container {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       height: 100vh;
       background-color: #f5f5f5;
       padding: 20px;
-    }
-    
-    .login-card {
-      width: 100%;
-      max-width: 400px;
-      margin-top: 20px;
-    }
-    
-    .full-width {
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-    
-    .login-button {
-      width: 100%;
-      padding: 0.75rem;
-      font-size: 1rem;
-    }
-    
-    .error-message {
-      margin-top: 1rem;
-      text-align: center;
+      box-sizing: border-box;
     }
     
     mat-toolbar {
       width: 100%;
       max-width: 400px;
       border-radius: 4px;
+      margin-bottom: 30px;
       justify-content: center;
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+    }
+    
+    .full-width {
+      width: 100%;
+      margin-bottom: 16px;
+    }
+    
+    .login-button {
+      width: 100%;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .error-message {
+      text-align: center;
+      margin-top: 10px;
+    }
+    
+    mat-card-header {
+      justify-content: center;
+    }
+    
+    mat-card-title {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
     }
   `]
 })

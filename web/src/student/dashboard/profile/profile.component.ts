@@ -42,15 +42,7 @@ import { MatListModule } from '@angular/material/list';
 
     .label {
       font-weight: bold;
-      color: #555;
-      display: inline-block;
-      width: 60px;
       margin-right: 10px;
-    }
-
-    mat-list-item {
-      height: auto !important;
-      padding: 5px 0;
     }
   `]
 })
