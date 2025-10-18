@@ -1,132 +1,93 @@
 import { Component, OnInit } from '@angular/core';
-import { StudentService } from '../student.service';
-import { Student, Score, ExamResult } from '../student.model';
-import { MatTableModule } from '@angular/material/table';
-import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { StudentService } from '../../shared/services';
+import { Student, Score, ExamResult } from '../../shared/models';
+import { NgIf, NgFor } from '@angular/common';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    MatTableModule,
-    MatCardModule,
-    MatTabsModule,
-    CommonModule
-  ],
+  imports: [NgIf, NgFor],
   template: `
-    <div class="dashboard-container">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>学生信息</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <div *ngIf="studentProfile; else noProfile">
-            <p><strong>学号:</strong> {{ studentProfile.student_id }}</p>
-            <p><strong>姓名:</strong> {{ studentProfile.student_name }}</p>
-            <p><strong>班级:</strong> {{ studentProfile.class_name }}</p>
+    <div class="dashboard-container" *ngIf="studentId">
+      <div class="welcome-section">
+        <h2>欢迎, {{student?.student_name}}!</h2>
+        <p>学号: {{student?.student_id}}</p>
+        <p>班级: {{student?.class_name}}</p>
+      </div>
+
+      <div class="section">
+        <h3>个人信息</h3>
+        <div class="info-grid" *ngIf="student">
+          <div class="info-item">
+            <span class="label">姓名:</span>
+            <span>{{student.student_name}}</span>
           </div>
-          <ng-template #noProfile>
-            <p *ngIf="!loadingProfile">无法加载学生信息</p>
-            <p *ngIf="loadingProfile">加载中...</p>
-          </ng-template>
-        </mat-card-content>
-      </mat-card>
-
-      <mat-tab-group>
-        <mat-tab label="成绩">
-          <div *ngIf="scores.length > 0; else noScores">
-            <table mat-table [dataSource]="scores" class="mat-elevation-z8">
-              <ng-container matColumnDef="exam_name">
-                <th mat-header-cell *matHeaderCellDef>考试类型</th>
-                <td mat-cell *matCellDef="let score">{{ score.exam_name }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="subject_name">
-                <th mat-header-cell *matHeaderCellDef>科目</th>
-                <td mat-cell *matCellDef="let score">{{ score.subject_name }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="score">
-                <th mat-header-cell *matHeaderCellDef>分数</th>
-                <td mat-cell *matCellDef="let score">{{ score.score }}</td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedScoreColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedScoreColumns;"></tr>
-            </table>
+          <div class="info-item">
+            <span class="label">学号:</span>
+            <span>{{student.student_id}}</span>
           </div>
-          <ng-template #noScores>
-            <p *ngIf="!loadingScores">暂无成绩数据</p>
-            <p *ngIf="loadingScores">加载中...</p>
-          </ng-template>
-        </mat-tab>
-
-        <mat-tab label="考试结果">
-          <div *ngIf="examResults.length > 0; else noResults">
-            <table mat-table [dataSource]="examResults" class="mat-elevation-z8">
-              <ng-container matColumnDef="exam_name">
-                <th mat-header-cell *matHeaderCellDef>考试名称</th>
-                <td mat-cell *matCellDef="let result">{{ result.exam_name }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="chinese">
-                <th mat-header-cell *matHeaderCellDef>语文</th>
-                <td mat-cell *matCellDef="let result">{{ result.chinese }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="math">
-                <th mat-header-cell *matHeaderCellDef>数学</th>
-                <td mat-cell *matCellDef="let result">{{ result.math }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="english">
-                <th mat-header-cell *matHeaderCellDef>英语</th>
-                <td mat-cell *matCellDef="let result">{{ result.english }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="physics">
-                <th mat-header-cell *matHeaderCellDef>物理</th>
-                <td mat-cell *matCellDef="let result">{{ result.physics }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="chemistry">
-                <th mat-header-cell *matHeaderCellDef>化学</th>
-                <td mat-cell *matCellDef="let result">{{ result.chemistry }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="politics">
-                <th mat-header-cell *matHeaderCellDef>政治</th>
-                <td mat-cell *matCellDef="let result">{{ result.politics }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="total_score">
-                <th mat-header-cell *matHeaderCellDef>总分</th>
-                <td mat-cell *matCellDef="let result">{{ result.total_score }}</td>
-              </ng-container>
-
-              <ng-container matColumnDef="ranking">
-                <th mat-header-cell *matHeaderCellDef>排名</th>
-                <td mat-cell *matCellDef="let result">{{ result.ranking }}</td>
-              </ng-container>
-
-              <tr mat-header-row *matHeaderRowDef="displayedResultColumns"></tr>
-              <tr mat-row *matRowDef="let row; columns: displayedResultColumns;"></tr>
-            </table>
+          <div class="info-item">
+            <span class="label">班级:</span>
+            <span>{{student.class_name}}</span>
           </div>
-          <ng-template #noResults>
-            <p *ngIf="!loadingResults">暂无考试结果数据</p>
-            <p *ngIf="loadingResults">加载中...</p>
-          </ng-template>
-        </mat-tab>
-      </mat-tab-group>
-      
-      <div *ngIf="errorMessages.length > 0" class="error-container">
-        <h3>错误信息:</h3>
-        <ul>
-          <li *ngFor="let error of errorMessages">{{ error }}</li>
-        </ul>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>成绩列表</h3>
+        <table class="data-table" *ngIf="scores.length > 0">
+          <thead>
+            <tr>
+              <th>科目</th>
+              <th>考试类型</th>
+              <th>分数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let score of scores">
+              <td>{{score.subject_name}}</td>
+              <td>{{score.exam_name}}</td>
+              <td>{{score.score}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="scores.length === 0 && !loading">暂无成绩记录</p>
+        <p *ngIf="loading">加载中...</p>
+      </div>
+
+      <div class="section">
+        <h3>考试结果</h3>
+        <table class="data-table" *ngIf="examResults.length > 0">
+          <thead>
+            <tr>
+              <th>考试名称</th>
+              <th>语文</th>
+              <th>数学</th>
+              <th>英语</th>
+              <th>物理</th>
+              <th>化学</th>
+              <th>政治</th>
+              <th>总分</th>
+              <th>排名</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let result of examResults">
+              <td>{{result.exam_name}}</td>
+              <td>{{result.chinese}}</td>
+              <td>{{result.math}}</td>
+              <td>{{result.english}}</td>
+              <td>{{result.physics}}</td>
+              <td>{{result.chemistry}}</td>
+              <td>{{result.politics}}</td>
+              <td>{{result.total_score}}</td>
+              <td>{{result.ranking}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p *ngIf="examResults.length === 0 && !loading">暂无考试结果</p>
+        <p *ngIf="loading">加载中...</p>
       </div>
     </div>
   `,
@@ -134,96 +95,135 @@ import { CommonModule } from '@angular/common';
     .dashboard-container {
       padding: 20px;
     }
-    
-    mat-card {
-      margin-bottom: 20px;
+
+    .welcome-section {
+      background-color: #e3f2fd;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      text-align: center;
     }
-    
-    table {
+
+    .welcome-section h2 {
+      margin: 0 0 10px 0;
+      color: #1976d2;
+    }
+
+    .section {
+      margin-bottom: 30px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
+
+    .section h3 {
+      margin-top: 0;
+      color: #333;
+      border-bottom: 2px solid #3f51b5;
+      padding-bottom: 10px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .data-table {
       width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
     }
-    
-    mat-tab-group {
-      margin-top: 20px;
+
+    .data-table th,
+    .data-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
     }
-    
-    .error-container {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #ffebee;
-      border: 1px solid #f44336;
-      border-radius: 4px;
+
+    .data-table th {
+      background-color: #f5f5f5;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: #f9f9f9;
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
     }
   `]
 })
 export class DashboardComponent implements OnInit {
-  studentProfile: Student | null = null;
+  studentId: string | null = null;
+  
+  student: Student | null = null;
   scores: Score[] = [];
   examResults: ExamResult[] = [];
-  errorMessages: string[] = [];
-  
-  loadingProfile = true;
-  loadingScores = true;
-  loadingResults = true;
-  
-  displayedScoreColumns: string[] = ['exam_name', 'subject_name', 'score'];
-  displayedResultColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'];
-  
-  constructor(private studentService: StudentService) { }
-  
+  loading = false;
+
+  constructor(
+    private studentService: StudentService,
+    private route: ActivatedRoute
+  ) {}
+
   ngOnInit(): void {
-    // 使用默认学生ID S0101 进行演示
-    this.loadStudentData('S0101');
+    this.route.queryParams.subscribe(params => {
+      this.studentId = params['studentId'] || null;
+      if (this.studentId) {
+        this.loadStudentData();
+      }
+    });
   }
-  
-  loadStudentData(studentId: string): void {
-    console.log('开始加载学生数据，学生ID:', studentId);
+
+  loadStudentData(): void {
+    if (!this.studentId) return;
     
-    this.studentService.getStudentProfile(studentId).subscribe({
-      next: (profile) => {
-        console.log('获取到学生个人资料:', profile);
-        this.studentProfile = profile;
-        this.loadingProfile = false;
+    this.loading = true;
+    
+    // 获取学生个人信息
+    this.studentService.getStudentProfile(this.studentId).subscribe({
+      next: (student: Student) => {
+        this.student = student;
       },
-      error: (error) => {
-        console.error('获取学生个人资料出错:', error);
-        const errorMessage = error instanceof Error ? error.message : 
-                            error?.message ? JSON.stringify(error.message) : 
-                            '未知错误';
-        this.errorMessages.push('获取学生个人资料出错: ' + errorMessage);
-        this.loadingProfile = false;
+      error: (error: any) => {
+        console.error('Error loading student profile:', error);
       }
     });
-    
-    this.studentService.getStudentScores(studentId).subscribe({
-      next: (scores) => {
-        console.log('获取到学生成绩:', scores);
+
+    // 获取学生成绩
+    this.studentService.getStudentScores(this.studentId).subscribe({
+      next: (scores: Score[]) => {
         this.scores = scores;
-        this.loadingScores = false;
       },
-      error: (error) => {
-        console.error('获取学生成绩出错:', error);
-        const errorMessage = error instanceof Error ? error.message : 
-                            error?.message ? JSON.stringify(error.message) : 
-                            '未知错误';
-        this.errorMessages.push('获取学生成绩出错: ' + errorMessage);
-        this.loadingScores = false;
+      error: (error: any) => {
+        console.error('Error loading student scores:', error);
       }
     });
-    
-    this.studentService.getStudentExamResults(studentId).subscribe({
-      next: (results) => {
-        console.log('获取到考试结果:', results);
+
+    // 获取考试结果
+    this.studentService.getStudentExamResults(this.studentId).subscribe({
+      next: (results: ExamResult[]) => {
         this.examResults = results;
-        this.loadingResults = false;
+        this.loading = false;
       },
-      error: (error) => {
-        console.error('获取考试结果出错:', error);
-        const errorMessage = error instanceof Error ? error.message : 
-                            error?.message ? JSON.stringify(error.message) : 
-                            '未知错误';
-        this.errorMessages.push('获取考试结果出错: ' + errorMessage);
-        this.loadingResults = false;
+      error: (error: any) => {
+        console.error('Error loading exam results:', error);
+        this.loading = false;
       }
     });
   }

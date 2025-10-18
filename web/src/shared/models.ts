@@ -8,21 +8,21 @@ export interface Student {
 export interface Score {
   score_id: number;
   score: number;
-  exam_name: number | string;
-  subject_name: number | string;
+  exam_name: string;
+  subject_name: string;
   student_name: string;
 }
 
 export interface ExamResult {
   exam_name: string;
   student_name: string;
-  chinese: string;
-  math: string;
-  english: string;
-  physics: string;
-  chemistry: string;
-  politics: string;
-  total_score: string;
+  chinese: number;
+  math: number;
+  english: number;
+  physics: number;
+  chemistry: number;
+  politics: number;
+  total_score: number;
   ranking: number;
 }
 
