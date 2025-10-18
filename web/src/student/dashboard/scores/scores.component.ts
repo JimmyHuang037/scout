@@ -20,32 +20,35 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <mat-card-title>成绩列表</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="table-container" *ngIf="scores.length > 0; else noData">
-          <table mat-table [dataSource]="scores" class="data-table">
-            <ng-container matColumnDef="subject_name">
-              <th mat-header-cell *matHeaderCellDef>科目</th>
-              <td mat-cell *matCellDef="let score">{{score.subject_name}}</td>
-            </ng-container>
+        @if (scores.length > 0) {
+          <div class="table-container">
+            <table mat-table [dataSource]="scores" class="data-table">
+              <ng-container matColumnDef="subject_name">
+                <th mat-header-cell *matHeaderCellDef>科目</th>
+                <td mat-cell *matCellDef="let score">{{score.subject_name}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="exam_name">
-              <th mat-header-cell *matHeaderCellDef>考试类型</th>
-              <td mat-cell *matCellDef="let score">{{score.exam_name}}</td>
-            </ng-container>
+              <ng-container matColumnDef="exam_name">
+                <th mat-header-cell *matHeaderCellDef>考试类型</th>
+                <td mat-cell *matCellDef="let score">{{score.exam_name}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="score">
-              <th mat-header-cell *matHeaderCellDef>分数</th>
-              <td mat-cell *matCellDef="let score">{{score.score}}</td>
-            </ng-container>
+              <ng-container matColumnDef="score">
+                <th mat-header-cell *matHeaderCellDef>分数</th>
+                <td mat-cell *matCellDef="let score">{{score.score}}</td>
+              </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-        
-        <ng-template #noData>
-          <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
-          <p *ngIf="!loading" class="no-data">暂无成绩记录</p>
-        </ng-template>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+        } @else {
+          @if (loading) {
+            <mat-spinner diameter="40"></mat-spinner>
+          } @else {
+            <p class="no-data">暂无成绩记录</p>
+          }
+        }
       </mat-card-content>
     </mat-card>
   `,

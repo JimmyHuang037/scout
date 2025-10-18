@@ -20,47 +20,50 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
         <mat-card-title>考试结果</mat-card-title>
       </mat-card-header>
       <mat-card-content>
-        <div class="table-container" *ngIf="examResults.length > 0; else noData">
-          <table mat-table [dataSource]="examResults" class="data-table">
-            <ng-container matColumnDef="exam_name">
-              <th mat-header-cell *matHeaderCellDef>考试名称</th>
-              <td mat-cell *matCellDef="let result">{{result.exam_name}}</td>
-            </ng-container>
+        @if (examResults.length > 0) {
+          <div class="table-container">
+            <table mat-table [dataSource]="examResults" class="data-table">
+              <ng-container matColumnDef="exam_name">
+                <th mat-header-cell *matHeaderCellDef>考试名称</th>
+                <td mat-cell *matCellDef="let result">{{result.exam_name}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="chinese">
-              <th mat-header-cell *matHeaderCellDef>语文</th>
-              <td mat-cell *matCellDef="let result">{{result.chinese}}</td>
-            </ng-container>
+              <ng-container matColumnDef="chinese">
+                <th mat-header-cell *matHeaderCellDef>语文</th>
+                <td mat-cell *matCellDef="let result">{{result.chinese}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="math">
-              <th mat-header-cell *matHeaderCellDef>数学</th>
-              <td mat-cell *matCellDef="let result">{{result.math}}</td>
-            </ng-container>
+              <ng-container matColumnDef="math">
+                <th mat-header-cell *matHeaderCellDef>数学</th>
+                <td mat-cell *matCellDef="let result">{{result.math}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="english">
-              <th mat-header-cell *matHeaderCellDef>英语</th>
-              <td mat-cell *matCellDef="let result">{{result.english}}</td>
-            </ng-container>
+              <ng-container matColumnDef="english">
+                <th mat-header-cell *matHeaderCellDef>英语</th>
+                <td mat-cell *matCellDef="let result">{{result.english}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="total">
-              <th mat-header-cell *matHeaderCellDef>总分</th>
-              <td mat-cell *matCellDef="let result">{{result.total}}</td>
-            </ng-container>
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef>总分</th>
+                <td mat-cell *matCellDef="let result">{{result.total}}</td>
+              </ng-container>
 
-            <ng-container matColumnDef="average">
-              <th mat-header-cell *matHeaderCellDef>平均分</th>
-              <td mat-cell *matCellDef="let result">{{result.average}}</td>
-            </ng-container>
+              <ng-container matColumnDef="average">
+                <th mat-header-cell *matHeaderCellDef>平均分</th>
+                <td mat-cell *matCellDef="let result">{{result.average}}</td>
+              </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
-        </div>
-        
-        <ng-template #noData>
-          <mat-spinner *ngIf="loading" diameter="40"></mat-spinner>
-          <p *ngIf="!loading" class="no-data">暂无考试结果</p>
-        </ng-template>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+        } @else {
+          @if (loading) {
+            <mat-spinner diameter="40"></mat-spinner>
+          } @else {
+            <p class="no-data">暂无考试结果</p>
+          }
+        }
       </mat-card-content>
     </mat-card>
   `,

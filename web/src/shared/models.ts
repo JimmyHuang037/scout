@@ -30,12 +30,33 @@ export interface ExamResult {
 export interface Teacher {
   teacher_id: string;
   teacher_name: string;
-  subject_name: string;
   class_name: string;
 }
 
 // 管理员相关模型
-export interface Admin {
-  admin_id: string;
-  admin_name: string;
+export interface Class {
+  class_id: number;
+  class_name: string;
+  teacher_name: string;
+}
+
+export interface Subject {
+  subject_id: number;
+  subject_name: string;
+}
+
+export interface ExamType {
+  exam_type_id: number;
+  exam_name: string;
+}
+
+export interface StudentScore {
+  score_id: number;
+  student_id: string;
+  student_name: string;
+  student_number: string;
+  class_name: string;
+  subject_name: string;
+  score: number;
+  exam_name: string;
 }

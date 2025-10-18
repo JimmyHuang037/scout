@@ -15,24 +15,14 @@ import { MatListModule } from '@angular/material/list';
   template: `
     <mat-card class="section">
       <mat-card-header>
-        <mat-card-title>个人信息</mat-card-title>
+        <mat-card-title>学生信息</mat-card-title>
       </mat-card-header>
-      <mat-card-content *ngIf="student">
-        <mat-list>
-          <mat-list-item>
-            <span class="label">姓名:</span>
-            <span>{{student.student_name}}</span>
-          </mat-list-item>
-          <mat-list-item>
-            <span class="label">学号:</span>
-            <span>{{student.student_id}}</span>
-          </mat-list-item>
-          <mat-list-item>
-            <span class="label">班级:</span>
-            <span>{{student.class_name}}</span>
-          </mat-list-item>
-        </mat-list>
-      </mat-card-content>
+      @if (student) {
+        <mat-card-content>
+          <p><strong>姓名:</strong> {{student.student_name}}</p>
+          <p><strong>班级:</strong> {{student.class_name}}</p>
+        </mat-card-content>
+      }
     </mat-card>
   `,
   styles: [`

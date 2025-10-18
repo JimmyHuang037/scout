@@ -21,24 +21,28 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatToolbarModule
   ],
   template: `
-    <div class="dashboard-container" *ngIf="studentId">
-      <mat-toolbar color="primary">
-        <span>欢迎, {{student?.student_name}}!</span>
-      </mat-toolbar>
-      
-      <div class="info-section">
-        <mat-card>
-          <mat-card-content>
-            <p><strong>学号:</strong> {{student?.student_id}}</p>
-            <p><strong>班级:</strong> {{student?.class_name}}</p>
-          </mat-card-content>
-        </mat-card>
+    @if (studentId) {
+      <div class="dashboard-container">
+        <mat-toolbar color="primary">
+          <span>欢迎, {{student?.student_name}}!</span>
+        </mat-toolbar>
+        
+        <div class="info-section">
+          <mat-card>
+            <mat-card-content>
+              <p><strong>学号:</strong> {{studentId}}</p>
+              <p><strong>班级:</strong> {{student?.class_name}}</p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+        
+        <div class="dashboard-content">
+          <app-profile [student]="student" />
+          <app-scores [scores]="scores" [loading]="scoresLoading" />
+          <app-exams [examResults]="examResults" [loading]="examsLoading" />
+        </div>
       </div>
-
-      <app-profile [student]="student"></app-profile>
-      <app-scores [scores]="scores" [loading]="loading"></app-scores>
-      <app-exams [examResults]="examResults" [loading]="loading"></app-exams>
-    </div>
+    }
   `,
   styles: [`
     .dashboard-container {
@@ -57,7 +61,8 @@ export class DashboardComponent implements OnInit {
   student: Student | null = null;
   scores: Score[] = [];
   examResults: ExamResult[] = [];
-  loading = false;
+  scoresLoading = false;
+  examsLoading = false;
 
   constructor(
     private studentService: StudentService,
@@ -76,7 +81,8 @@ export class DashboardComponent implements OnInit {
   loadStudentData(): void {
     if (!this.studentId) return;
     
-    this.loading = true;
+    this.scoresLoading = true;
+    this.examsLoading = true;
     
     // 获取学生个人信息
     this.studentService.getStudentProfile(this.studentId).subscribe({
@@ -92,9 +98,11 @@ export class DashboardComponent implements OnInit {
     this.studentService.getStudentScores(this.studentId).subscribe({
       next: (scores: Score[]) => {
         this.scores = scores;
+        this.scoresLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading student scores:', error);
+        this.scoresLoading = false;
       }
     });
 
@@ -102,11 +110,11 @@ export class DashboardComponent implements OnInit {
     this.studentService.getStudentExamResults(this.studentId).subscribe({
       next: (results: ExamResult[]) => {
         this.examResults = results;
-        this.loading = false;
+        this.examsLoading = false;
       },
       error: (error: any) => {
         console.error('Error loading exam results:', error);
-        this.loading = false;
+        this.examsLoading = false;
       }
     });
   }

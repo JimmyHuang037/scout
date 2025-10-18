@@ -44,8 +44,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
               <input matInput type="password" name="password" [(ngModel)]="loginData.password" required />
             </mat-form-field>
             
-            <button 
-              mat-raised-button 
+            <button mat-raised-button 
               color="primary" 
               type="submit" 
               [disabled]="!loginForm.form.valid"
@@ -53,9 +52,11 @@ import { MatToolbarModule } from '@angular/material/toolbar';
               登录
             </button>
             
-            <div *ngIf="errorMessage" class="error-message">
-              <p class="mat-error">{{ errorMessage }}</p>
-            </div>
+            @if (errorMessage) {
+              <div class="error-message">
+                <p class="mat-error">{{ errorMessage }}</p>
+              </div>
+            }
           </form>
         </mat-card-content>
       </mat-card>
