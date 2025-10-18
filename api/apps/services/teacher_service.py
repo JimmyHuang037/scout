@@ -187,24 +187,46 @@ class TeacherService:
                 connection.autocommit(True)
     
     def delete_teacher(self, teacher_id):
+        connection = None
         try:
-            check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
-            check_result = self.db_service.execute_query(check_query, (teacher_id,))
-            check_result = check_result[0] if check_result else None
-            if not check_result or check_result['count'] == 0:
-                current_app.logger.warning(f"Teacher {teacher_id} does not exist")
-                return False
+            connection = self.db_service.get_connection()
+            connection.autocommit(False)
             
-            delete_exams_query = "DELETE FROM exams WHERE teacher_id = %s"
-            self.db_service.execute_update(delete_exams_query, (teacher_id,))
-            
-            delete_tc_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
-            self.db_service.execute_update(delete_tc_query, (teacher_id,))
-            
-            query = "DELETE FROM Teachers WHERE teacher_id = %s"
-            affected_rows = self.db_service.execute_update(query, (teacher_id,))
-            return affected_rows > 0
+            with connection.cursor() as cursor:
+                # 检查教师是否存在
+                check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
+                cursor.execute(check_query, (teacher_id,))
+                check_result = cursor.fetchone()
+                
+                if not check_result or check_result['count'] == 0:
+                    connection.rollback()
+                    current_app.logger.warning(f"Teacher {teacher_id} does not exist")
+                    return False
+                
+                # 删除与该教师相关的考试记录（如果表存在）
+                try:
+                    delete_exams_query = "DELETE FROM Exams WHERE teacher_id = %s"
+                    cursor.execute(delete_exams_query, (teacher_id,))
+                except Exception as e:
+                    current_app.logger.warning(f"Could not delete exams for teacher {teacher_id}: {str(e)}")
+                
+                # 删除教师班级关联记录
+                delete_tc_query = "DELETE FROM TeacherClasses WHERE teacher_id = %s"
+                cursor.execute(delete_tc_query, (teacher_id,))
+                
+                # 删除教师本身
+                delete_teacher_query = "DELETE FROM Teachers WHERE teacher_id = %s"
+                affected_rows = cursor.execute(delete_teacher_query, (teacher_id,))
+                
+                connection.commit()
+                return affected_rows > 0
+                
         except Exception as e:
+            if connection:
+                connection.rollback()
             if current_app:
                 current_app.logger.error(f"Failed to delete teacher {teacher_id}: {str(e)}")
             raise e
+        finally:
+            if connection:
+                connection.autocommit(True)
