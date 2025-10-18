@@ -13,7 +13,15 @@ export const routes: Routes = [
     component: LoginComponent
   },
   {
-    path: 'dashboard',
+    path: 'student/dashboard',
     component: DashboardComponent
+  },
+  {
+    path: 'teacher/dashboard',
+    loadComponent: () => import('../teacher/dashboard.component').then(m => m.TeacherDashboardComponent)
+  },
+  {
+    path: 'admin/dashboard',
+    loadComponent: () => import('../admin/dashboard.component').then(m => m.AdminDashboardComponent)
   }
 ];

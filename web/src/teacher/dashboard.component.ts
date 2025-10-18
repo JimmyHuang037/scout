@@ -1,38 +1,32 @@
-import { Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
-  imports: [
-    MatCardModule,
-    MatTabsModule,
-    CommonModule
-  ],
+  imports: [CommonModule],
   template: `
     <div class="dashboard-container">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>教师信息</mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-          <p>教师功能正在开发中...</p>
-        </mat-card-content>
-      </mat-card>
+      <h1>教师仪表板</h1>
+      <p>欢迎, {{teacherId}}!</p>
+      <p>教师功能正在开发中...</p>
     </div>
   `,
   styles: [`
     .dashboard-container {
       padding: 20px;
     }
-    
-    mat-card {
-      margin-bottom: 20px;
-    }
   `]
 })
-export class TeacherDashboardComponent {
-  constructor() { }
+export class TeacherDashboardComponent implements OnInit {
+  teacherId: string | null = null;
+
+  constructor(private route: ActivatedRoute) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.teacherId = params['teacherId'] || null;
+    });
+  }
 }

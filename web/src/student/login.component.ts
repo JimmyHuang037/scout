@@ -114,11 +114,19 @@ export class LoginComponent {
     this.authService.login(this.loginData.userId, this.loginData.password).subscribe({
       next: (user: UserInfo) => {
         if (user.role === 'student') {
-          this.router.navigate(['/dashboard'], { 
+          this.router.navigate(['/student/dashboard'], { 
             queryParams: { studentId: this.loginData.userId } 
           });
+        } else if (user.role === 'teacher') {
+          this.router.navigate(['/teacher/dashboard'], { 
+            queryParams: { teacherId: this.loginData.userId } 
+          });
+        } else if (user.role === 'admin') {
+          this.router.navigate(['/admin/dashboard'], { 
+            queryParams: { adminId: this.loginData.userId } 
+          });
         } else {
-          this.errorMessage = '只有学生可以访问此系统';
+          this.errorMessage = '不支持的用户角色';
           this.authService.logout().subscribe();
         }
       },
