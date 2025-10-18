@@ -7,7 +7,7 @@
 DB_USER="root"
 DB_PASS="Newuser1"
 DB_NAME="school_management"
-BACKUP_DIR="/home/jimmy/repo/scout/db/backup"
+BACKUP_DIR="$(dirname "$0")/backup"
 
 # 创建备份目录（如果不存在）
 mkdir -p "$BACKUP_DIR"
