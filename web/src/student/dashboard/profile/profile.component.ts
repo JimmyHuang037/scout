@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Student } from '../../shared/student.model';
+import { Student } from '../../../shared/models';
 import { NgIf } from '@angular/common';
 
 @Component({

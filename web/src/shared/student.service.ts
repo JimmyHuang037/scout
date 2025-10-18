@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { Student, Score, ExamResult } from './student.model';
+import { Student, Score, ExamResult } from './models';
 
 // 定义API响应接口
 interface ApiResponse<T> {
