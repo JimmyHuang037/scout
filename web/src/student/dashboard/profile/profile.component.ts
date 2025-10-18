@@ -1,60 +1,56 @@
 import { Component, Input } from '@angular/core';
 import { Student } from '../../../shared/models';
 import { NgIf } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatListModule } from '@angular/material/list';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [NgIf],
+  imports: [
+    NgIf,
+    MatCardModule,
+    MatListModule
+  ],
   template: `
-    <div class="section">
-      <h3>个人信息</h3>
-      <div class="info-grid" *ngIf="student">
-        <div class="info-item">
-          <span class="label">姓名:</span>
-          <span>{{student.student_name}}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">学号:</span>
-          <span>{{student.student_id}}</span>
-        </div>
-        <div class="info-item">
-          <span class="label">班级:</span>
-          <span>{{student.class_name}}</span>
-        </div>
-      </div>
-    </div>
+    <mat-card class="section">
+      <mat-card-header>
+        <mat-card-title>个人信息</mat-card-title>
+      </mat-card-header>
+      <mat-card-content *ngIf="student">
+        <mat-list>
+          <mat-list-item>
+            <span class="label">姓名:</span>
+            <span>{{student.student_name}}</span>
+          </mat-list-item>
+          <mat-list-item>
+            <span class="label">学号:</span>
+            <span>{{student.student_id}}</span>
+          </mat-list-item>
+          <mat-list-item>
+            <span class="label">班级:</span>
+            <span>{{student.class_name}}</span>
+          </mat-list-item>
+        </mat-list>
+      </mat-card-content>
+    </mat-card>
   `,
   styles: [`
     .section {
       margin-bottom: 30px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 20px;
-    }
-
-    .section h3 {
-      margin-top: 0;
-      color: #333;
-      border-bottom: 2px solid #3f51b5;
-      padding-bottom: 10px;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 15px;
-    }
-
-    .info-item {
-      display: flex;
-      flex-direction: column;
     }
 
     .label {
       font-weight: bold;
       color: #555;
+      display: inline-block;
+      width: 60px;
+      margin-right: 10px;
+    }
+
+    mat-list-item {
+      height: auto !important;
+      padding: 5px 0;
     }
   `]
 })

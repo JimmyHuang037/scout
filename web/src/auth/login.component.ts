@@ -3,95 +3,102 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
 import { AuthService, UserInfo } from '../shared/admin.service';
+import { MatCardModule } from '@angular/material/card';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, NgIf],
+  imports: [
+    FormsModule, 
+    NgIf,
+    MatCardModule,
+    MatInputModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatToolbarModule
+  ],
   template: `
     <div class="login-container">
-      <div class="login-form">
-        <h2>学生管理系统登录</h2>
-        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
-          <div class="form-group">
-            <label for="userId">用户ID:</label>
-            <input type="text" id="userId" name="userId" [(ngModel)]="loginData.userId" required />
-          </div>
-          
-          <div class="form-group">
-            <label for="password">密码:</label>
-            <input type="password" id="password" name="password" [(ngModel)]="loginData.password" required />
-          </div>
-          
-          <button type="submit" [disabled]="!loginForm.form.valid">登录</button>
-          
-          <div *ngIf="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
-        </form>
-      </div>
+      <mat-toolbar color="primary">
+        <span>学生管理系统</span>
+      </mat-toolbar>
+      
+      <mat-card class="login-card">
+        <mat-card-header>
+          <mat-card-title>用户登录</mat-card-title>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>用户ID</mat-label>
+              <input matInput type="text" name="userId" [(ngModel)]="loginData.userId" required />
+            </mat-form-field>
+            
+            <mat-form-field appearance="fill" class="full-width">
+              <mat-label>密码</mat-label>
+              <input matInput type="password" name="password" [(ngModel)]="loginData.password" required />
+            </mat-form-field>
+            
+            <button 
+              mat-raised-button 
+              color="primary" 
+              type="submit" 
+              [disabled]="!loginForm.form.valid"
+              class="login-button">
+              登录
+            </button>
+            
+            <div *ngIf="errorMessage" class="error-message">
+              <p class="mat-error">{{ errorMessage }}</p>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
     </div>
   `,
   styles: [`
     .login-container {
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       height: 100vh;
       background-color: #f5f5f5;
+      padding: 20px;
     }
     
-    .login-form {
-      background: white;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    .login-card {
       width: 100%;
       max-width: 400px;
+      margin-top: 20px;
     }
     
-    .form-group {
+    .full-width {
+      width: 100%;
       margin-bottom: 1rem;
     }
     
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: bold;
-    }
-    
-    input {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    
-    button {
+    .login-button {
       width: 100%;
       padding: 0.75rem;
-      background-color: #3f51b5;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
       font-size: 1rem;
     }
     
-    button:disabled {
-      background-color: #cccccc;
-      cursor: not-allowed;
-    }
-    
-    button:hover:not(:disabled) {
-      background-color: #303f9f;
-    }
-    
     .error-message {
-      color: #f44336;
       margin-top: 1rem;
       text-align: center;
+    }
+    
+    mat-toolbar {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 4px;
+      justify-content: center;
     }
   `]
 })

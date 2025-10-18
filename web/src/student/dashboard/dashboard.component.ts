@@ -6,17 +6,33 @@ import { NgIf } from '@angular/common';
 import { ProfileComponent } from './profile/profile.component';
 import { ScoresComponent } from './scores/scores.component';
 import { ExamsComponent } from './exams/exams.component';
+import { MatCardModule } from '@angular/material/card';
+import { MatToolbarModule } from '@angular/material/toolbar';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [NgIf, ProfileComponent, ScoresComponent, ExamsComponent],
+  imports: [
+    NgIf, 
+    ProfileComponent, 
+    ScoresComponent, 
+    ExamsComponent,
+    MatCardModule,
+    MatToolbarModule
+  ],
   template: `
     <div class="dashboard-container" *ngIf="studentId">
-      <div class="welcome-section">
-        <h2>欢迎, {{student?.student_name}}!</h2>
-        <p>学号: {{student?.student_id}}</p>
-        <p>班级: {{student?.class_name}}</p>
+      <mat-toolbar color="primary">
+        <span>欢迎, {{student?.student_name}}!</span>
+      </mat-toolbar>
+      
+      <div class="info-section">
+        <mat-card>
+          <mat-card-content>
+            <p><strong>学号:</strong> {{student?.student_id}}</p>
+            <p><strong>班级:</strong> {{student?.class_name}}</p>
+          </mat-card-content>
+        </mat-card>
       </div>
 
       <app-profile [student]="student"></app-profile>
@@ -24,24 +40,7 @@ import { ExamsComponent } from './exams/exams.component';
       <app-exams [examResults]="examResults" [loading]="loading"></app-exams>
     </div>
   `,
-  styles: [`
-    .dashboard-container {
-      padding: 20px;
-    }
-
-    .welcome-section {
-      background-color: #e3f2fd;
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 30px;
-      text-align: center;
-    }
-
-    .welcome-section h2 {
-      margin: 0 0 10px 0;
-      color: #1976d2;
-    }
-  `]
+  styleUrls: ['../app/app.scss']
 })
 export class DashboardComponent implements OnInit {
   studentId: string | null = null;

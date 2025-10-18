@@ -1,91 +1,123 @@
 import { Component, Input } from '@angular/core';
 import { ExamResult } from '../../../shared/models';
 import { NgIf, NgFor } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-exams',
   standalone: true,
-  imports: [NgIf, NgFor],
+  imports: [
+    NgIf, 
+    NgFor,
+    MatCardModule,
+    MatTableModule,
+    MatProgressSpinnerModule
+  ],
   template: `
-    <div class="section">
-      <h3>考试结果</h3>
-      <table class="data-table" *ngIf="examResults.length > 0">
-        <thead>
-          <tr>
-            <th>考试名称</th>
-            <th>语文</th>
-            <th>数学</th>
-            <th>英语</th>
-            <th>物理</th>
-            <th>化学</th>
-            <th>政治</th>
-            <th>总分</th>
-            <th>排名</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let result of examResults">
-            <td>{{result.exam_name}}</td>
-            <td>{{result.chinese}}</td>
-            <td>{{result.math}}</td>
-            <td>{{result.english}}</td>
-            <td>{{result.physics}}</td>
-            <td>{{result.chemistry}}</td>
-            <td>{{result.politics}}</td>
-            <td>{{result.total_score}}</td>
-            <td>{{result.ranking}}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p *ngIf="examResults.length === 0 && !loading">暂无考试结果</p>
-      <p *ngIf="loading">加载中...</p>
-    </div>
+    <mat-card class="section">
+      <mat-card-header>
+        <mat-card-title>考试结果</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container" *ngIf="examResults.length > 0; else noData">
+          <table mat-table [dataSource]="examResults" class="data-table">
+            <ng-container matColumnDef="exam_name">
+              <th mat-header-cell *matHeaderCellDef>考试名称</th>
+              <td mat-cell *matCellDef="let result">{{result.exam_name}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="chinese">
+              <th mat-header-cell *matHeaderCellDef>语文</th>
+              <td mat-cell *matCellDef="let result">{{result.chinese}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="math">
+              <th mat-header-cell *matHeaderCellDef>数学</th>
+              <td mat-cell *matCellDef="let result">{{result.math}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="english">
+              <th mat-header-cell *matHeaderCellDef>英语</th>
+              <td mat-cell *matCellDef="let result">{{result.english}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="physics">
+              <th mat-header-cell *matHeaderCellDef>物理</th>
+              <td mat-cell *matCellDef="let result">{{result.physics}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="chemistry">
+              <th mat-header-cell *matHeaderCellDef>化学</th>
+              <td mat-cell *matCellDef="let result">{{result.chemistry}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="politics">
+              <th mat-header-cell *matHeaderCellDef>政治</th>
+              <td mat-cell *matCellDef="let result">{{result.politics}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="total_score">
+              <th mat-header-cell *matHeaderCellDef>总分</th>
+              <td mat-cell *matCellDef="let result">{{result.total_score}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="ranking">
+              <th mat-header-cell *matHeaderCellDef>排名</th>
+              <td mat-cell *matCellDef="let result">{{result.ranking}}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+        
+        <ng-template #noData>
+          <div class="no-data" *ngIf="!loading">
+            <p>暂无考试结果</p>
+          </div>
+          <div class="loading" *ngIf="loading">
+            <mat-spinner diameter="30"></mat-spinner>
+            <p>加载中...</p>
+          </div>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
   `,
   styles: [`
     .section {
       margin-bottom: 30px;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      padding: 20px;
     }
 
-    .section h3 {
-      margin-top: 0;
-      color: #333;
-      border-bottom: 2px solid #3f51b5;
-      padding-bottom: 10px;
+    .table-container {
+      overflow-x: auto;
     }
 
     .data-table {
       width: 100%;
-      border-collapse: collapse;
       margin-top: 10px;
     }
 
-    .data-table th,
-    .data-table td {
-      padding: 12px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
+    .no-data, .loading {
+      text-align: center;
+      padding: 20px;
     }
 
-    .data-table th {
-      background-color: #f5f5f5;
-      font-weight: bold;
-      color: #333;
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
-    .data-table tbody tr:hover {
-      background-color: #f9f9f9;
-    }
-
-    .data-table tbody tr:last-child td {
-      border-bottom: none;
+    mat-spinner {
+      margin-bottom: 10px;
     }
   `]
 })
 export class ExamsComponent {
   @Input() examResults: ExamResult[] = [];
   @Input() loading: boolean = false;
+  
+  displayedColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'];
 }
