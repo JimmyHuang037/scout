@@ -92,15 +92,4 @@ export abstract class BaseService {
         catchError(this.handleError)
       );
   }
-
-  /**
-   * 通用GET请求方法
-   */
-  protected get<T>(endpoint: string): Observable<T> {
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`)
-      .pipe(
-        map(response => response.data),
-        catchError(this.handleError)
-      );
-  }
 }
