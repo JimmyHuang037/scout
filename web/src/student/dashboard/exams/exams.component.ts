@@ -41,14 +41,29 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
                 <td mat-cell *matCellDef="let result">{{result.english}}</td>
               </ng-container>
 
-              <ng-container matColumnDef="total">
-                <th mat-header-cell *matHeaderCellDef>总分</th>
-                <td mat-cell *matCellDef="let result">{{result.total}}</td>
+              <ng-container matColumnDef="physics">
+                <th mat-header-cell *matHeaderCellDef>物理</th>
+                <td mat-cell *matCellDef="let result">{{result.physics}}</td>
               </ng-container>
 
-              <ng-container matColumnDef="average">
-                <th mat-header-cell *matHeaderCellDef>平均分</th>
-                <td mat-cell *matCellDef="let result">{{result.average}}</td>
+              <ng-container matColumnDef="chemistry">
+                <th mat-header-cell *matHeaderCellDef>化学</th>
+                <td mat-cell *matCellDef="let result">{{result.chemistry}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="politics">
+                <th mat-header-cell *matHeaderCellDef>政治</th>
+                <td mat-cell *matCellDef="let result">{{result.politics}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="total_score">
+                <th mat-header-cell *matHeaderCellDef>总分</th>
+                <td mat-cell *matCellDef="let result">{{result.total_score}}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="ranking">
+                <th mat-header-cell *matHeaderCellDef>排名</th>
+                <td mat-cell *matCellDef="let result">{{result.ranking}}</td>
               </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
@@ -97,5 +112,5 @@ export class ExamsComponent {
   @Input() examResults: ExamResult[] = [];
   @Input() loading = false;
   
-  displayedColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'total', 'average'];
+  displayedColumns: string[] = ['exam_name', 'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'];
 }

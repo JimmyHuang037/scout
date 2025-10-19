@@ -37,9 +37,33 @@ export class StudentService {
   }
 
   getStudentExamResults(studentId: string): Observable<ExamResult[]> {
-    return this.http.get<ApiResponse<ExamResult[]>>(`${this.baseUrl}/exam_results/${studentId}`)
+    return this.http.get(`${this.baseUrl}/exam_results/${studentId}`, { responseType: 'text' })
       .pipe(
-        map(response => response.data),
+        map(response => {
+          // 检查响应是否为HTML（错误页面）
+          if (response.startsWith('<!doctype') || response.startsWith('<html')) {
+            throw new Error('Received HTML response instead of JSON. Check if the API server is running and the endpoint is correct.');
+          }
+          
+          // 解析JSON响应
+          const parsedResponse: ApiResponse<any[]> = JSON.parse(response);
+          
+          // 转换字符串类型字段为数字类型
+          const examResults: ExamResult[] = parsedResponse.data.map(item => ({
+            exam_name: item.exam_name,
+            student_name: item.student_name,
+            chinese: Number(item.chinese),
+            math: Number(item.math),
+            english: Number(item.english),
+            physics: Number(item.physics),
+            chemistry: Number(item.chemistry),
+            politics: Number(item.politics),
+            total_score: Number(item.total_score),
+            ranking: Number(item.ranking)
+          }));
+          
+          return examResults;
+        }),
         catchError(this.handleError)
       );
   }
