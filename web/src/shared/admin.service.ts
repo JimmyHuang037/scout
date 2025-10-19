@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-import { BaseService, ApiResponse } from './base-service';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { BaseService } from './base-service';
 
 // 定义用户信息接口
 export interface UserInfo {
@@ -33,18 +33,11 @@ export class AuthService extends BaseService {
     );
   }
 
-  getCurrentUser(): Observable<UserInfo | null> {
-    return this.get<UserInfo>('me').pipe(
+  getCurrentUser(): Observable<UserInfo> {
+    return this.getOne<UserInfo>('me').pipe(
       map(response => {
         this.currentUserSubject.next(response);
         return response;
-      }),
-      catchError((error) => {
-        if (error.status === 401) {
-          this.currentUserSubject.next(null);
-          return of(null);
-        }
-        return of(null); // 其他错误也返回 null，不影响用户体验
       })
     );
   }
