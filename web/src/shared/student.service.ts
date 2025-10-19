@@ -20,7 +20,7 @@ export class StudentService extends BaseService {
   }
 
   getStudentScores(studentId: string): Observable<Score[]> {
-    return this.getList<Score[]>(`scores/${studentId}`);
+    return this.getList<Score>(`scores/${studentId}`);
   }
 
   getStudentExamResults(studentId: string): Observable<ExamResult[]> {
