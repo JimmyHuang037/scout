@@ -132,7 +132,6 @@ dmypy.json
 .pyre/
 
 # IDE
-.vscode/
 .idea/
 
 # OS generated files
