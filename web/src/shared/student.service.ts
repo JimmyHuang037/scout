@@ -27,22 +27,11 @@ export class StudentService extends BaseService {
     return this.getJsonWithFallback<ExamResult>(`exam_results/${studentId}`)
       .pipe(
         // 转换字符串类型字段为数字类型
-        map(data => data.map(item => this.transformExamResult(item)))
+        map(data => data.map(item => 
+          this.transformObjectFields<ExamResult>(item, [
+            'chinese', 'math', 'english', 'physics', 'chemistry', 'politics', 'total_score', 'ranking'
+          ])
+        ))
       );
-  }
-
-  private transformExamResult(item: any): ExamResult {
-    return {
-      exam_name: item.exam_name,
-      student_name: item.student_name,
-      chinese: this.transformToNumber(item.chinese),
-      math: this.transformToNumber(item.math),
-      english: this.transformToNumber(item.english),
-      physics: this.transformToNumber(item.physics),
-      chemistry: this.transformToNumber(item.chemistry),
-      politics: this.transformToNumber(item.politics),
-      total_score: this.transformToNumber(item.total_score),
-      ranking: this.transformToNumber(item.ranking)
-    };
   }
 }

@@ -41,6 +41,21 @@ export abstract class BaseService {
   }
 
   /**
+   * 通用对象字段转换方法
+   * @param obj 要转换的对象
+   * @param numericFields 需要转换为数字的字段名数组
+   */
+  protected transformObjectFields<T>(obj: any, numericFields: string[]): T {
+    const result: any = { ...obj };
+    numericFields.forEach(field => {
+      if (result[field] !== undefined) {
+        result[field] = this.transformToNumber(result[field]);
+      }
+    });
+    return result;
+  }
+
+  /**
    * 获取数据列表的通用方法
    */
   protected getList<T>(endpoint: string): Observable<T[]> {
