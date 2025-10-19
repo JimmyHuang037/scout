@@ -25,19 +25,10 @@ import { MatToolbarModule } from '@angular/material/toolbar';
           <span>欢迎, {{student?.student_name}}!</span>
         </mat-toolbar>
         
-        <div class="info-section">
-          <mat-card>
-            <mat-card-content>
-              <p><strong>学号:</strong> {{studentId}}</p>
-              <p><strong>班级:</strong> {{student?.class_name}}</p>
-            </mat-card-content>
-          </mat-card>
-        </div>
-        
         <div class="dashboard-content">
           <app-profile [student]="student" />
-          <app-scores [scores]="scores" [loading]="scoresLoading" />
           <app-exams [examResults]="examResults" [loading]="examsLoading" />
+          <app-scores [scores]="scores" [loading]="scoresLoading" />
         </div>
       </div>
     }

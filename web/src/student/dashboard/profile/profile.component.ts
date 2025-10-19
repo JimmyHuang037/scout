@@ -17,6 +17,7 @@ import { MatListModule } from '@angular/material/list';
       </mat-card-header>
       @if (student) {
         <mat-card-content>
+          <p><strong>学号:</strong> {{student.student_id}}</p>
           <p><strong>姓名:</strong> {{student.student_name}}</p>
           <p><strong>班级:</strong> {{student.class_name}}</p>
         </mat-card-content>
