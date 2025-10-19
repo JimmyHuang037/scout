@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, retryWhen, delay, take, concatMap } from 'rxjs/operators';
 
 // 定义API响应接口
 export interface ApiResponse<T> {
@@ -77,6 +77,25 @@ export abstract class BaseService {
           // 解析JSON响应
           const parsedResponse: ApiResponse<any[]> = JSON.parse(response);
           return parsedResponse.data;
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * 获取可能有Content-Type问题的JSON数据
+   */
+  protected getJsonWithFallback<T>(endpoint: string): Observable<T[]> {
+    return this.http.get<ApiResponse<T[]>>(`${this.baseUrl}/${endpoint}`)
+      .pipe(
+        map(response => response.data),
+        catchError((error: HttpErrorResponse) => {
+          // 如果是解析错误，尝试用文本方式获取
+          if (error.status === 200 && error.statusText === 'OK') {
+            // 可能是Content-Type问题，尝试文本方式获取
+            return this.getTextResponse<T>(endpoint);
+          }
+          throw error;
         }),
         catchError(this.handleError)
       );
