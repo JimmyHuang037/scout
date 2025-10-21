@@ -130,6 +130,7 @@ export class LoginComponent {
   
   onLogin(): void {
     this.errorMessage = '';
+    console.log("this is a test")
     
     this.authService.login(this.loginData.userId, this.loginData.password).subscribe({
       next: (user: UserInfo) => {
