@@ -10,7 +10,7 @@ export const routes: Routes = [
   },
   {
     path: 'login',
-    component: LoginComponent
+    component: LoginComponent//可搜索
   },
   {
     path: 'student/dashboard',

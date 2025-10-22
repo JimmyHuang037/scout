@@ -1,0 +1,32 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "serve",
+            "type": "shell",
+            "command": "npm",
+            "args": ["start"],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "problemMatcher": {
+                "owner": "typescript",
+                "source": "ts",
+                "applyTo": "all",
+                "fileLocation": "absolute",
+                "pattern": "$tsc",
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*\\[.*\\]\\s+Compiling",
+                    "endsPattern": ".* Compiled |.* Failed to compile\\."
+                }
+            },
+            "isBackground": true,
+            "detail": "Start the Angular development server"
+        }
+    ]
+}

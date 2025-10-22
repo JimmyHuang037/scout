@@ -1,9 +1,8 @@
-import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Score } from '../../../shared/models';
 import { MatCardModule } from '@angular/material/card';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
@@ -12,8 +11,7 @@ import { MatTableDataSource } from '@angular/material/table';
   imports: [
     MatCardModule,
     MatTableModule,
-    MatProgressSpinnerModule,
-    MatPaginatorModule
+    MatProgressSpinnerModule
   ],
   template: `
     <mat-card class="section">
@@ -22,27 +20,28 @@ import { MatTableDataSource } from '@angular/material/table';
       </mat-card-header>
       <mat-card-content>
         <div class="table-container">
-          <table mat-table [dataSource]="dataSource" class="data-table">
+          <table mat-table [dataSource]="dataSource" class="data-table" mat-table-recycle-rows>
             <ng-container matColumnDef="subject_name">
               <th mat-header-cell *matHeaderCellDef>科目</th>
               <td mat-cell *matCellDef="let score">{{score.subject_name}}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
 
             <ng-container matColumnDef="exam_name">
               <th mat-header-cell *matHeaderCellDef>考试类型</th>
               <td mat-cell *matCellDef="let score">{{score.exam_name}}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
 
             <ng-container matColumnDef="score">
               <th mat-header-cell *matHeaderCellDef>分数</th>
               <td mat-cell *matCellDef="let score">{{score.score}}</td>
+              <td mat-footer-cell *matFooterCellDef></td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
-          
-          <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons />
         </div>
         
         @if (loading) {
@@ -63,8 +62,9 @@ import { MatTableDataSource } from '@angular/material/table';
     }
     
     .table-container {
-      overflow-x: auto;
+      overflow: auto;
       position: relative;
+      height: 300px;
     }
     
     .data-table {
@@ -103,18 +103,12 @@ import { MatTableDataSource } from '@angular/material/table';
     }
   `]
 })
-export class ScoresComponent implements AfterViewInit {
+export class ScoresComponent {
   @Input() scores: Score[] = [];
   @Input() loading: boolean = false;
   
   displayedColumns: string[] = ['subject_name', 'exam_name', 'score'];
   dataSource: MatTableDataSource<Score> = new MatTableDataSource<Score>();
-  
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-  
-  ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-  }
   
   ngOnChanges() {
     // 当scores数据发生变化时更新dataSource
