@@ -77,6 +77,7 @@ export class DashboardComponent implements OnInit {
     this.studentService.getStudentProfile(this.studentId).subscribe({
       next: (student: Student) => {
         this.student = student;
+        console.log("student:", student);
       },
       error: (error: any) => {
         console.error('Error loading student profile:', error);

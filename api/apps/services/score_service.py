@@ -17,6 +17,19 @@ class ScoreService:
         """
         return self.db_service.execute_query(query, (student_id,))
 
+    def get_student_scores_as_chinese_column(self, student_id):
+        query = """
+            SELECT s.score_id as 成绩编号, s.score as 成绩, et.exam_type_name as 考试类型, 
+                   sub.subject_name as 科目, st.student_name as 学生姓名
+            FROM Scores s
+            JOIN Students st ON s.student_id = st.student_id
+            JOIN Subjects sub ON s.subject_id = sub.subject_id
+            JOIN ExamTypes et ON s.exam_type_id = et.exam_type_id
+            WHERE s.student_id = %s
+            ORDER BY s.exam_type_id
+        """
+        return self.db_service.execute_query(query, (student_id,))
+
     def get_student_exam_score(self, student_id, exam_id):
         query = """
             SELECT s.score_id, s.score, e.exam_id as exam_name, 

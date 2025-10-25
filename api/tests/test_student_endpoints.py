@@ -54,3 +54,12 @@ class TestStudentEndpoints(CurlTestBase):
             "student_4_get_exam_results_not_found.json", self.test_setup,
             expect_error=True
         )
+
+    def test_05_get_student_scores_chinese(self):
+        """测试用例5: 获取学生语文成绩（无需登录和会话）"""
+        self.run_api_test(
+            5, "获取学生成绩",
+            ['curl', '-s', f'{self.base_url}/api/student/scores/chinese/S0101', '|', 'jq'],
+            "student_5_get_scores_chinese.json", self.test_setup
+        )
+
