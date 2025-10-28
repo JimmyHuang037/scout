@@ -28,7 +28,7 @@ export interface ExamResult {
 
 // 教师相关模型
 export interface Teacher {
-  teacher_id: string;
+  teacher_id: number;
   teacher_name: string;
   class_name: string;
 }

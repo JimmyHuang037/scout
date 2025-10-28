@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { BaseService } from './base-service';
+import { Teacher, StudentScore } from './models';
 
 @Injectable({
   providedIn: 'root'
@@ -12,5 +14,29 @@ export class TeacherService extends BaseService {
     super(http);
   }
 
-  // 可以在这里添加教师相关的API调用方法
+  /**
+   * 获取教师个人资料
+   * @param teacherId 教师ID
+   */
+  getTeacherProfile(teacherId: number): Observable<Teacher> {
+    return this.getOne<Teacher>(`profile/${teacherId}`);
+  }
+
+  /**
+   * 获取教师管理的学生成绩列表
+   * @param teacherId 教师ID
+   */
+  getTeacherScores(teacherId: number): Observable<StudentScore[]> {
+    return this.getList<StudentScore>(`scores/${teacherId}`);
+  }
+
+  /**
+   * 更新学生成绩
+   * @param teacherId 教师ID
+   * @param scoreId 成绩ID
+   * @param score 新成绩
+   */
+  updateStudentScore(teacherId: number, scoreId: number, score: number): Observable<StudentScore> {
+    return this.post<StudentScore>(`scores/${teacherId}/${scoreId}`, { score });
+  }
 }

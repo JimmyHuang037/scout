@@ -1,0 +1,25 @@
+{
+  "name": "teachers-management-system",
+  "version": "1.0.0",
+  "description": "A system to manage teachers data from MySQL database",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mysql2": "^3.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "teachers",
+    "mysql",
+    "express",
+    "nodejs"
+  ],
+  "author": "Scout",
+  "license": "MIT"
+}
