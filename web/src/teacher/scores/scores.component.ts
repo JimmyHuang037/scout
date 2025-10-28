@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { StudentScore } from '../../shared/models';
 import { MatCardModule } from '@angular/material/card';
-import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,7 +27,7 @@ import { MatButtonModule } from '@angular/material/button';
       </mat-card-header>
       <mat-card-content>
         <div class="table-container">
-          <table mat-table [dataSource]="dataSource" class="scores-table" mat-table-recycle-rows>
+          <table mat-table [dataSource]="scores" class="scores-table" mat-table-recycle-rows>
             <ng-container matColumnDef="student_number">
               <th mat-header-cell *matHeaderCellDef>学号</th>
               <td mat-cell *matCellDef="let score">{{ score.student_number }}</td>
@@ -69,7 +69,7 @@ import { MatButtonModule } from '@angular/material/button';
               <td mat-cell *matCellDef="let score">
                 <div class="score-input-container">
                   <input 
-                    [(ngModel)]="scoreInputs[score.score_id]"
+                    [(ngModel)]="scoreInputs[score.score_id]"  
                     type="number" 
                     min="0" 
                     max="100" 
@@ -158,20 +158,14 @@ import { MatButtonModule } from '@angular/material/button';
     }
   `]
 })
-export class TeacherScoresComponent implements OnChanges {
+export class TeacherScoresComponent {
   @Input() scores: StudentScore[] = [];
   @Input() loading: boolean = false;
   @Output() scoreUpdate = new EventEmitter<{scoreId: number, newScore: number}>();
   
-  dataSource = new MatTableDataSource<StudentScore>();
   scoreInputs: {[key: number]: number} = {};
-  displayedColumns: string[] = ['student_number', 'student_name', 'class_name', 'subject_name', 'exam_name', 'score', 'actions'];
   
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['scores'] && changes['scores'].currentValue) {
-      this.dataSource.data = changes['scores'].currentValue;
-    }
-  }
+  displayedColumns: string[] = ['student_number', 'student_name', 'class_name', 'subject_name', 'exam_name', 'score', 'actions'];
   
   updateScore(scoreId: number, newScore: number): void {
     if (newScore !== undefined && newScore >= 0 && newScore <= 100) {
