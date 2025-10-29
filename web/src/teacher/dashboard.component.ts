@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { TeacherService } from '../../shared/teacher.service';
-import { Teacher, StudentScore, Class, Student } from '../../shared/models';
+import { TeacherService } from '../shared/teacher.service';
+import { Teacher, StudentScore, Class, Student } from '../shared/models';
 import { ProfileComponent } from './dashboard/profile/profile.component';
 import { ScoresComponent } from './dashboard/scores/scores.component';
 import { ClassesComponent } from './dashboard/classes/classes.component';

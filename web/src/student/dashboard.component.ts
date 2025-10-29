@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { StudentService } from '../../shared/student.service';
-import { Student, Score, ExamResult } from '../../shared/models';
-import { ProfileComponent } from './profile/profile.component';
-import { ScoresComponent } from './scores/scores.component';
-import { ExamsComponent } from './exams/exams.component';
+import { StudentService } from '../shared/student.service';
+import { Student, Score, ExamResult } from '../shared/models';
+import { ProfileComponent } from './dashboard/profile/profile.component';
+import { ScoresComponent } from './dashboard/scores/scores.component';
+import { ExamsComponent } from './dashboard/exams/exams.component';
 import { MatCardModule } from '@angular/material/card';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
@@ -27,8 +27,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
         
         <div class="dashboard-content">
           <app-profile [student]="student" />
-          <app-exams [examResults]="examResults" [loading]="examsLoading" />
           <app-scores [scores]="scores" [loading]="scoresLoading" />
+          <app-exams [examResults]="exams" [loading]="examsLoading" />
         </div>
       </div>
     }
@@ -39,7 +39,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
       max-width: 1200px;
       margin: 0 auto;
     }
-    .info-section {
+    .dashboard-content > * {
       margin: 16px 0;
     }
   `]
@@ -49,7 +49,7 @@ export class DashboardComponent implements OnInit {
   
   student: Student | null = null;
   scores: Score[] = [];
-  examResults: ExamResult[] = [];
+  exams: ExamResult[] = [];
   scoresLoading = false;
   examsLoading = false;
 
@@ -60,7 +60,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      this.studentId = params['studentId'] || null;
+      this.studentId = params['studentId'] ? params['studentId'] : null;
       if (this.studentId) {
         this.loadStudentData();
       }
@@ -96,14 +96,14 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 获取考试结果
+    // 获取学生考试结果
     this.studentService.getStudentExamResults(this.studentId).subscribe({
-      next: (results: ExamResult[]) => {
-        this.examResults = results;
+      next: (exams: ExamResult[]) => {
+        this.exams = exams;
         this.examsLoading = false;
       },
       error: (error: any) => {
-        console.error('Error loading exam results:', error);
+        console.error('Error loading student exams:', error);
         this.examsLoading = false;
       }
     });

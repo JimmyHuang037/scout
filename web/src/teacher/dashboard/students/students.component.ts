@@ -1,4 +1,5 @@
 import { Component, Input, ViewChild, AfterViewInit } from '@angular/core';
+import { Student } from '../../../shared/models';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -103,12 +104,12 @@ import { CommonModule } from '@angular/common';
 })
 export class StudentsComponent implements AfterViewInit {
   @Input() loading: boolean = false;
-  @Input() set students(students: any[]) {
+  @Input() set students(students: Student[]) {
     this.dataSource.data = students;
   }
 
   displayedColumns: string[] = ['student_id', 'student_name', 'class_name'];
-  dataSource = new MatTableDataSource<any>();
+  dataSource = new MatTableDataSource<Student>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;

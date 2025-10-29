@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { Teacher } from '../../../../shared/models';
+import { Teacher } from '../../../shared/models';
 import { MatCardModule } from '@angular/material/card';
 import { MatListModule } from '@angular/material/list';
 

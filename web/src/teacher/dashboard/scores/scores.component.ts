@@ -1,5 +1,5 @@
 import { Component, Input, ViewChild, AfterViewInit, OnDestroy } from '@angular/core';
-import { StudentScore } from '../../../../shared/models';
+import { StudentScore } from '../../../shared/models';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatSortModule, MatSort } from '@angular/material/sort';
@@ -28,7 +28,7 @@ import { CommonModule } from '@angular/common';
   template: `
     <mat-card class="scores-card">
       <mat-card-header>
-        <mat-card-title>学生成绩管理</mat-card-title>
+        <mat-card-title>成绩管理</mat-card-title>
       </mat-card-header>
       <mat-card-content>
         @if (loading) {
@@ -56,33 +56,15 @@ import { CommonModule } from '@angular/common';
                 <td mat-cell *matCellDef="let element">{{element.student_name}}</td>
               </ng-container>
 
-              <!-- 学号列 -->
-              <ng-container matColumnDef="student_number">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>学号</th>
-                <td mat-cell *matCellDef="let element">{{element.student_number}}</td>
-              </ng-container>
-
-              <!-- 班级列 -->
-              <ng-container matColumnDef="class_name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>班级</th>
-                <td mat-cell *matCellDef="let element">{{element.class_name}}</td>
-              </ng-container>
-
               <!-- 科目列 -->
               <ng-container matColumnDef="subject_name">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>科目</th>
                 <td mat-cell *matCellDef="let element">{{element.subject_name}}</td>
               </ng-container>
 
-              <!-- 考试名称列 -->
-              <ng-container matColumnDef="exam_name">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>考试名称</th>
-                <td mat-cell *matCellDef="let element">{{element.exam_name}}</td>
-              </ng-container>
-
-              <!-- 成绩列 -->
+              <!-- 分数列 -->
               <ng-container matColumnDef="score">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>成绩</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>分数</th>
                 <td mat-cell *matCellDef="let element">{{element.score}}</td>
               </ng-container>
 
@@ -129,10 +111,10 @@ import { CommonModule } from '@angular/common';
 export class ScoresComponent implements AfterViewInit, OnDestroy {
   @Input() loading: boolean = false;
   @Input() set scores(scores: StudentScore[]) {
-    this.dataSource.data = scores;
+    this.dataSource.data = scores || [];
   }
 
-  displayedColumns: string[] = ['student_id', 'student_name', 'student_number', 'class_name', 'subject_name', 'exam_name', 'score'];
+  displayedColumns: string[] = ['student_id', 'student_name', 'subject_name', 'score'];
   dataSource = new MatTableDataSource<StudentScore>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -144,7 +126,8 @@ export class ScoresComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // 清理资源
+    // Clean up data source to prevent memory leaks
+    this.dataSource.disconnect();
   }
 
   applyFilter(event: Event) {

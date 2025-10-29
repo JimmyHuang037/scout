@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from '../auth/login.component';
-import { DashboardComponent } from '../student/dashboard/dashboard.component';
+import { DashboardComponent as StudentDashboardComponent } from '../student/dashboard.component';
+import { DashboardComponent as TeacherDashboardComponent } from '../teacher/dashboard.component';
 
 export const routes: Routes = [
   {
@@ -14,11 +15,11 @@ export const routes: Routes = [
   },
   {
     path: 'student/dashboard',
-    component: DashboardComponent
+    component: StudentDashboardComponent
   },
   {
     path: 'teacher/dashboard',
-    loadComponent: () => import('../teacher/dashboard.component').then(m => m.TeacherDashboardComponent)
+    component: TeacherDashboardComponent
   },
   {
     path: 'admin/dashboard',
