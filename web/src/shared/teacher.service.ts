@@ -28,7 +28,8 @@ export class TeacherService extends BaseService {
    * @param teacherId 教师ID
    */
   getTeacherScores(teacherId: number): Observable<StudentScore[]> {
-    return this.http.get<any>(`${this.baseUrl}/scores/${teacherId}`)
+    // 通过设置per_page参数为一个足够大的数来获取所有数据
+    return this.http.get<any>(`${this.baseUrl}/scores/${teacherId}?per_page=10000`)
       .pipe(
         map(response => response.data.scores),
         map(scores => scores.map((score: any) => ({
