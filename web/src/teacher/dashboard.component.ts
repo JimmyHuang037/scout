@@ -1,53 +1,85 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TeacherService } from '../shared/teacher.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Teacher, StudentScore, Class, Student } from '../shared/models';
 import { ProfileComponent } from './dashboard/profile/profile.component';
 import { ScoresComponent } from './dashboard/scores/scores.component';
 import { ClassesComponent } from './dashboard/classes/classes.component';
 import { StudentsComponent } from './dashboard/students/students.component';
-import { MatCardModule } from '@angular/material/card';
-import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTabsModule } from '@angular/material/tabs';
+import { CommonModule } from '@angular/common';
+
+interface ScoreUpdateEvent {
+  teacherId: number;
+  scoreId: number;
+  score: number;
+}
 
 @Component({
   selector: 'app-teacher-dashboard',
   standalone: true,
   imports: [
-    ProfileComponent, 
-    ScoresComponent, 
+    CommonModule,
+    ProfileComponent,
+    ScoresComponent,
     ClassesComponent,
     StudentsComponent,
-    MatCardModule,
-    MatToolbarModule
+    MatTabsModule,
+    RouterModule
   ],
   template: `
-    @if (teacherId) {
-      <div class="dashboard-container">
-        <mat-toolbar color="primary">
-          <span>欢迎, {{teacher?.teacher_name}}!</span>
-        </mat-toolbar>
+    <div class="teacher-dashboard" *ngIf="teacherId !== null">
+      <h1>教师仪表板</h1>
+      
+      <mat-tab-group dynamicHeight>
+        <mat-tab label="个人信息">
+          <app-profile [teacher]="teacher"></app-profile>
+        </mat-tab>
         
-        <div class="dashboard-content">
-          <app-profile [teacher]="teacher" />
-          <app-scores [scores]="scores" [loading]="scoresLoading" />
-          <app-classes [classes]="classes" [loading]="classesLoading" />
-          <app-students [students]="students" [loading]="studentsLoading" />
-        </div>
-      </div>
-    }
+        <mat-tab label="成绩管理">
+          <app-scores 
+            [scores]="scores" 
+            [loading]="scoresLoading"
+            [teacherId]="teacherId"
+            (scoreUpdated)="updateStudentScore($event)">
+          </app-scores>
+        </mat-tab>
+        
+        <mat-tab label="班级管理">
+          <app-classes [classes]="classes" [loading]="classesLoading"></app-classes>
+        </mat-tab>
+        
+        <mat-tab label="学生管理">
+          <app-students [students]="students" [loading]="studentsLoading"></app-students>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+    
+    <div *ngIf="teacherId === null" class="error-message">
+      未提供教师ID参数
+    </div>
   `,
   styles: [`
-    .dashboard-container {
-      padding: 16px;
+    .teacher-dashboard {
+      padding: 20px;
       max-width: 1200px;
       margin: 0 auto;
     }
-    .dashboard-content > * {
-      margin: 16px 0;
+    
+    .error-message {
+      padding: 20px;
+      text-align: center;
+      color: #f44336;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
     }
   `]
 })
-export class DashboardComponent implements OnInit {
+export class TeacherDashboardComponent implements OnInit {
   teacherId: number | null = null;
   
   teacher: Teacher | null = null;
@@ -59,17 +91,20 @@ export class DashboardComponent implements OnInit {
   studentsLoading = false;
 
   constructor(
+    private route: ActivatedRoute,
+    private router: Router,
     private teacherService: TeacherService,
-    private route: ActivatedRoute
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.teacherId = params['teacherId'] ? +params['teacherId'] : null;
-      if (this.teacherId) {
-        this.loadTeacherData();
-      }
-    });
+    const teacherIdParam = this.route.snapshot.queryParamMap.get('teacherId');
+    if (teacherIdParam) {
+      this.teacherId = +teacherIdParam;
+      this.loadTeacherData();
+    } else {
+      this.teacherId = null;
+    }
   }
 
   loadTeacherData(): void {
@@ -125,5 +160,30 @@ export class DashboardComponent implements OnInit {
         this.studentsLoading = false;
       }
     });
+  }
+
+  updateStudentScore(event: ScoreUpdateEvent): void {
+    this.teacherService.updateStudentScore(event.teacherId, event.scoreId, event.score)
+      .subscribe({
+        next: (updatedScore) => {
+          // 更新本地数据
+          const scoreIndex = this.scores.findIndex(s => s.score_id === event.scoreId);
+          if (scoreIndex !== -1) {
+            this.scores[scoreIndex] = updatedScore;
+            // 使用不可变方式更新数组以触发变更检测
+            this.scores = [...this.scores];
+          }
+          
+          this.snackBar.open('成绩更新成功', '关闭', {
+            duration: 3000,
+          });
+        },
+        error: (error) => {
+          console.error('更新成绩失败:', error);
+          this.snackBar.open('成绩更新失败: ' + error.message, '关闭', {
+            duration: 3000,
+          });
+        }
+      });
   }
 }

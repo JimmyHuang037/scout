@@ -55,7 +55,9 @@ export interface StudentScore {
   student_name: string;
   student_number: string;
   class_name: string;
+  subject_id: number;
   subject_name: string;
-  score: number;
+  exam_type_id: number;
   exam_name: string;
+  score: number;
 }

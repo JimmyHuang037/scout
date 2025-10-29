@@ -1,9 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { BaseService } from './base-service';
 import { Teacher, StudentScore, Class, Student } from './models';
+
+interface ApiResponse<T> {
+  data: T;
+  message: string;
+  success: boolean;
+  timestamp: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -38,9 +45,11 @@ export class TeacherService extends BaseService {
           student_name: score.student_name,
           student_number: score.student_number,
           class_name: score.class_name,
+          subject_id: Number(score.subject_id),
           subject_name: score.subject_name,
-          score: Number(score.score),
-          exam_name: score.exam_name
+          exam_type_id: Number(score.exam_type_id),
+          exam_name: score.exam_name,
+          score: Number(score.score)
         }))),
         // catchError(this.handleError)
       );
@@ -53,7 +62,23 @@ export class TeacherService extends BaseService {
    * @param score 新成绩
    */
   updateStudentScore(teacherId: number, scoreId: number, score: number): Observable<StudentScore> {
-    return this.post<StudentScore>(`scores/${teacherId}/${scoreId}`, { score });
+    return this.http.put<ApiResponse<StudentScore>>(`${this.baseUrl}/scores/${teacherId}/${scoreId}`, { score })
+      .pipe(
+        map(response => response.data),
+        map(scoreData => ({
+          score_id: Number(scoreData.score_id),
+          student_id: scoreData.student_id,
+          student_name: scoreData.student_name,
+          student_number: scoreData.student_number,
+          class_name: scoreData.class_name,
+          subject_id: Number(scoreData.subject_id),
+          subject_name: scoreData.subject_name,
+          exam_type_id: Number(scoreData.exam_type_id),
+          exam_name: scoreData.exam_name,
+          score: Number(scoreData.score)
+        })),
+        catchError(this.handleError)
+      );
   }
 
   /**
