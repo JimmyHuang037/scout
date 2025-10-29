@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { BaseService } from './base-service';
 import { Teacher, StudentScore, Class, Student } from './models';
 
@@ -27,7 +28,21 @@ export class TeacherService extends BaseService {
    * @param teacherId 教师ID
    */
   getTeacherScores(teacherId: number): Observable<StudentScore[]> {
-    return this.getList<StudentScore>(`scores/${teacherId}`);
+    return this.http.get<any>(`${this.baseUrl}/scores/${teacherId}`)
+      .pipe(
+        map(response => response.data.scores),
+        map(scores => scores.map((score: any) => ({
+          score_id: Number(score.score_id),
+          student_id: score.student_id,
+          student_name: score.student_name,
+          student_number: score.student_number,
+          class_name: score.class_name,
+          subject_name: score.subject_name,
+          score: Number(score.score),
+          exam_name: score.exam_name
+        }))),
+        // catchError(this.handleError)
+      );
   }
 
   /**
@@ -45,7 +60,16 @@ export class TeacherService extends BaseService {
    * @param teacherId 教师ID
    */
   getTeacherClasses(teacherId: number): Observable<Class[]> {
-    return this.getList<Class>(`classes/${teacherId}`);
+    return this.http.get<any>(`${this.baseUrl}/classes/${teacherId}`)
+      .pipe(
+        map(response => response.data.classes),
+        map(classes => classes.map((cls: any) => ({
+          class_id: Number(cls.class_id),
+          class_name: cls.class_name,
+          teacher_name: cls.teacher_name || ''
+        }))),
+        // catchError(this.handleError)
+      );
   }
 
   /**
@@ -53,7 +77,16 @@ export class TeacherService extends BaseService {
    * @param teacherId 教师ID
    */
   getTeacherStudents(teacherId: number): Observable<Student[]> {
-    return this.getList<Student>(`students/${teacherId}`);
+    return this.http.get<any>(`${this.baseUrl}/students/${teacherId}`)
+      .pipe(
+        map(response => response.data.students),
+        map(students => students.map((student: any) => ({
+          student_id: student.student_id,
+          student_name: student.student_name,
+          class_name: student.class_name
+        }))),
+        // catchError(this.handleError)
+      );
   }
 
   /**
@@ -62,7 +95,16 @@ export class TeacherService extends BaseService {
    * @param classId 班级ID
    */
   getClassStudents(teacherId: number, classId: string): Observable<Student[]> {
-    return this.getList<Student>(`students/${teacherId}/class/${classId}`);
+    return this.http.get<any>(`${this.baseUrl}/students/${teacherId}/class/${classId}`)
+      .pipe(
+        map(response => response.data.students),
+        map(students => students.map((student: any) => ({
+          student_id: student.student_id,
+          student_name: student.student_name,
+          class_name: student.class_name
+        }))),
+        // catchError(this.handleError)
+      );
   }
 
   /**

@@ -30,7 +30,6 @@ export interface ExamResult {
 export interface Teacher {
   teacher_id: number;
   teacher_name: string;
-  class_name: string;
 }
 
 // 管理员相关模型

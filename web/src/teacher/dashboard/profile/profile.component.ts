@@ -23,10 +23,6 @@ import { MatListModule } from '@angular/material/list';
               <span class="info-label">教师姓名:</span>
               <span class="info-value">{{teacher.teacher_name}}</span>
             </mat-list-item>
-            <mat-list-item>
-              <span class="info-label">班级:</span>
-              <span class="info-value">{{teacher.class_name}}</span>
-            </mat-list-item>
           </mat-list>
         } @else {
           <p>加载中...</p>
