@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { AdminService } from '../../../shared/admin.service';
 import { ExamType } from '../../../shared/models';
 
@@ -23,7 +26,9 @@ import { ExamType } from '../../../shared/models';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule
   ],
   template: `
     <mat-card>
@@ -45,16 +50,16 @@ import { ExamType } from '../../../shared/models';
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="filteredExamTypes" class="exam-types-table">
+          <table mat-table [dataSource]="dataSource" matSort class="exam-types-table">
             <!-- 考试类型ID列 -->
             <ng-container matColumnDef="exam_type_id">
-              <th mat-header-cell *matHeaderCellDef>考试类型ID</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>考试类型ID</th>
               <td mat-cell *matCellDef="let examType">{{ examType.exam_type_id }}</td>
             </ng-container>
 
-            <!-- 考试类型名称列 -->
+            <!-- 考试名称列 -->
             <ng-container matColumnDef="exam_name">
-              <th mat-header-cell *matHeaderCellDef>考试类型名称</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>考试名称</th>
               <td mat-cell *matCellDef="let examType">{{ examType.exam_name }}</td>
             </ng-container>
 
@@ -75,11 +80,14 @@ import { ExamType } from '../../../shared/models';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
 
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="选择页面">
+          </mat-paginator>
+
           <div class="loading-shade" *ngIf="loading">
             <mat-spinner></mat-spinner>
           </div>
 
-          <div class="no-data" *ngIf="!loading && filteredExamTypes.length === 0">
+          <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
             <p>没有找到考试类型数据</p>
           </div>
         </div>
@@ -135,13 +143,16 @@ import { ExamType } from '../../../shared/models';
     }
   `]
 })
-export class ExamTypesComponent implements OnInit {
+export class ExamTypesComponent implements OnInit, AfterViewInit {
   examTypes: ExamType[] = [];
-  filteredExamTypes: ExamType[] = [];
+  dataSource = new MatTableDataSource<ExamType>();
   loading = false;
   searchTerm = '';
   
   displayedColumns: string[] = ['exam_type_id', 'exam_name', 'actions'];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private adminService: AdminService) {}
 
@@ -149,12 +160,17 @@ export class ExamTypesComponent implements OnInit {
     this.loadExamTypes();
   }
 
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
   loadExamTypes(): void {
     this.loading = true;
     this.adminService.getExamTypes().subscribe({
       next: (examTypes) => {
         this.examTypes = examTypes;
-        this.filteredExamTypes = [...examTypes];
+        this.dataSource.data = examTypes;
         this.loading = false;
       },
       error: (error) => {
@@ -165,15 +181,7 @@ export class ExamTypesComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm) {
-      this.filteredExamTypes = [...this.examTypes];
-      return;
-    }
-    
-    const term = this.searchTerm.toLowerCase();
-    this.filteredExamTypes = this.examTypes.filter(examType => 
-      examType.exam_name.toLowerCase().includes(term)
-    );
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
   }
 
   openCreateDialog(): void {

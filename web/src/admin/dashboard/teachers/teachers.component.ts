@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { AdminService } from '../../../shared/admin.service';
 import { Teacher } from '../../../shared/models';
 
@@ -23,7 +26,9 @@ import { Teacher } from '../../../shared/models';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule
   ],
   template: `
     <mat-card>
@@ -45,16 +50,16 @@ import { Teacher } from '../../../shared/models';
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="filteredTeachers" class="teachers-table">
+          <table mat-table [dataSource]="dataSource" matSort class="teachers-table">
             <!-- 教师ID列 -->
             <ng-container matColumnDef="teacher_id">
-              <th mat-header-cell *matHeaderCellDef>教师ID</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>教师ID</th>
               <td mat-cell *matCellDef="let teacher">{{ teacher.teacher_id }}</td>
             </ng-container>
 
             <!-- 教师姓名列 -->
             <ng-container matColumnDef="teacher_name">
-              <th mat-header-cell *matHeaderCellDef>教师姓名</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>教师姓名</th>
               <td mat-cell *matCellDef="let teacher">{{ teacher.teacher_name }}</td>
             </ng-container>
 
@@ -75,11 +80,14 @@ import { Teacher } from '../../../shared/models';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
 
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="选择页面">
+          </mat-paginator>
+
           <div class="loading-shade" *ngIf="loading">
             <mat-spinner></mat-spinner>
           </div>
 
-          <div class="no-data" *ngIf="!loading && filteredTeachers.length === 0">
+          <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
             <p>没有找到教师数据</p>
           </div>
         </div>
@@ -135,13 +143,16 @@ import { Teacher } from '../../../shared/models';
     }
   `]
 })
-export class TeachersComponent implements OnInit {
+export class TeachersComponent implements OnInit, AfterViewInit {
   teachers: Teacher[] = [];
-  filteredTeachers: Teacher[] = [];
+  dataSource = new MatTableDataSource<Teacher>();
   loading = false;
   searchTerm = '';
   
   displayedColumns: string[] = ['teacher_id', 'teacher_name', 'actions'];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private adminService: AdminService) {}
 
@@ -149,12 +160,17 @@ export class TeachersComponent implements OnInit {
     this.loadTeachers();
   }
 
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
   loadTeachers(): void {
     this.loading = true;
     this.adminService.getTeachers().subscribe({
       next: (teachers) => {
         this.teachers = teachers;
-        this.filteredTeachers = [...teachers];
+        this.dataSource.data = teachers;
         this.loading = false;
       },
       error: (error) => {
@@ -165,15 +181,7 @@ export class TeachersComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm) {
-      this.filteredTeachers = [...this.teachers];
-      return;
-    }
-    
-    const term = this.searchTerm.toLowerCase();
-    this.filteredTeachers = this.teachers.filter(teacher => 
-      teacher.teacher_name.toLowerCase().includes(term)
-    );
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
   }
 
   openCreateDialog(): void {

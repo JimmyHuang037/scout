@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { BaseService } from './base-service';
+import { BaseService, ApiResponse } from './base-service';
 import { Student, Teacher, Class, Subject, ExamType } from './models';
 
 // 定义用户信息接口
@@ -75,7 +75,11 @@ export class AdminService extends BaseService {
 
   // 学生管理相关方法
   getStudents(): Observable<Student[]> {
-    return this.getList<Student>('students');
+    return this.http.get<ApiResponse<{students: Student[]}>>(`${this.baseUrl}/students`)
+      .pipe(
+        map(response => response.data.students),
+        catchError(this.handleError)
+      );
   }
 
   getStudent(studentId: string): Observable<Student> {
@@ -96,7 +100,11 @@ export class AdminService extends BaseService {
 
   // 教师管理相关方法
   getTeachers(): Observable<Teacher[]> {
-    return this.getList<Teacher>('teachers');
+    return this.http.get<ApiResponse<{teachers: Teacher[]}>>(`${this.baseUrl}/teachers`)
+      .pipe(
+        map(response => response.data.teachers),
+        catchError(this.handleError)
+      );
   }
 
   getTeacher(teacherId: number): Observable<Teacher> {
@@ -117,7 +125,11 @@ export class AdminService extends BaseService {
 
   // 班级管理相关方法
   getClasses(): Observable<Class[]> {
-    return this.getList<Class>('classes');
+    return this.http.get<ApiResponse<{classes: Class[]}>>(`${this.baseUrl}/classes`)
+      .pipe(
+        map(response => response.data.classes),
+        catchError(this.handleError)
+      );
   }
 
   getClass(classId: number): Observable<Class> {
@@ -138,7 +150,11 @@ export class AdminService extends BaseService {
 
   // 科目管理相关方法
   getSubjects(): Observable<Subject[]> {
-    return this.getList<Subject>('subjects');
+    return this.http.get<ApiResponse<{subjects: Subject[]}>>(`${this.baseUrl}/subjects`)
+      .pipe(
+        map(response => response.data.subjects),
+        catchError(this.handleError)
+      );
   }
 
   getSubject(subjectId: number): Observable<Subject> {
@@ -159,7 +175,11 @@ export class AdminService extends BaseService {
 
   // 考试类型管理相关方法
   getExamTypes(): Observable<ExamType[]> {
-    return this.getList<ExamType>('exam_types');
+    return this.http.get<ApiResponse<{exam_types: ExamType[]}>>(`${this.baseUrl}/exam_types`)
+      .pipe(
+        map(response => response.data.exam_types),
+        catchError(this.handleError)
+      );
   }
 
   getExamType(examTypeId: number): Observable<ExamType> {

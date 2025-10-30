@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -8,8 +8,13 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AdminService } from '../../../shared/admin.service';
 import { Student } from '../../../shared/models';
+import { CreateStudentDialogComponent } from './create-student-dialog.component';
 
 @Component({
   selector: 'app-admin-students',
@@ -23,7 +28,11 @@ import { Student } from '../../../shared/models';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule,
+    MatDialogModule,
+    CreateStudentDialogComponent
   ],
   template: `
     <mat-card>
@@ -36,7 +45,7 @@ import { Student } from '../../../shared/models';
         <div class="toolbar">
           <mat-form-field appearance="outline">
             <mat-label>搜索学生</mat-label>
-            <input matInput placeholder="输入学生姓名或学号" [(ngModel)]="searchTerm" (input)="applyFilter()">
+            <input matInput placeholder="输入学生ID或姓名" [(ngModel)]="searchTerm" (input)="applyFilter()">
           </mat-form-field>
           <button mat-raised-button color="primary" (click)="openCreateDialog()">
             <mat-icon>add</mat-icon>
@@ -45,22 +54,22 @@ import { Student } from '../../../shared/models';
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="filteredStudents" class="students-table">
-            <!-- 学号列 -->
+          <table mat-table [dataSource]="dataSource" matSort class="students-table">
+            <!-- 学生ID列 -->
             <ng-container matColumnDef="student_id">
-              <th mat-header-cell *matHeaderCellDef>学号</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>学生ID</th>
               <td mat-cell *matCellDef="let student">{{ student.student_id }}</td>
             </ng-container>
 
-            <!-- 姓名列 -->
+            <!-- 学生姓名列 -->
             <ng-container matColumnDef="student_name">
-              <th mat-header-cell *matHeaderCellDef>姓名</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>学生姓名</th>
               <td mat-cell *matCellDef="let student">{{ student.student_name }}</td>
             </ng-container>
 
             <!-- 班级列 -->
             <ng-container matColumnDef="class_name">
-              <th mat-header-cell *matHeaderCellDef>班级</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>班级</th>
               <td mat-cell *matCellDef="let student">{{ student.class_name }}</td>
             </ng-container>
 
@@ -81,11 +90,14 @@ import { Student } from '../../../shared/models';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
 
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="选择页面">
+          </mat-paginator>
+
           <div class="loading-shade" *ngIf="loading">
             <mat-spinner></mat-spinner>
           </div>
 
-          <div class="no-data" *ngIf="!loading && filteredStudents.length === 0">
+          <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
             <p>没有找到学生数据</p>
           </div>
         </div>
@@ -141,18 +153,29 @@ import { Student } from '../../../shared/models';
     }
   `]
 })
-export class StudentsComponent implements OnInit {
+export class StudentsComponent implements OnInit, AfterViewInit {
   students: Student[] = [];
-  filteredStudents: Student[] = [];
+  dataSource = new MatTableDataSource<Student>();
   loading = false;
   searchTerm = '';
   
   displayedColumns: string[] = ['student_id', 'student_name', 'class_name', 'actions'];
 
-  constructor(private adminService: AdminService) {}
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  constructor(
+    private adminService: AdminService,
+    private dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.loadStudents();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
   }
 
   loadStudents(): void {
@@ -160,7 +183,7 @@ export class StudentsComponent implements OnInit {
     this.adminService.getStudents().subscribe({
       next: (students) => {
         this.students = students;
-        this.filteredStudents = [...students];
+        this.dataSource.data = students;
         this.loading = false;
       },
       error: (error) => {
@@ -171,22 +194,33 @@ export class StudentsComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm) {
-      this.filteredStudents = [...this.students];
-      return;
-    }
-    
-    const term = this.searchTerm.toLowerCase();
-    this.filteredStudents = this.students.filter(student => 
-      student.student_id.toLowerCase().includes(term) ||
-      student.student_name.toLowerCase().includes(term) ||
-      student.class_name.toLowerCase().includes(term)
-    );
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
   }
 
   openCreateDialog(): void {
-    // TODO: 打开创建学生对话框
-    console.log('打开创建学生对话框');
+    const dialogRef = this.dialog.open(CreateStudentDialogComponent, {
+      width: '400px'
+    });
+
+    dialogRef.afterClosed().subscribe((result: Student) => {
+      if (result) {
+        this.createStudent(result);
+      }
+    });
+  }
+
+  createStudent(student: any): void {
+    this.adminService.createStudent(student).subscribe({
+      next: (newStudent) => {
+        // 添加新学生到数据源
+        this.students.push(newStudent);
+        this.dataSource.data = [...this.students];
+        console.log('学生创建成功:', newStudent);
+      },
+      error: (error) => {
+        console.error('创建学生失败:', error);
+      }
+    });
   }
 
   editStudent(student: Student): void {

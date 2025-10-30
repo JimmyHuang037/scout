@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { AdminService } from '../../../shared/admin.service';
 import { Subject } from '../../../shared/models';
 
@@ -23,7 +26,9 @@ import { Subject } from '../../../shared/models';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule
   ],
   template: `
     <mat-card>
@@ -45,16 +50,16 @@ import { Subject } from '../../../shared/models';
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="filteredSubjects" class="subjects-table">
+          <table mat-table [dataSource]="dataSource" matSort class="subjects-table">
             <!-- 科目ID列 -->
             <ng-container matColumnDef="subject_id">
-              <th mat-header-cell *matHeaderCellDef>科目ID</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>科目ID</th>
               <td mat-cell *matCellDef="let subject">{{ subject.subject_id }}</td>
             </ng-container>
 
             <!-- 科目名称列 -->
             <ng-container matColumnDef="subject_name">
-              <th mat-header-cell *matHeaderCellDef>科目名称</th>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>科目名称</th>
               <td mat-cell *matCellDef="let subject">{{ subject.subject_name }}</td>
             </ng-container>
 
@@ -75,11 +80,14 @@ import { Subject } from '../../../shared/models';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
 
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="选择页面">
+          </mat-paginator>
+
           <div class="loading-shade" *ngIf="loading">
             <mat-spinner></mat-spinner>
           </div>
 
-          <div class="no-data" *ngIf="!loading && filteredSubjects.length === 0">
+          <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
             <p>没有找到科目数据</p>
           </div>
         </div>
@@ -136,13 +144,16 @@ import { Subject } from '../../../shared/models';
     }
   `]
 })
-export class SubjectsComponent implements OnInit {
+export class SubjectsComponent implements OnInit, AfterViewInit {
   subjects: Subject[] = [];
-  filteredSubjects: Subject[] = [];
+  dataSource = new MatTableDataSource<Subject>();
   loading = false;
   searchTerm = '';
   
   displayedColumns: string[] = ['subject_id', 'subject_name', 'actions'];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private adminService: AdminService) {}
 
@@ -150,12 +161,17 @@ export class SubjectsComponent implements OnInit {
     this.loadSubjects();
   }
 
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
   loadSubjects(): void {
     this.loading = true;
     this.adminService.getSubjects().subscribe({
       next: (subjects) => {
         this.subjects = subjects;
-        this.filteredSubjects = [...subjects];
+        this.dataSource.data = subjects;
         this.loading = false;
       },
       error: (error) => {
@@ -166,15 +182,7 @@ export class SubjectsComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm) {
-      this.filteredSubjects = [...this.subjects];
-      return;
-    }
-    
-    const term = this.searchTerm.toLowerCase();
-    this.filteredSubjects = this.subjects.filter(subject => 
-      subject.subject_name.toLowerCase().includes(term)
-    );
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
   }
 
   openCreateDialog(): void {

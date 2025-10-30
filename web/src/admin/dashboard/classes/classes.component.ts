@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
@@ -8,6 +8,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
+import { MatSortModule, MatSort } from '@angular/material/sort';
+import { MatTableDataSource } from '@angular/material/table';
 import { AdminService } from '../../../shared/admin.service';
 import { Class } from '../../../shared/models';
 
@@ -23,7 +26,9 @@ import { Class } from '../../../shared/models';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    FormsModule
+    FormsModule,
+    MatPaginatorModule,
+    MatSortModule
   ],
   template: `
     <mat-card>
@@ -36,7 +41,7 @@ import { Class } from '../../../shared/models';
         <div class="toolbar">
           <mat-form-field appearance="outline">
             <mat-label>搜索班级</mat-label>
-            <input matInput placeholder="输入班级名称" [(ngModel)]="searchTerm" (input)="applyFilter()">
+            <input matInput placeholder="输入班级名称或教师姓名" [(ngModel)]="searchTerm" (input)="applyFilter()">
           </mat-form-field>
           <button mat-raised-button color="primary" (click)="openCreateDialog()">
             <mat-icon>add</mat-icon>
@@ -45,33 +50,33 @@ import { Class } from '../../../shared/models';
         </div>
 
         <div class="table-container">
-          <table mat-table [dataSource]="filteredClasses" class="classes-table">
+          <table mat-table [dataSource]="dataSource" matSort class="classes-table">
             <!-- 班级ID列 -->
             <ng-container matColumnDef="class_id">
-              <th mat-header-cell *matHeaderCellDef>班级ID</th>
-              <td mat-cell *matCellDef="let cls">{{ cls.class_id }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>班级ID</th>
+              <td mat-cell *matCellDef="let class">{{ class.class_id }}</td>
             </ng-container>
 
             <!-- 班级名称列 -->
             <ng-container matColumnDef="class_name">
-              <th mat-header-cell *matHeaderCellDef>班级名称</th>
-              <td mat-cell *matCellDef="let cls">{{ cls.class_name }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>班级名称</th>
+              <td mat-cell *matCellDef="let class">{{ class.class_name }}</td>
             </ng-container>
 
-            <!-- 班主任列 -->
+            <!-- 教师姓名列 -->
             <ng-container matColumnDef="teacher_name">
-              <th mat-header-cell *matHeaderCellDef>班主任</th>
-              <td mat-cell *matCellDef="let cls">{{ cls.teacher_name }}</td>
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>教师姓名</th>
+              <td mat-cell *matCellDef="let class">{{ class.teacher_name }}</td>
             </ng-container>
 
             <!-- 操作列 -->
             <ng-container matColumnDef="actions">
               <th mat-header-cell *matHeaderCellDef>操作</th>
-              <td mat-cell *matCellDef="let cls">
-                <button mat-icon-button color="primary" (click)="editClass(cls)" aria-label="编辑">
+              <td mat-cell *matCellDef="let class">
+                <button mat-icon-button color="primary" (click)="editClass(class)" aria-label="编辑">
                   <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" (click)="deleteClass(cls.class_id)" aria-label="删除">
+                <button mat-icon-button color="warn" (click)="deleteClass(class.class_id)" aria-label="删除">
                   <mat-icon>delete</mat-icon>
                 </button>
               </td>
@@ -81,11 +86,14 @@ import { Class } from '../../../shared/models';
             <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
           </table>
 
+          <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons aria-label="选择页面">
+          </mat-paginator>
+
           <div class="loading-shade" *ngIf="loading">
             <mat-spinner></mat-spinner>
           </div>
 
-          <div class="no-data" *ngIf="!loading && filteredClasses.length === 0">
+          <div class="no-data" *ngIf="!loading && dataSource.data.length === 0">
             <p>没有找到班级数据</p>
           </div>
         </div>
@@ -141,13 +149,16 @@ import { Class } from '../../../shared/models';
     }
   `]
 })
-export class ClassesComponent implements OnInit {
+export class ClassesComponent implements OnInit, AfterViewInit {
   classes: Class[] = [];
-  filteredClasses: Class[] = [];
+  dataSource = new MatTableDataSource<Class>();
   loading = false;
   searchTerm = '';
   
   displayedColumns: string[] = ['class_id', 'class_name', 'teacher_name', 'actions'];
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   constructor(private adminService: AdminService) {}
 
@@ -155,12 +166,17 @@ export class ClassesComponent implements OnInit {
     this.loadClasses();
   }
 
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
+
   loadClasses(): void {
     this.loading = true;
     this.adminService.getClasses().subscribe({
       next: (classes) => {
         this.classes = classes;
-        this.filteredClasses = [...classes];
+        this.dataSource.data = classes;
         this.loading = false;
       },
       error: (error) => {
@@ -171,16 +187,7 @@ export class ClassesComponent implements OnInit {
   }
 
   applyFilter(): void {
-    if (!this.searchTerm) {
-      this.filteredClasses = [...this.classes];
-      return;
-    }
-    
-    const term = this.searchTerm.toLowerCase();
-    this.filteredClasses = this.classes.filter(cls => 
-      cls.class_name.toLowerCase().includes(term) ||
-      cls.teacher_name.toLowerCase().includes(term)
-    );
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
   }
 
   openCreateDialog(): void {
@@ -188,9 +195,9 @@ export class ClassesComponent implements OnInit {
     console.log('打开创建班级对话框');
   }
 
-  editClass(cls: Class): void {
+  editClass(classItem: Class): void {
     // TODO: 打开编辑班级对话框
-    console.log('编辑班级:', cls);
+    console.log('编辑班级:', classItem);
   }
 
   deleteClass(classId: number): void {
