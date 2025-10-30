@@ -432,7 +432,7 @@ class TestAdminEndpoints(CurlTestBase):
         """测试用例exam_type_05: 删除考试类型"""
         self.run_api_test(
             "exam_type_05", "删除考试类型",
-            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam_types/1', '|', 'jq'],
+            ['curl', '-s', '-X', 'DELETE', f'{self.base_url}/api/admin/exam_types/6', '|', 'jq'],
             "admin_exam_type_05_delete_exam_type.json",
             self.test_setup
         )
