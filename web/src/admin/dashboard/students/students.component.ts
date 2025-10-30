@@ -235,9 +235,8 @@ export class StudentsComponent implements OnInit, AfterViewInit {
   createStudent(student: any): void {
     this.adminService.createStudent(student).subscribe({
       next: (newStudent) => {
-        // 添加新学生到数据源
-        this.students.push(newStudent);
-        this.dataSource.data = [...this.students];
+        // 创建成功后重新加载学生列表，以确保获取完整的数据（包括class_name等关联信息）
+        this.loadStudents();
         console.log('学生创建成功:', newStudent);
       },
       error: (error) => {
@@ -265,48 +264,38 @@ export class StudentsComponent implements OnInit, AfterViewInit {
     this.loading = true; // 开始加载
     this.adminService.updateStudent(studentUpdate.student_id, studentUpdate).subscribe({
       next: (updatedStudent) => {
-        // 更新数据源中的学生信息
-        const index = this.students.findIndex(s => s.student_id === updatedStudent.student_id);
-        if (index !== -1) {
-          // 合并原始数据和更新数据
-          this.students[index] = { ...this.students[index], ...updatedStudent };
-          this.dataSource.data = [...this.students];
-        }
+        // 更新成功后重新加载学生列表，以确保获取完整的数据（包括class_name等关联信息）
+        this.loadStudents();
         console.log('学生更新成功:', updatedStudent);
-        this.loading = false; // 结束加载
       },
       error: (error) => {
         console.error('更新学生失败:', error);
-        this.loading = false; // 即使出错也要结束加载，避免遮罩层一直存在
       }
     });
   }
 
   deleteStudent(student: Student): void {
-    // 动态导入确认对话框组件
-    import('./students.component').then(({ ConfirmDialogComponent }) => {
-      // 打开确认对话框
-      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-        width: '400px',
-        data: { studentName: student.student_name }
-      });
+    // 直接使用已定义的ConfirmDialogComponent，无需动态导入
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { studentName: student.student_name }
+    });
 
-      dialogRef.afterClosed().subscribe((result: boolean) => {
-        if (result) {
-          // 用户确认删除
-          this.adminService.deleteStudent(student.student_id).subscribe({
-            next: () => {
-              // 从数据源中移除已删除的学生
-              this.students = this.students.filter(s => s.student_id !== student.student_id);
-              this.dataSource.data = [...this.students];
-              console.log('学生删除成功:', student.student_id);
-            },
-            error: (error) => {
-              console.error('删除学生失败:', error);
-            }
-          });
-        }
-      });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        // 用户确认删除
+        this.adminService.deleteStudent(student.student_id).subscribe({
+          next: () => {
+            // 从数据源中移除已删除的学生
+            this.students = this.students.filter(s => s.student_id !== student.student_id);
+            this.dataSource.data = [...this.students];
+            console.log('学生删除成功:', student.student_id);
+          },
+          error: (error) => {
+            console.error('删除学生失败:', error);
+          }
+        });
+      }
     });
   }
 }

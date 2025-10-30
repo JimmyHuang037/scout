@@ -19,6 +19,19 @@ else
     BACKUP_FILE="$BACKUP_DIR/$1"
 fi
 
+# 删除现有的视图以避免备份问题
+echo "正在删除现有视图..."
+mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" << EOF
+DROP VIEW IF EXISTS users;
+DROP VIEW IF EXISTS teachers;
+DROP VIEW IF EXISTS teacher_performance;
+DROP VIEW IF EXISTS teacher_counts;
+DROP VIEW IF EXISTS teacher_classes;
+DROP VIEW IF EXISTS students;
+DROP VIEW IF EXISTS scores;
+DROP VIEW IF EXISTS exam_results;
+DROP VIEW IF EXISTS exam_class;
+EOF
 
 # 执行备份
 echo "正在备份数据库 $DB_NAME..."
