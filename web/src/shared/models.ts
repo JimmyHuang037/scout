@@ -3,6 +3,7 @@ export interface Student {
   student_id: string;
   student_name: string;
   class_name: string;
+  class_id?: number; // 添加class_id字段，用于编辑操作
 }
 
 export interface Score {
