@@ -126,4 +126,26 @@ export abstract class BaseService {
         catchError(this.handleError)
       );
   }
+
+  /**
+   * 通用PUT请求方法
+   */
+  protected put<T>(endpoint: string, body: any): Observable<T> {
+    return this.http.put<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, body)
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * 通用DELETE请求方法
+   */
+  protected delete<T>(endpoint: string): Observable<T> {
+    return this.http.delete<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`)
+      .pipe(
+        map(response => response.data),
+        catchError(this.handleError)
+      );
+  }
 }

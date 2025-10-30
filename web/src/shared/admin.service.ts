@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
 import { BaseService } from './base-service';
+import { Student, Teacher, Class, Subject, ExamType } from './models';
 
 // 定义用户信息接口
 export interface UserInfo {
@@ -72,5 +73,108 @@ export class AdminService extends BaseService {
     super(http);
   }
 
-  // 可以在这里添加管理员相关的API调用方法
+  // 学生管理相关方法
+  getStudents(): Observable<Student[]> {
+    return this.getList<Student>('students');
+  }
+
+  getStudent(studentId: string): Observable<Student> {
+    return this.getOne<Student>(`students/${studentId}`);
+  }
+
+  createStudent(student: Partial<Student>): Observable<Student> {
+    return this.post<Student>('students', student);
+  }
+
+  updateStudent(studentId: string, student: Partial<Student>): Observable<Student> {
+    return this.put<Student>(`students/${studentId}`, student);
+  }
+
+  deleteStudent(studentId: string): Observable<any> {
+    return this.delete(`students/${studentId}`);
+  }
+
+  // 教师管理相关方法
+  getTeachers(): Observable<Teacher[]> {
+    return this.getList<Teacher>('teachers');
+  }
+
+  getTeacher(teacherId: number): Observable<Teacher> {
+    return this.getOne<Teacher>(`teachers/${teacherId}`);
+  }
+
+  createTeacher(teacher: Partial<Teacher>): Observable<Teacher> {
+    return this.post<Teacher>('teachers', teacher);
+  }
+
+  updateTeacher(teacherId: number, teacher: Partial<Teacher>): Observable<Teacher> {
+    return this.put<Teacher>(`teachers/${teacherId}`, teacher);
+  }
+
+  deleteTeacher(teacherId: number): Observable<any> {
+    return this.delete(`teachers/${teacherId}`);
+  }
+
+  // 班级管理相关方法
+  getClasses(): Observable<Class[]> {
+    return this.getList<Class>('classes');
+  }
+
+  getClass(classId: number): Observable<Class> {
+    return this.getOne<Class>(`classes/${classId}`);
+  }
+
+  createClass(cls: Partial<Class>): Observable<Class> {
+    return this.post<Class>('classes', cls);
+  }
+
+  updateClass(classId: number, cls: Partial<Class>): Observable<Class> {
+    return this.put<Class>(`classes/${classId}`, cls);
+  }
+
+  deleteClass(classId: number): Observable<any> {
+    return this.delete(`classes/${classId}`);
+  }
+
+  // 科目管理相关方法
+  getSubjects(): Observable<Subject[]> {
+    return this.getList<Subject>('subjects');
+  }
+
+  getSubject(subjectId: number): Observable<Subject> {
+    return this.getOne<Subject>(`subjects/${subjectId}`);
+  }
+
+  createSubject(subject: Partial<Subject>): Observable<Subject> {
+    return this.post<Subject>('subjects', subject);
+  }
+
+  updateSubject(subjectId: number, subject: Partial<Subject>): Observable<Subject> {
+    return this.put<Subject>(`subjects/${subjectId}`, subject);
+  }
+
+  deleteSubject(subjectId: number): Observable<any> {
+    return this.delete(`subjects/${subjectId}`);
+  }
+
+  // 考试类型管理相关方法
+  getExamTypes(): Observable<ExamType[]> {
+    return this.getList<ExamType>('exam_types');
+  }
+
+  getExamType(examTypeId: number): Observable<ExamType> {
+    return this.getOne<ExamType>(`exam_types/${examTypeId}`);
+  }
+
+  createExamType(examType: Partial<ExamType>): Observable<ExamType> {
+    return this.post<ExamType>('exam_types', examType);
+  }
+
+  updateExamType(examTypeId: number, examType: Partial<ExamType>): Observable<ExamType> {
+    return this.put<ExamType>(`exam_types/${examTypeId}`, examType);
+  }
+
+  deleteExamType(examTypeId: number): Observable<any> {
+    return this.delete(`exam_types/${examTypeId}`);
+  }
 }
