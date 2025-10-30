@@ -157,29 +157,17 @@ export class StudentsComponent implements OnInit {
 
   loadStudents(): void {
     this.loading = true;
-    // TODO: 实现获取学生列表的API调用
-    // this.adminService.getStudents().subscribe({
-    //   next: (students) => {
-    //     this.students = students;
-    //     this.filteredStudents = [...students];
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('加载学生数据失败:', error);
-    //     this.loading = false;
-    //   }
-    // });
-    
-    // 模拟数据用于演示
-    setTimeout(() => {
-      this.students = [
-        { student_id: 'S001', student_name: '张三', class_name: '一年级一班' },
-        { student_id: 'S002', student_name: '李四', class_name: '一年级二班' },
-        { student_id: 'S003', student_name: '王五', class_name: '一年级一班' }
-      ];
-      this.filteredStudents = [...this.students];
-      this.loading = false;
-    }, 1000);
+    this.adminService.getStudents().subscribe({
+      next: (students) => {
+        this.students = students;
+        this.filteredStudents = [...students];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('加载学生数据失败:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter(): void {

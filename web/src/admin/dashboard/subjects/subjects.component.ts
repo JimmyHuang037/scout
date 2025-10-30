@@ -99,6 +99,7 @@ import { Subject } from '../../../shared/models';
     .toolbar mat-form-field {
       flex: 1;
       min-width: 200px;
+      min-width: 200px;
       max-width: 400px;
     }
 
@@ -151,31 +152,17 @@ export class SubjectsComponent implements OnInit {
 
   loadSubjects(): void {
     this.loading = true;
-    // TODO: 实现获取科目列表的API调用
-    // this.adminService.getSubjects().subscribe({
-    //   next: (subjects) => {
-    //     this.subjects = subjects;
-    //     this.filteredSubjects = [...subjects];
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('加载科目数据失败:', error);
-    //     this.loading = false;
-    //   }
-    // });
-    
-    // 模拟数据用于演示
-    setTimeout(() => {
-      this.subjects = [
-        { subject_id: 1, subject_name: '语文' },
-        { subject_id: 2, subject_name: '数学' },
-        { subject_id: 3, subject_name: '英语' },
-        { subject_id: 4, subject_name: '物理' },
-        { subject_id: 5, subject_name: '化学' }
-      ];
-      this.filteredSubjects = [...this.subjects];
-      this.loading = false;
-    }, 1000);
+    this.adminService.getSubjects().subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+        this.filteredSubjects = [...subjects];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('加载科目数据失败:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter(): void {

@@ -52,9 +52,9 @@ import { Teacher } from '../../../shared/models';
               <td mat-cell *matCellDef="let teacher">{{ teacher.teacher_id }}</td>
             </ng-container>
 
-            <!-- 姓名列 -->
+            <!-- 教师姓名列 -->
             <ng-container matColumnDef="teacher_name">
-              <th mat-header-cell *matHeaderCellDef>姓名</th>
+              <th mat-header-cell *matHeaderCellDef>教师姓名</th>
               <td mat-cell *matCellDef="let teacher">{{ teacher.teacher_name }}</td>
             </ng-container>
 
@@ -151,29 +151,17 @@ export class TeachersComponent implements OnInit {
 
   loadTeachers(): void {
     this.loading = true;
-    // TODO: 实现获取教师列表的API调用
-    // this.adminService.getTeachers().subscribe({
-    //   next: (teachers) => {
-    //     this.teachers = teachers;
-    //     this.filteredTeachers = [...teachers];
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('加载教师数据失败:', error);
-    //     this.loading = false;
-    //   }
-    // });
-    
-    // 模拟数据用于演示
-    setTimeout(() => {
-      this.teachers = [
-        { teacher_id: 1, teacher_name: '张老师' },
-        { teacher_id: 2, teacher_name: '李老师' },
-        { teacher_id: 3, teacher_name: '王老师' }
-      ];
-      this.filteredTeachers = [...this.teachers];
-      this.loading = false;
-    }, 1000);
+    this.adminService.getTeachers().subscribe({
+      next: (teachers) => {
+        this.teachers = teachers;
+        this.filteredTeachers = [...teachers];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('加载教师数据失败:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter(): void {

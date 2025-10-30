@@ -151,30 +151,17 @@ export class ExamTypesComponent implements OnInit {
 
   loadExamTypes(): void {
     this.loading = true;
-    // TODO: 实现获取考试类型列表的API调用
-    // this.adminService.getExamTypes().subscribe({
-    //   next: (examTypes) => {
-    //     this.examTypes = examTypes;
-    //     this.filteredExamTypes = [...examTypes];
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('加载考试类型数据失败:', error);
-    //     this.loading = false;
-    //   }
-    // });
-    
-    // 模拟数据用于演示
-    setTimeout(() => {
-      this.examTypes = [
-        { exam_type_id: 1, exam_name: '期中考试' },
-        { exam_type_id: 2, exam_name: '期末考试' },
-        { exam_type_id: 3, exam_name: '月考' },
-        { exam_type_id: 4, exam_name: '模拟考试' }
-      ];
-      this.filteredExamTypes = [...this.examTypes];
-      this.loading = false;
-    }, 1000);
+    this.adminService.getExamTypes().subscribe({
+      next: (examTypes) => {
+        this.examTypes = examTypes;
+        this.filteredExamTypes = [...examTypes];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('加载考试类型数据失败:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter(): void {

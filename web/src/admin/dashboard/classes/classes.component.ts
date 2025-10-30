@@ -157,29 +157,17 @@ export class ClassesComponent implements OnInit {
 
   loadClasses(): void {
     this.loading = true;
-    // TODO: 实现获取班级列表的API调用
-    // this.adminService.getClasses().subscribe({
-    //   next: (classes) => {
-    //     this.classes = classes;
-    //     this.filteredClasses = [...classes];
-    //     this.loading = false;
-    //   },
-    //   error: (error) => {
-    //     console.error('加载班级数据失败:', error);
-    //     this.loading = false;
-    //   }
-    // });
-    
-    // 模拟数据用于演示
-    setTimeout(() => {
-      this.classes = [
-        { class_id: 1, class_name: '一年级一班', teacher_name: '张老师' },
-        { class_id: 2, class_name: '一年级二班', teacher_name: '李老师' },
-        { class_id: 3, class_name: '二年级一班', teacher_name: '王老师' }
-      ];
-      this.filteredClasses = [...this.classes];
-      this.loading = false;
-    }, 1000);
+    this.adminService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+        this.filteredClasses = [...classes];
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('加载班级数据失败:', error);
+        this.loading = false;
+      }
+    });
   }
 
   applyFilter(): void {
