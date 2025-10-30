@@ -90,6 +90,13 @@ export class EditStudentDialogComponent implements OnInit {
     this.adminService.getClasses().subscribe({
       next: (classes) => {
         this.classes = classes;
+        // 设置表单的class_id默认值
+        if (this.data.student.class_name) {
+          const matchedClass = classes.find(c => c.class_name === this.data.student.class_name);
+          if (matchedClass) {
+            this.studentForm.patchValue({ class_id: matchedClass.class_id });
+          }
+        }
       },
       error: (error) => {
         console.error('加载班级数据失败:', error);

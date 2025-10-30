@@ -52,14 +52,8 @@ export class ConfirmDialogComponent {
     FormsModule,
     MatPaginatorModule,
     MatSortModule,
-    MatDialogModule,
-    // 以下组件通过MatDialog.open()动态使用，而非在模板中直接使用
-    // @ts-ignore
-    CreateStudentDialogComponent,
-    // @ts-ignore
-    EditStudentDialogComponent,
-    // @ts-ignore
-    ConfirmDialogComponent
+    MatDialogModule
+    // 移除对话框组件，改为动态导入以消除NG8113警告
   ],
   template: `
     <mat-card>
@@ -225,14 +219,16 @@ export class StudentsComponent implements OnInit, AfterViewInit {
   }
 
   openCreateDialog(): void {
-    const dialogRef = this.dialog.open(CreateStudentDialogComponent, {
-      width: '400px'
-    });
+    import('./create-student-dialog.component').then(({ CreateStudentDialogComponent }) => {
+      const dialogRef = this.dialog.open(CreateStudentDialogComponent, {
+        width: '400px'
+      });
 
-    dialogRef.afterClosed().subscribe((result: Student) => {
-      if (result) {
-        this.createStudent(result);
-      }
+      dialogRef.afterClosed().subscribe((result: Student) => {
+        if (result) {
+          this.createStudent(result);
+        }
+      });
     });
   }
 
@@ -251,15 +247,17 @@ export class StudentsComponent implements OnInit, AfterViewInit {
   }
 
   editStudent(student: Student): void {
-    const dialogRef = this.dialog.open(EditStudentDialogComponent, {
-      width: '400px',
-      data: { student: { ...student } }  // 传递学生数据的副本
-    });
+    import('./edit-student-dialog.component').then(({ EditStudentDialogComponent }) => {
+      const dialogRef = this.dialog.open(EditStudentDialogComponent, {
+        width: '400px',
+        data: { student: { ...student } }  // 传递学生数据的副本
+      });
 
-    dialogRef.afterClosed().subscribe((result: Student) => {
-      if (result) {
-        this.updateStudent(result);
-      }
+      dialogRef.afterClosed().subscribe((result: Student) => {
+        if (result) {
+          this.updateStudent(result);
+        }
+      });
     });
   }
 
@@ -285,27 +283,30 @@ export class StudentsComponent implements OnInit, AfterViewInit {
   }
 
   deleteStudent(student: Student): void {
-    // 打开确认对话框
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: { studentName: student.student_name }
-    });
+    // 动态导入确认对话框组件
+    import('./students.component').then(({ ConfirmDialogComponent }) => {
+      // 打开确认对话框
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '400px',
+        data: { studentName: student.student_name }
+      });
 
-    dialogRef.afterClosed().subscribe((result: boolean) => {
-      if (result) {
-        // 用户确认删除
-        this.adminService.deleteStudent(student.student_id).subscribe({
-          next: () => {
-            // 从数据源中移除已删除的学生
-            this.students = this.students.filter(s => s.student_id !== student.student_id);
-            this.dataSource.data = [...this.students];
-            console.log('学生删除成功:', student.student_id);
-          },
-          error: (error) => {
-            console.error('删除学生失败:', error);
-          }
-        });
-      }
+      dialogRef.afterClosed().subscribe((result: boolean) => {
+        if (result) {
+          // 用户确认删除
+          this.adminService.deleteStudent(student.student_id).subscribe({
+            next: () => {
+              // 从数据源中移除已删除的学生
+              this.students = this.students.filter(s => s.student_id !== student.student_id);
+              this.dataSource.data = [...this.students];
+              console.log('学生删除成功:', student.student_id);
+            },
+            error: (error) => {
+              console.error('删除学生失败:', error);
+            }
+          });
+        }
+      });
     });
   }
 }
