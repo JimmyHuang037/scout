@@ -1,6 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, retryWhen, delay, take, concatMap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 // 定义API响应接口
 export interface ApiResponse<T> {
@@ -70,9 +70,16 @@ export abstract class BaseService {
    * 获取单个数据的通用方法
    */
   protected getOne<T>(endpoint: string): Observable<T> {
-    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`)
+    return this.get<T>(endpoint);
+  }
+
+  /**
+   * 通用GET请求方法
+   */
+  protected get<T>(endpoint: string, options?: any): Observable<T> {
+    return this.http.get<ApiResponse<T>>(`${this.baseUrl}/${endpoint}`, options)
       .pipe(
-        map(response => response.data),
+        map((response: any) => response.data),
         catchError(this.handleError)
       );
   }
