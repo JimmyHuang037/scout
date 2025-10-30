@@ -3,32 +3,15 @@ from flask import current_app
 
 
 class SubjectService:
-
     def __init__(self):
         self.db_service = DatabaseService()
 
-    def get_all_subjects(self, page=1, per_page=10):
+    def get_all_subjects(self):
         try:
-            offset = (page - 1) * per_page
+            query = "SELECT subject_id, subject_name FROM Subjects ORDER BY subject_id"
+            subjects = self.db_service.execute_query(query)
             
-            count_query = "SELECT COUNT(*) as total FROM Subjects"
-            total_result = self.db_service.execute_query(count_query)
-            total = total_result[0]['total'] if total_result else 0
-            
-            query = "SELECT subject_id, subject_name FROM Subjects ORDER BY subject_id LIMIT %s OFFSET %s"
-            subjects = self.db_service.execute_query(query, (per_page, offset))
-            
-            pages = (total + per_page - 1) // per_page
-            
-            return {
-                'subjects': subjects,
-                'pagination': {
-                    'page': page,
-                    'per_page': per_page,
-                    'total': total,
-                    'pages': pages
-                }
-            }
+            return subjects
         except Exception as e:
             current_app.logger.error(f"Failed to get all subjects: {str(e)}")
             raise e

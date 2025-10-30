@@ -4,7 +4,6 @@ from flask import current_app
 
 
 class TeacherService:
-
     def __init__(self):
         self.db_service = DatabaseService()
         self.class_service = ClassService()
@@ -12,13 +11,15 @@ class TeacherService:
     def get_teacher_profile(self, teacher_id):
         try:
             query = """
-                SELECT teacher_id, teacher_name
-                FROM Teachers 
-                WHERE teacher_id = %s
+                SELECT t.teacher_id, t.teacher_name, s.subject_name
+                FROM Teachers t
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
+                WHERE t.teacher_id = %s
             """
             result = self.db_service.execute_query(query, (teacher_id,))
             return result[0] if result else None
         except Exception as e:
+            current_app.logger.error(f"Error getting teacher profile {teacher_id}: {str(e)}")
             raise e
 
     def get_teacher_classes(self, teacher_id):
@@ -31,10 +32,9 @@ class TeacherService:
                 ORDER BY c.class_id
             """
             classes = self.db_service.execute_query(query, (teacher_id,))
-            return {
-                'classes': classes
-            }
+            return classes
         except Exception as e:
+            current_app.logger.error(f"Error getting teacher classes for {teacher_id}: {str(e)}")
             raise e
 
     def get_all_classes_students(self, teacher_id):
@@ -71,32 +71,17 @@ class TeacherService:
         except Exception as e:
             raise e
 
-    def get_all_teachers(self, page=1, per_page=10):
+    def get_all_teachers(self):
         try:
-            offset = (page - 1) * per_page
-            
-            count_query = "SELECT COUNT(*) as count FROM Teachers"
-            total_result = self.db_service.execute_query(count_query)
-            total = total_result[0]['count'] if total_result else 0
-            
             query = """
                 SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
                 FROM Teachers t
                 LEFT JOIN Subjects s ON t.subject_id = s.subject_id
                 ORDER BY t.teacher_id
-                LIMIT %s OFFSET %s
             """
-            teachers = self.db_service.execute_query(query, (per_page, offset))
+            teachers = self.db_service.execute_query(query)
             
-            return {
-                'teachers': teachers,
-                'pagination': {
-                    'page': page,
-                    'per_page': per_page,
-                    'total': total,
-                    'pages': (total + per_page - 1) // per_page
-                }
-            }
+            return teachers
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to get all teachers: {str(e)}")
@@ -119,72 +104,61 @@ class TeacherService:
 
     def create_teacher(self, teacher_data):
         try:
-            query = """
-                INSERT INTO Teachers (teacher_name, subject_id, password)
-                VALUES (%s, %s, %s)
-            """
-            params = (
-                teacher_data.get('teacher_name'),
-                teacher_data.get('subject_id'),
-                teacher_data.get('password', 'pass123')
+            # Check if teacher already exists
+            check_query = "SELECT teacher_id FROM Teachers WHERE teacher_name = %s AND subject_id = %s"
+            existing = self.db_service.execute_query(check_query, (teacher_data['teacher_name'], teacher_data['subject_id']))
+            if existing:
+                raise ValueError("Teacher with same name and subject already exists")
+            
+            # Insert new teacher
+            insert_query = "INSERT INTO Teachers (teacher_name, subject_id, password) VALUES (%s, %s, %s)"
+            teacher_id = self.db_service.execute_update(
+                insert_query, 
+                (teacher_data['teacher_name'], teacher_data['subject_id'], teacher_data.get('password', 'pass123'))
             )
-            self.db_service.execute_update(query, params)
-            return True
+            
+            # Get the created teacher
+            select_query = """
+                SELECT t.teacher_id, t.teacher_name, t.subject_id, s.subject_name
+                FROM Teachers t
+                LEFT JOIN Subjects s ON t.subject_id = s.subject_id
+                WHERE t.teacher_id = %s
+            """
+            result = self.db_service.execute_query(select_query, (teacher_id,))
+            return result[0] if result else None
+            
         except Exception as e:
             if current_app:
                 current_app.logger.error(f"Failed to create teacher: {str(e)}")
             raise e
 
     def update_teacher(self, teacher_id, teacher_data):
-        connection = None
         try:
-            connection = self.db_service.get_connection()
-            connection.autocommit(False)
+            # Check if teacher exists
+            if not self.get_teacher_by_id(teacher_id):
+                return False
             
-            with connection.cursor() as cursor:
-                check_query = "SELECT COUNT(*) as count FROM Teachers WHERE teacher_id = %s"
-                cursor.execute(check_query, (teacher_id,))
-                check_result = cursor.fetchone()
-                
-                if not check_result or check_result['count'] == 0:
-                    current_app.logger.warning(f"Teacher {teacher_id} does not exist")
-                    connection.rollback()
-                    return False
-                
-                update_fields = []
-                params = []
-                
-                if 'teacher_name' in teacher_data:
-                    update_fields.append("teacher_name = %s")
-                    params.append(teacher_data['teacher_name'])
-                    
-                if 'subject_id' in teacher_data:
-                    update_fields.append("subject_id = %s")
-                    params.append(teacher_data['subject_id'])
-                    
-                if 'password' in teacher_data:
-                    update_fields.append("password = %s")
-                    params.append(teacher_data['password'])
-                
-                if not update_fields:
-                    connection.rollback()
-                    return False
-                    
-                query = f"UPDATE Teachers SET {', '.join(update_fields)} WHERE teacher_id = %s"
-                params.append(teacher_id)
-                
-                affected_rows = cursor.execute(query, params)
-                connection.commit()
-                return affected_rows > 0
+            # Build update query dynamically
+            fields = []
+            params = []
+            
+            for key, value in teacher_data.items():
+                if key in ['teacher_name', 'subject_id', 'password']:
+                    fields.append(f"{key} = %s")
+                    params.append(value)
+            
+            if not fields:
+                return True  # Nothing to update
+            
+            params.append(teacher_id)
+            update_query = f"UPDATE Teachers SET {', '.join(fields)} WHERE teacher_id = %s"
+            self.db_service.execute_update(update_query, params)
+            
+            return True
         except Exception as e:
-            if connection:
-                connection.rollback()
             if current_app:
                 current_app.logger.error(f"Failed to update teacher {teacher_id}: {str(e)}")
-            raise e
-        finally:
-            if connection:
-                connection.autocommit(True)
+            return False
     
     def delete_teacher(self, teacher_id):
         connection = None

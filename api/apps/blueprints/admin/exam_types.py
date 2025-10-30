@@ -8,12 +8,10 @@ admin_exam_types_bp = Blueprint('admin_exam_types', __name__)
 
 @handle_exceptions
 def get_exam_types():
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
     exam_type_service = ExamTypeService()
-    exam_types_data = exam_type_service.get_all_exam_types(page, per_page)
-    current_app.logger.info(f"成功获取考试类型列表，第{page}页，每页{per_page}条")
-    return success_response(exam_types_data)
+    exam_types_data = exam_type_service.get_all_exam_types()
+    current_app.logger.info("成功获取考试类型列表")
+    return success_response({'exam_types': exam_types_data})
 
 @handle_exceptions
 def create_exam_type():
@@ -31,6 +29,13 @@ def create_exam_type():
 
 @handle_exceptions
 def get_exam_type(exam_type_id):
+    # 确保exam_type_id是整数类型
+    try:
+        exam_type_id = int(exam_type_id)
+    except (ValueError, TypeError):
+        current_app.logger.warning(f"无效的考试类型ID: {exam_type_id}")
+        return error_response("无效的考试类型ID", 400)
+        
     exam_type_service = ExamTypeService()
     exam_type_data = exam_type_service.get_exam_type_by_id(exam_type_id)
     if not exam_type_data:
@@ -41,6 +46,13 @@ def get_exam_type(exam_type_id):
 
 @handle_exceptions
 def update_exam_type(exam_type_id):
+    # 确保exam_type_id是整数类型
+    try:
+        exam_type_id = int(exam_type_id)
+    except (ValueError, TypeError):
+        current_app.logger.warning(f"无效的考试类型ID: {exam_type_id}")
+        return error_response("无效的考试类型ID", 400)
+        
     data, error = validate_json_input(['exam_type_name'])
     if error:
         return error
@@ -57,6 +69,13 @@ def update_exam_type(exam_type_id):
 
 @handle_exceptions
 def delete_exam_type(exam_type_id):
+    # 确保exam_type_id是整数类型
+    try:
+        exam_type_id = int(exam_type_id)
+    except (ValueError, TypeError):
+        current_app.logger.warning(f"无效的考试类型ID: {exam_type_id}")
+        return error_response("无效的考试类型ID", 400)
+        
     exam_type_service = ExamTypeService()
     result = exam_type_service.delete_exam_type(exam_type_id)
     if not result:

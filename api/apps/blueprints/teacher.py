@@ -23,13 +23,10 @@ def get_profile(teacher_id):
 
 @handle_exceptions
 def get_my_scores(teacher_id):
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    
     score_service = ScoreService()
-    scores_data = score_service.get_teacher_scores(teacher_id, page, per_page)
+    scores_data = score_service.get_teacher_scores(teacher_id)
     current_app.logger.info(f"Teacher {teacher_id} retrieved scores")
-    return success_response(scores_data)
+    return success_response({'scores': scores_data})
 
 
 @handle_exceptions
@@ -79,13 +76,10 @@ def get_class(teacher_id, class_id):
 
 @handle_exceptions
 def get_teacher_students(teacher_id):
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    
     student_service = StudentService()
-    students_data = student_service.get_teacher_students(teacher_id, None, page, per_page)
+    students_data = student_service.get_teacher_students(teacher_id)
     current_app.logger.info(f"Teacher {teacher_id} retrieved students")
-    return success_response(students_data)
+    return success_response({'students': students_data})
 
 
 @handle_exceptions
@@ -101,13 +95,10 @@ def get_teacher_student(teacher_id, student_id):
 
 @handle_exceptions
 def get_exam_scores(teacher_id, exam_id):
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
-    
     score_service = ScoreService()
-    scores_data = score_service.get_exam_scores(teacher_id, exam_id, page, per_page)
+    scores_data = score_service.get_exam_scores(teacher_id, exam_id)
     current_app.logger.info(f"Teacher {teacher_id} retrieved scores for exam {exam_id}")
-    return success_response(scores_data)
+    return success_response({'scores': scores_data})
 
 
 teacher_bp.add_url_rule('/profile/<string:teacher_id>', view_func=get_profile, methods=['GET'])

@@ -8,12 +8,10 @@ admin_teacher_classes_bp = Blueprint('admin_teacher_classes', __name__)
 
 @handle_exceptions
 def get_teacher_classes():
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
     teacher_class_service = TeacherClassService()
-    teacher_classes_data = teacher_class_service.get_all_teacher_classes(page, per_page)
-    current_app.logger.info(f"成功获取教师班级关联列表，第{page}页，每页{per_page}条")
-    return success_response(teacher_classes_data)
+    teacher_classes_data = teacher_class_service.get_all_teacher_classes()
+    current_app.logger.info("成功获取教师班级关联列表")
+    return success_response({'teacher_classes': teacher_classes_data})
 
 @handle_exceptions
 def create_teacher_class():

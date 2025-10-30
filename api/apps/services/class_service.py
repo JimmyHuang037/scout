@@ -2,23 +2,12 @@ from apps.utils.database_service import DatabaseService
 from flask import current_app
 
 
-class ClassNotFoundError(Exception):
-    pass
-
-
 class ClassService:
-
     def __init__(self):
         self.db_service = DatabaseService()
-    
-    def get_all_classes(self, page=1, per_page=10):
+
+    def get_all_classes(self):
         try:
-            offset = (page - 1) * per_page
-            
-            count_query = "SELECT COUNT(*) as count FROM Classes"
-            total_result = self.db_service.execute_query(count_query)
-            total = total_result[0]['count'] if total_result else 0
-            
             query = """
                 SELECT c.class_id, c.class_name, 
                        COUNT(s.student_id) as student_count
@@ -26,19 +15,10 @@ class ClassService:
                 LEFT JOIN Students s ON c.class_id = s.class_id
                 GROUP BY c.class_id, c.class_name
                 ORDER BY c.class_id
-                LIMIT %s OFFSET %s
             """
-            classes = self.db_service.execute_query(query, (per_page, offset))
+            classes = self.db_service.execute_query(query)
             
-            return {
-                'classes': classes,
-                'pagination': {
-                    'page': page,
-                    'per_page': per_page,
-                    'total': total,
-                    'pages': (total + per_page - 1) // per_page
-                }
-            }
+            return classes
             
         except Exception as e:
             current_app.logger.error(f"Error getting all classes: {str(e)}")
@@ -92,79 +72,68 @@ class ClassService:
                     params.append(value)
             
             if not fields:
-                return False
-            
+                return True
+                
             params.append(class_id)
-            query = f"UPDATE Classes SET {', '.join(fields)} WHERE class_id = %s"
-            self.db_service.execute_update(query, params)
-            return True
+            update_query = f"UPDATE Classes SET {', '.join(fields)} WHERE class_id = %s"
+            self.db_service.execute_update(update_query, params)
+            
+            # Get updated class
+            select_query = """
+                SELECT c.class_id, c.class_name
+                FROM Classes c
+                WHERE c.class_id = %s
+            """
+            result = self.db_service.execute_query(select_query, (class_id,))
+            return result[0] if result else None
         except Exception as e:
             current_app.logger.error(f"Error updating class {class_id}: {str(e)}")
-            raise e
+            return False
     
     def delete_class(self, class_id):
         try:
-            delete_scores_query = "DELETE FROM Scores WHERE student_id IN (SELECT student_id FROM Students WHERE class_id = %s)"
-            self.db_service.execute_update(delete_scores_query, (class_id,))
+            # Check if class exists and has students
+            check_query = """
+                SELECT COUNT(s.student_id) as student_count
+                FROM Classes c
+                LEFT JOIN Students s ON c.class_id = s.class_id
+                WHERE c.class_id = %s
+                GROUP BY c.class_id
+            """
+            result = self.db_service.execute_query(check_query, (class_id,))
             
-            delete_teacher_classes_query = "DELETE FROM TeacherClasses WHERE class_id = %s"
-            self.db_service.execute_update(delete_teacher_classes_query, (class_id,))
+            if result and result[0]['student_count'] > 0:
+                return False, "Cannot delete class with students"
             
-            delete_students_query = "DELETE FROM Students WHERE class_id = %s"
-            self.db_service.execute_update(delete_students_query, (class_id,))
-            
-            delete_class_query = "DELETE FROM Classes WHERE class_id = %s"
-            self.db_service.execute_update(delete_class_query, (class_id,))
-
-            return True
+            delete_query = "DELETE FROM Classes WHERE class_id = %s"
+            self.db_service.execute_update(delete_query, (class_id,))
+            return True, "Class deleted successfully"
         except Exception as e:
             current_app.logger.error(f"Error deleting class {class_id}: {str(e)}")
-            raise e
+            return False, str(e)
     
-    def get_class_students(self, class_id):
+    def get_students_by_class(self, class_id, teacher_id=None):
         try:
-            query = """
-                SELECT s.student_id, s.student_name, c.class_name
-                FROM Students s
-                JOIN Classes c ON s.class_id = c.class_id
-                WHERE s.class_id = %s
-                ORDER BY s.student_id
-            """
-            students = self.db_service.execute_query(query, (class_id,))
-            return {
-                'students': students
-            }
+            if teacher_id:
+                query = """
+                    SELECT s.student_id, s.student_name
+                    FROM Students s
+                    JOIN Classes c ON s.class_id = c.class_id
+                    JOIN TeacherClasses tc ON c.class_id = tc.class_id
+                    WHERE c.class_id = %s AND tc.teacher_id = %s
+                    ORDER BY s.student_id
+                """
+                students = self.db_service.execute_query(query, (class_id, teacher_id))
+            else:
+                query = """
+                    SELECT s.student_id, s.student_name
+                    FROM Students s
+                    WHERE s.class_id = %s
+                    ORDER BY s.student_id
+                """
+                students = self.db_service.execute_query(query, (class_id,))
+            
+            return students
         except Exception as e:
-            current_app.logger.error(f"Error getting class students for class {class_id}: {str(e)}")
-            raise e
-            
-    def get_students_by_class(self, class_id, teacher_id):
-        try:
-            class_check_query = "SELECT class_id FROM Classes WHERE class_id = %s"
-            class_exists = self.db_service.execute_query(class_check_query, (class_id,))
-            if not class_exists:
-                raise ClassNotFoundError("Class not found")
-            
-            permission_query = """
-                SELECT 1
-                FROM TeacherClasses
-                WHERE class_id = %s AND teacher_id = %s
-            """
-            has_permission = self.db_service.execute_query(permission_query, (class_id, teacher_id))
-            if not has_permission:
-                raise ClassNotFoundError("Teacher does not have permission to access this class")
-            
-            query = """
-                SELECT s.student_id, s.student_name, c.class_name
-                FROM Students s
-                JOIN Classes c ON s.class_id = c.class_id
-                WHERE s.class_id = %s
-                ORDER BY s.student_id
-            """
-            students = self.db_service.execute_query(query, (class_id,))
-            return {
-                'students': students
-            }
-        except Exception as e:
-            current_app.logger.error(f"Error getting students by class {class_id} for teacher {teacher_id}: {str(e)}")
+            current_app.logger.error(f"Error getting students by class {class_id}: {str(e)}")
             raise e

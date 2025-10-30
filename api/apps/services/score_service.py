@@ -214,20 +214,8 @@ class ScoreService:
         finally:
             self.db_service.close()
 
-    def get_teacher_scores(self, teacher_id, page=1, per_page=10):
+    def get_teacher_scores(self, teacher_id):
         try:
-            offset = (page - 1) * per_page
-            
-            count_query = """
-                SELECT COUNT(*) as count
-                FROM Scores s
-                JOIN Students st ON s.student_id = st.student_id
-                JOIN TeacherClasses tc ON st.class_id = tc.class_id
-                WHERE tc.teacher_id = %s
-            """
-            total_result = self.db_service.execute_query(count_query, (teacher_id,))
-            total = total_result[0]['count'] if total_result else 0
-            
             query = """
                 SELECT s.score_id, s.score, s.exam_type_id, s.subject_id, s.student_id,
                        et.exam_type_name as exam_name, sub.subject_name, 
@@ -239,18 +227,9 @@ class ScoreService:
                 JOIN TeacherClasses tc ON st.class_id = tc.class_id
                 WHERE tc.teacher_id = %s
                 ORDER BY s.score_id DESC
-                LIMIT %s OFFSET %s
             """
-            scores = self.db_service.execute_query(query, (teacher_id, per_page, offset))
+            scores = self.db_service.execute_query(query, (teacher_id,))
             
-            return {
-                'scores': scores,
-                'pagination': {
-                    'page': page,
-                    'per_page': per_page,
-                    'total': total,
-                    'pages': (total + per_page - 1) // per_page
-                }
-            }
+            return scores
         except Exception as e:
             raise e

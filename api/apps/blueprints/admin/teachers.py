@@ -8,12 +8,10 @@ admin_teachers_bp = Blueprint('admin_teachers', __name__)
 
 @handle_exceptions
 def get_teachers():
-    page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 10, type=int)
     teacher_service = TeacherService()
-    teachers_data = teacher_service.get_all_teachers(page, per_page)
-    current_app.logger.info(f"成功获取教师列表，第{page}页，每页{per_page}条")
-    return success_response(teachers_data)
+    teachers_data = teacher_service.get_all_teachers()
+    current_app.logger.info("成功获取教师列表")
+    return success_response({'teachers': teachers_data})
 
 @handle_exceptions
 def create_teacher():
