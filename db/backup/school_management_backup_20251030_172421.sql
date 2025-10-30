@@ -242,6 +242,43 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary view structure for view `teacher_performance`
+--
+
+DROP TABLE IF EXISTS `teacher_performance`;
+/*!50001 DROP VIEW IF EXISTS `teacher_performance`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `teacher_performance` AS SELECT 
+ 1 AS `teacher_id`,
+ 1 AS `teacher_name`,
+ 1 AS `subject_id`,
+ 1 AS `subject_name`,
+ 1 AS `class_id`,
+ 1 AS `class_name`,
+ 1 AS `exam_type_id`,
+ 1 AS `exam_type_name`,
+ 1 AS `average_score`,
+ 1 AS `rank_in_subject`,
+ 1 AS `rank_in_school`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!50001 DROP VIEW IF EXISTS `users`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `users` AS SELECT 
+ 1 AS `user_id`,
+ 1 AS `user_name`,
+ 1 AS `password`,
+ 1 AS `role`*/;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Dumping routines for database 'school_management'
 --
 
@@ -280,6 +317,42 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET character_set_client      = @saved_cs_client */;
 /*!50001 SET character_set_results     = @saved_cs_results */;
 /*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `teacher_performance`
+--
+
+/*!50001 DROP VIEW IF EXISTS `teacher_performance`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `teacher_performance` AS select `t`.`teacher_id` AS `teacher_id`,`t`.`teacher_name` AS `teacher_name`,`s`.`subject_id` AS `subject_id`,`s`.`subject_name` AS `subject_name`,`c`.`class_id` AS `class_id`,`c`.`class_name` AS `class_name`,`et`.`exam_type_id` AS `exam_type_id`,`et`.`exam_type_name` AS `exam_type_name`,avg(`sc`.`score`) AS `average_score`,row_number() OVER (PARTITION BY `s`.`subject_id`,`et`.`exam_type_id` ORDER BY avg(`sc`.`score`) desc )  AS `rank_in_subject`,row_number() OVER (PARTITION BY `et`.`exam_type_id` ORDER BY avg(`sc`.`score`) desc )  AS `rank_in_school` from ((((((`Teachers` `t` join `Subjects` `s` on((`t`.`subject_id` = `s`.`subject_id`))) join `TeacherClasses` `tc` on((`t`.`teacher_id` = `tc`.`teacher_id`))) join `Classes` `c` on((`tc`.`class_id` = `c`.`class_id`))) join `Students` `st` on((`c`.`class_id` = `st`.`class_id`))) join `Scores` `sc` on((`st`.`student_id` = `sc`.`student_id`))) join `ExamTypes` `et` on((`sc`.`exam_type_id` = `et`.`exam_type_id`))) group by `t`.`teacher_id`,`t`.`teacher_name`,`s`.`subject_id`,`s`.`subject_name`,`c`.`class_id`,`c`.`class_name`,`et`.`exam_type_id`,`et`.`exam_type_name` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `users`
+--
+
+/*!50001 DROP VIEW IF EXISTS `users`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_unicode_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `users` AS select `Students`.`student_id` AS `user_id`,`Students`.`student_name` AS `user_name`,`Students`.`password` AS `password`,'student' AS `role` from `Students` union all select `Teachers`.`teacher_id` AS `user_id`,`Teachers`.`teacher_name` AS `user_name`,`Teachers`.`password` AS `password`,'teacher' AS `role` from `Teachers` union all select 'admin' AS `user_id`,'admin' AS `user_name`,'admin' AS `password`,'admin' AS `role` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -290,4 +363,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-10-30 16:58:56
+-- Dump completed on 2025-10-30 17:24:21
